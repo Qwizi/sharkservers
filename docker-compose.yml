@@ -20,11 +20,12 @@ services:
   db:
     image: postgres:15.1
     environment:
-      - POSTGRES_HOST=db
       - POSTGRES_DB=shark_db
       - POSTGRES_USER=shark_user
       - POSTGRES_PASSWORD=shark_password
     restart: always
+    ports:
+      - "5432:5432"
     networks:
       - shark
 
