@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from app.__version import VERSION
 from app.db import database
 from app.users.models import User
+from app.users.views import router as users_router
 
 
 def create_app():
@@ -14,6 +15,7 @@ def create_app():
     )
 
     _app.state.database = database
+    _app.include_router(users_router, prefix="/users", tags=["users"])
 
     @_app.on_event("startup")
     async def startup():
@@ -28,7 +30,7 @@ def create_app():
             await database_.disconnect()
 
     @_app.get("/")
-    async def home(response_model=List[User]):
+    async def home():
         return {}
 
     return _app

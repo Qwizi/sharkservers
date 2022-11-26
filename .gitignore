@@ -213,3 +213,5 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 # End of https://mrkandreev.name/snippets/gitignore-generator/#Python,PyCharm
+
+test.db

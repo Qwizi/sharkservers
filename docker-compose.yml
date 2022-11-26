@@ -12,6 +12,7 @@ services:
       - POSTGRES_DB=shark_db
       - POSTGRES_USER=shark_user
       - POSTGRES_PASSWORD=shark_password
+      - TESTING=False
     depends_on:
       - db
     restart: always
