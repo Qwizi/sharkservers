@@ -63,3 +63,4 @@ async def test_user_get_not_found(client):
     user_not_found = UserNotFound()
     assert response.status_code == user_not_found.status_code
     assert response.json()['detail'] == user_not_found.detail
+    
