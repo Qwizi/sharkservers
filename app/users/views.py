@@ -1,6 +1,7 @@
 from typing import List
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from fastapi_pagination import Page, paginate, Params
 from ormar import NoMatch
 
 from app.users.exceptions import UserNotFound
@@ -10,9 +11,10 @@ from app.users.schemas import UserOut
 router = APIRouter()
 
 
-@router.get("", response_model=list[UserOut])
-async def get_users():
-    return await User.objects.all()
+@router.get("", response_model=Page[UserOut])
+async def get_users(params: Params = Depends()):
+    users = await User.objects.all()
+    return paginate(users, params)
 
 
 @router.get("/{user_id}", response_model=UserOut)

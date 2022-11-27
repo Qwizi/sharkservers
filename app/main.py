@@ -4,8 +4,8 @@ from fastapi import FastAPI
 
 from app.__version import VERSION
 from app.db import database
-from app.users.models import User
 from app.users.views import router as users_router
+from fastapi_pagination import add_pagination
 
 
 def create_app():
@@ -16,6 +16,7 @@ def create_app():
 
     _app.state.database = database
     _app.include_router(users_router, prefix="/users", tags=["users"])
+    add_pagination(_app)
 
     @_app.on_event("startup")
     async def startup():

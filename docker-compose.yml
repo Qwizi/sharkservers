@@ -13,6 +13,7 @@ services:
       - POSTGRES_USER=shark_user
       - POSTGRES_PASSWORD=shark_password
       - TESTING=False
+      - PIP_DEFAULT_TIMEOUT=200
     depends_on:
       - db
     restart: always

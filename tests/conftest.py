@@ -42,9 +42,9 @@ def faker_session_locale():
     return ['pl_PL']
 
 
-async def create_50_fake_users(faker: Faker):
+async def create_fake_users(faker: Faker, number: int = 50):
     username_list = set()
-    while len(username_list) < 50:
+    while len(username_list) < number:
         username_list.add(faker.first_name().lower())
     users_list = []
     for username in username_list:
