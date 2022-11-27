@@ -11,3 +11,12 @@ class RegisterUser(BaseModel):
     def passwords_match(cls, value, values, **kwargs):
         if "password" in values and value != values["password"]:
             raise ValueError("Passwords do not match")
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    user_id: int | None = None

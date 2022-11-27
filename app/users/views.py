@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends
 from fastapi_pagination import Page, paginate, Params
 from ormar import NoMatch
 
+from app.auth.views import get_current_active_user
+from app.settings import Settings, get_settings
 from app.users.exceptions import UserNotFound
 from app.users.models import User
 from app.users.schemas import UserOut
@@ -15,6 +17,12 @@ router = APIRouter()
 async def get_users(params: Params = Depends()):
     users = await User.objects.all()
     return paginate(users, params)
+
+
+@router.get("/me", response_model=User)
+async def get_logged_user(current_user: User = Depends(get_current_active_user),
+                          settings: Settings = Depends(get_settings)):
+    return current_user
 
 
 @router.get("/{user_id}", response_model=UserOut)

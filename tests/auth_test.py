@@ -1,19 +1,25 @@
 import pytest
 
+from app.auth.schemas import Token
 from app.users.models import User
 from tests.conftest import create_fake_users
 
-TEST_USER = {
+TEST_REGISTER_USER = {
     "username": "Test",
     "email": "test@test.pl",
     "password": "testpassword123",
     "password2": "testpassword123"
 }
 
+TEST_LOGIN_USER = {
+    "username": TEST_REGISTER_USER['username'],
+    "password": TEST_REGISTER_USER['password']
+}
+
 
 @pytest.mark.asyncio
 async def test_auth_register(client):
-    r = await client.post("/auth/register", json=TEST_USER)
+    r = await client.post("/auth/register", json=TEST_REGISTER_USER)
     assert r.status_code == 200
     assert len(await User.objects.all()) == 1
     assert r.json()['username'] == "Test"
@@ -24,8 +30,12 @@ async def test_auth_register(client):
 
 @pytest.mark.asyncio
 async def test_auth_register_exception_when_password_not_match(client):
-    TEST_USER["password2"] = "diffrentpassword"
-    r = await client.post("/auth/register", json=TEST_USER)
+    r = await client.post("/auth/register", json={
+        "username": TEST_REGISTER_USER['username'],
+        "email": TEST_REGISTER_USER['email'],
+        "password": TEST_REGISTER_USER['password'],
+        "password2": "diffrentpassword"
+    })
     response_data = {
         "detail": [
             {
@@ -45,8 +55,18 @@ async def test_auth_register_exception_when_username_or_password_is_taken(client
     r = await client.post("/auth/register", json={
         "username": user.username,
         "email": user.email,
-        "password": TEST_USER['password'],
-        "password2": TEST_USER['password']
+        "password": TEST_REGISTER_USER['password'],
+        "password2": TEST_REGISTER_USER['password2']
     })
     assert r.status_code == 422
     assert r.json()["detail"] == "Email or username already exists"
+
+
+@pytest.mark.asyncio
+async def test_auth_create_access_token(client):
+    r = await client.post("/auth/register", json=TEST_REGISTER_USER)
+    data = r.json()
+    r = await client.post("/auth/token", data=TEST_LOGIN_USER)
+    assert r.status_code == 200
+    assert "access_token" in r.json()
+    assert "token_type" in r.json()

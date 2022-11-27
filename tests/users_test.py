@@ -1,12 +1,15 @@
 import pytest
 from httpx import AsyncClient
 from ormar import NoMatch
+from starlette import status
 from starlette.exceptions import HTTPException
 
+from app.auth.schemas import Token
 from app.main import app
 from app.users.exceptions import UserNotFound
 from app.users.models import User
 from app.users.schemas import UserOut
+from tests.auth_test import TEST_REGISTER_USER, TEST_LOGIN_USER
 from tests.conftest import TEST_USER, create_fake_users
 
 
@@ -63,4 +66,32 @@ async def test_user_get_not_found(client):
     user_not_found = UserNotFound()
     assert response.status_code == user_not_found.status_code
     assert response.json()['detail'] == user_not_found.detail
-    
+
+
+@pytest.mark.asyncio
+async def test_get_unactivated_logged_user(client):
+    register_r = await client.post("/auth/register", json=TEST_REGISTER_USER)
+    token_r = await client.post("/auth/token", data=TEST_LOGIN_USER)
+    access_token = token_r.json()['access_token']
+    r = await client.get("/users/me", headers={
+        "Authorization": f"Bearer {access_token}"
+    })
+    assert r.status_code == status.HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.asyncio
+async def test_get_logged_user(client):
+    register_r = await client.post("/auth/register", json=TEST_REGISTER_USER)
+    user = await User.objects.get(username=TEST_LOGIN_USER['username'])
+    await user.update(is_activated=True)
+    assert user.is_activated is True
+    token_r = await client.post("/auth/token", data=TEST_LOGIN_USER)
+    access_token = token_r.json()['access_token']
+    r = await client.get("/users/me", headers={
+        "Accept": "application/json",
+        "Authorization": f"Bearer {access_token}"
+    })
+    assert r.status_code == status.HTTP_200_OK
+    assert r.json()['username'] == TEST_LOGIN_USER['username']
+    assert r.json()['is_activated'] is True
+    assert r.json()['is_superuser'] is False
