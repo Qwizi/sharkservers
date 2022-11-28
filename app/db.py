@@ -19,6 +19,6 @@ class BaseMeta(ormar.ModelMeta):
     metadata = metadata
 
 
-class CreatedUpdatedModel(ormar.Model):
-    created_at = ormar.DateTime(default=datetime.datetime.utcnow())
-    updated_at = ormar.DateTime(default=datetime.datetime.utcnow())
+class DateFieldsMixins:
+    created_date: datetime.datetime = ormar.DateTime(default=datetime.datetime.now)
+    updated_date: datetime.datetime = ormar.DateTime(default=datetime.datetime.now)

@@ -1,9 +1,9 @@
 import ormar
 
-from app.db import BaseMeta, CreatedUpdatedModel
+from app.db import BaseMeta, DateFieldsMixins
 
 
-class User(ormar.Model):
+class User(ormar.Model, DateFieldsMixins):
     class Meta(BaseMeta):
         tablename = "users"
 
@@ -13,4 +13,4 @@ class User(ormar.Model):
     password: str = ormar.String(max_length=255)
     is_activated: bool = ormar.Boolean(default=False)
     is_superuser: bool = ormar.Boolean(default=False)
-    avatar: str = ormar.String(max_length=255)
+    avatar: str = ormar.String(max_length=255, default="/media/images/avatars/default_avatar.png")
