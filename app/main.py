@@ -4,9 +4,13 @@ from fastapi import FastAPI
 
 from app.__version import VERSION
 from app.db import database
+from app.scopes.utils import create_scopes_for_application
+from app.users.models import User
 from app.users.views import router as users_router
 from app.auth.views import router as auth_router
 from fastapi_pagination import add_pagination
+
+from app.utils import create_scopes
 
 
 def create_app():
@@ -25,6 +29,8 @@ def create_app():
         database_ = _app.state.database
         if not database_.is_connected:
             await database.connect()
+        scopes = create_scopes(["users"])
+        print(scopes)
 
     @_app.on_event("shutdown")
     async def shutdown():
