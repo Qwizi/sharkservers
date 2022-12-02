@@ -1,6 +1,7 @@
-from app.scopes.utils import create_scopes_for_application
+from app.scopes.models import Scope
+from app.scopes.utils import create_scopes_for_app
 
-
+"""
 def create_scopes(applications):
     scopes_dict = {}
     for app in applications:
@@ -9,3 +10,4 @@ def create_scopes(applications):
             if v[0] not in scopes_dict:
                 scopes_dict[v[0]] = v[1]
     return scopes_dict
+"""
