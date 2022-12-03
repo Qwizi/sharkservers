@@ -1,3 +1,5 @@
+from typing import List
+
 from pydantic import BaseModel, validator
 
 
@@ -20,3 +22,4 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     user_id: int | None = None
+    scopes: list[str] = []

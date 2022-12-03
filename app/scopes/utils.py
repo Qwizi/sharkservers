@@ -30,9 +30,19 @@ async def create_scopes_for_app(app_name: str, additional=None):
             )
 
 
-async def create_scopes(applications, additional=None):
+async def _create_scopes(applications, additional=None):
     for app in applications:
         await create_scopes_for_app(app, additional)
+
+
+async def create_scopes():
+    return await _create_scopes(["users"], additional=[
+        {
+            "app_name": "users",
+            "value": "me",
+            "description": "Get logged users data"
+        }
+    ])
 
 
 async def get_scopes():
@@ -43,3 +53,11 @@ async def get_scopes():
         if scope_tuple[0] not in scopes_dict:
             scopes_dict[scope_tuple[0]] = scope_tuple[1]
     return scopes_dict
+
+
+async def get_scopesv2():
+    scopes = await Scope.objects.all()
+    scopes_list = []
+    for scope in scopes:
+        scopes_list.append(scope.get_string())
+    return scopes_list

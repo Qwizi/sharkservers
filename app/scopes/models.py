@@ -12,6 +12,9 @@ class Scope(ormar.Model):
     value = ormar.String(max_length=120)
     description = ormar.String(max_length=256)
 
+    def get_string(self):
+        return f"{self.app_name}:{self.value}"
+
     def get_tuple(self):
         return f"{self.app_name}:{self.value}", self.description
 

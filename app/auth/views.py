@@ -4,6 +4,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.auth.exceptions import invalid_username_password_exception
 from app.auth.schemas import RegisterUser, Token
 from app.auth.utils import authenticate_user, create_access_token, register_user
+from app.scopes.utils import get_scopesv2
 from app.settings import Settings, get_settings
 from app.users.schemas import UserOut
 
@@ -21,5 +22,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     user = await authenticate_user(username=form_data.username, password=form_data.password)
     if not user:
         raise invalid_username_password_exception
-    access_token = create_access_token(settings, data={'sub': str(user.id)})
+    scopes = await get_scopesv2()
+    print(scopes)
+    access_token = create_access_token(settings, data={'sub': str(user.id), "scopes": scopes})
     return Token(access_token=access_token, token_type="bearer")
