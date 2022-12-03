@@ -6,6 +6,7 @@ from starlette.exceptions import HTTPException
 
 from app.auth.schemas import Token
 from app.main import app
+from app.scopes.utils import create_scopes
 from app.users.exceptions import UserNotFound
 from app.users.models import User
 from app.users.schemas import UserOut
@@ -70,6 +71,7 @@ async def test_user_get_not_found(client):
 
 @pytest.mark.asyncio
 async def test_get_unactivated_logged_user(client):
+    await create_scopes()
     register_r = await client.post("/auth/register", json=TEST_REGISTER_USER)
     token_r = await client.post("/auth/token", data=TEST_LOGIN_USER)
     access_token = token_r.json()['access_token']
@@ -81,6 +83,7 @@ async def test_get_unactivated_logged_user(client):
 
 @pytest.mark.asyncio
 async def test_get_logged_user(client):
+    await create_scopes()
     register_r = await client.post("/auth/register", json=TEST_REGISTER_USER)
     user = await User.objects.get(username=TEST_LOGIN_USER['username'])
     await user.update(is_activated=True)
