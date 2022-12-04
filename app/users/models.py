@@ -1,6 +1,9 @@
+from typing import Optional, List
+
 import ormar
 
 from app.db import BaseMeta, DateFieldsMixins
+from app.roles.models import Role
 
 
 class User(ormar.Model, DateFieldsMixins):
@@ -14,3 +17,5 @@ class User(ormar.Model, DateFieldsMixins):
     is_activated: bool = ormar.Boolean(default=False)
     is_superuser: bool = ormar.Boolean(default=False)
     avatar: str = ormar.String(max_length=255, default="/media/images/avatars/default_avatar.png")
+    roles: Optional[List[Role]] = ormar.ManyToMany(Role, related_name="user_roles")
+    display_role: Optional[Role] = ormar.ForeignKey(Role, related_name="user_display_role")

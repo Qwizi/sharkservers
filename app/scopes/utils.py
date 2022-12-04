@@ -1,3 +1,4 @@
+from app.roles.models import Role
 from app.scopes.enums import ScopeEnum
 from app.scopes.models import Scope
 
@@ -61,3 +62,13 @@ async def get_scopesv2():
     for scope in scopes:
         scopes_list.append(scope.get_string())
     return scopes_list
+
+
+async def get_scopesv3(roles: list[Role]):
+    scopes = []
+    for role in roles:
+        for scope in role.scopes:
+            scope_str = scope.get_string()
+            if scope_str not in scopes:
+                scopes.append(scope.get_string())
+    return scopes

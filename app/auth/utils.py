@@ -20,6 +20,7 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 
 from app.auth.exceptions import credentials_exception, invalid_username_password_exception, inactive_user_exception
 from app.auth.schemas import TokenData, RegisterUser
+from app.roles.models import Role
 from app.scopes.utils import get_scopes
 from app.settings import Settings, get_settings
 from app.users.exceptions import UserNotFound
@@ -45,7 +46,7 @@ def get_password_hash(plain_password):
 
 async def authenticate_user(username: str, password: str) -> User | bool:
     try:
-        user = await User.objects.get(username=username)
+        user = await User.objects.select_related(["roles", "roles__scopes"]).get(username=username)
         if not verify_password(password, user.password):
             return False
     except UserNotFound as e:
@@ -78,7 +79,8 @@ async def get_current_user(security_scopes: SecurityScopes, token: str = Depends
     except JWTError as e:
         raise credentials_exception
     try:
-        user = await User.objects.get(id=int(token_data.user_id))
+        user = await User.objects.select_related(["roles", "display_role"]).get(
+            id=int(token_data.user_id))
     except UserNotFound:
         raise invalid_username_password_exception
     for scope in security_scopes.scopes:
@@ -100,11 +102,15 @@ async def get_current_active_user(current_user: User = Security(get_current_user
 async def register_user(user_data: RegisterUser):
     password = get_password_hash(user_data.password)
     try:
-        created_user = User(
+        user_role = await Role.objects.get(id=2)
+        created_user = await User.objects.create(
             username=user_data.username,
             email=user_data.email,
-            password=password)
-        await created_user.save()
+            password=password,
+            display_role=user_role
+        )
+
+        await created_user.roles.add(user_role)
     except (IntegrityError, SQLIntegrityError, UniqueViolationError) as e:
         raise HTTPException(status_code=422, detail=f"Email or username already exists")
 

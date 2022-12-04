@@ -1,6 +1,8 @@
 import pytest
 
 from app.auth.schemas import Token
+from app.roles.utils import create_default_roles
+from app.scopes.utils import create_scopes
 from app.users.models import User
 from tests.conftest import create_fake_users
 
@@ -19,6 +21,8 @@ TEST_LOGIN_USER = {
 
 @pytest.mark.asyncio
 async def test_auth_register(client):
+    await create_scopes()
+    await create_default_roles()
     r = await client.post("/auth/register", json=TEST_REGISTER_USER)
     assert r.status_code == 200
     assert len(await User.objects.all()) == 1
@@ -27,9 +31,14 @@ async def test_auth_register(client):
     assert r.json()["is_activated"] is False
     assert r.json()["is_superuser"] is False
 
+    assert len(r.json()["roles"]) == 1
+    assert r.json()["display_role"]["id"] == 2
+
 
 @pytest.mark.asyncio
 async def test_auth_register_exception_when_password_not_match(client):
+    await create_scopes()
+    await create_default_roles()
     r = await client.post("/auth/register", json={
         "username": TEST_REGISTER_USER['username'],
         "email": TEST_REGISTER_USER['email'],
@@ -64,6 +73,8 @@ async def test_auth_register_exception_when_username_or_password_is_taken(client
 
 @pytest.mark.asyncio
 async def test_auth_create_access_token(client):
+    await create_scopes()
+    await create_default_roles()
     r = await client.post("/auth/register", json=TEST_REGISTER_USER)
     data = r.json()
     r = await client.post("/auth/token", data=TEST_LOGIN_USER)
