@@ -36,7 +36,7 @@ async def _create_scopes(applications, additional=None):
 
 
 async def create_scopes():
-    return await _create_scopes(["users"], additional=[
+    return await _create_scopes(["users", "roles", "scopes"], additional=[
         {
             "app_name": "users",
             "value": "me",
