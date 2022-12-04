@@ -10,9 +10,18 @@ from httpx import AsyncClient
 
 from app.db import metadata
 from app.main import app
+from app.roles.models import Role
+from app.roles.utils import get_user_role_scopes
 from app.users.models import User
 
 DATABASE_URL = "sqlite:///test.db"
+
+TEST_USER = {
+    "username": "Test user",
+    "email": "test@test.pl",
+    "password": "test",
+    "avatar": "asdasd"
+}
 
 
 @pytest.fixture(autouse=True, scope="function")
@@ -57,9 +66,18 @@ async def create_fake_users(faker: Faker, number: int = 50):
     return users_list
 
 
-TEST_USER = {
-    "username": "Test user",
-    "email": "test@test.pl",
-    "password": "test",
-    "avatar": "asdasd"
-}
+async def create_fake_roles(faker: Faker, number: int = 50):
+    roles_list = []
+    role_name_list = set()
+    while len(role_name_list) < number:
+        role_name_list.add(faker.job())
+    for role_name in role_name_list:
+        role = await Role.objects.create(
+            name=role_name,
+            color="test_color"
+        )
+        user_scopes = await get_user_role_scopes()
+        for scope in user_scopes:
+            role.scopes.add(scope)
+        roles_list.append(role)
+    return roles_list
