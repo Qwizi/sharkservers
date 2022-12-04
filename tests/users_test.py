@@ -6,6 +6,7 @@ from starlette.exceptions import HTTPException
 
 from app.auth.schemas import Token
 from app.main import app
+from app.roles.utils import create_default_roles
 from app.scopes.utils import create_scopes
 from app.users.exceptions import UserNotFound
 from app.users.models import User
@@ -72,6 +73,7 @@ async def test_user_get_not_found(client):
 @pytest.mark.asyncio
 async def test_get_unactivated_logged_user(client):
     await create_scopes()
+    await create_default_roles()
     register_r = await client.post("/auth/register", json=TEST_REGISTER_USER)
     token_r = await client.post("/auth/token", data=TEST_LOGIN_USER)
     access_token = token_r.json()['access_token']
@@ -84,6 +86,8 @@ async def test_get_unactivated_logged_user(client):
 @pytest.mark.asyncio
 async def test_get_logged_user(client):
     await create_scopes()
+    await create_default_roles()
+
     register_r = await client.post("/auth/register", json=TEST_REGISTER_USER)
     user = await User.objects.get(username=TEST_LOGIN_USER['username'])
     await user.update(is_activated=True)
@@ -98,3 +102,5 @@ async def test_get_logged_user(client):
     assert r.json()['username'] == TEST_LOGIN_USER['username']
     assert r.json()['is_activated'] is True
     assert r.json()['is_superuser'] is False
+    assert "roles" in r.json()
+    assert "display_role" in r.json()

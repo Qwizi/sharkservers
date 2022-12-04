@@ -11,7 +11,8 @@ from httpx import AsyncClient
 from app.db import metadata
 from app.main import app
 from app.roles.models import Role
-from app.roles.utils import get_user_role_scopes
+from app.roles.utils import get_user_role_scopes, create_default_roles
+from app.scopes.utils import create_scopes
 from app.users.models import User
 
 DATABASE_URL = "sqlite:///test.db"
@@ -56,13 +57,19 @@ async def create_fake_users(faker: Faker, number: int = 50):
     while len(username_list) < number:
         username_list.add(faker.first_name().lower())
     users_list = []
+    await create_scopes()
+    await create_default_roles()
+    user_role = await Role.objects.get(id=2)
     for username in username_list:
-        users_list.append(await User.objects.create(
+        user = await User.objects.create(
             username=username,
             email=f"{username}@test.pl",
             password="test",
-            avatar="asdasd"
-        ))
+            avatar="asdasd",
+            display_role=user_role
+        )
+        await user.roles.add(user_role)
+        users_list.append(user)
     return users_list
 
 
