@@ -17,9 +17,14 @@ class RegisterUser(BaseModel):
 
 class Token(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str
 
 
 class TokenData(BaseModel):
     user_id: int | None = None
     scopes: list[str] = []
+
+
+class RefreshToken(BaseModel):
+    refresh_token: str

@@ -10,8 +10,10 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str
     TESTING: bool = False
     SECRET_KEY: str
+    REFRESH_SECRET_KEY: str
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRES: int = 30
+    ACCESS_TOKEN_EXPIRES: int = 5
+    REFRESH_TOKEN_EXPIRES: int = 43829
 
     class Config:
         env_file = '.env'
