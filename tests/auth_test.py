@@ -1,8 +1,10 @@
 import pytest
+from jose import jwt
 
 from app.auth.schemas import Token
 from app.roles.utils import create_default_roles
 from app.scopes.utils import create_scopes
+from app.settings import get_settings
 from app.users.models import User
 from tests.conftest import create_fake_users
 
@@ -80,4 +82,19 @@ async def test_auth_create_access_token(client):
     r = await client.post("/auth/token", data=TEST_LOGIN_USER)
     assert r.status_code == 200
     assert "access_token" in r.json()
+    assert "refresh_token" in r.json()
     assert "token_type" in r.json()
+
+
+@pytest.mark.asyncio
+async def test_get_access_token_from_refresh_token(client, faker):
+    await create_scopes()
+    await create_default_roles()
+    await client.post("/auth/register", json=TEST_REGISTER_USER)
+    r = await client.post("/auth/token", data=TEST_LOGIN_USER)
+    token_data = r.json()
+
+    r_r = await client.post("/auth/token/refresh", json={
+        "refresh_token": token_data["refresh_token"]
+    })
+    assert r_r.status_code == 200

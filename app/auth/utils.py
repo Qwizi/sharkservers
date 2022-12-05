@@ -62,6 +62,15 @@ def create_access_token(settings: Settings = Depends(get_settings), data: dict =
     return encoded_jwt
 
 
+def create_refresh_token(settings: Settings = Depends(get_settings), data: dict = None):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=
+                                           settings.REFRESH_TOKEN_EXPIRES)
+    to_encode.update({'exp': expire})
+    encoded_jwt = jwt.encode(to_encode, settings.REFRESH_SECRET_KEY, algorithm=settings.ALGORITHM)
+    return encoded_jwt
+
+
 async def get_current_user(security_scopes: SecurityScopes, token: str = Depends(oauth2_scheme),
                            settings: Settings = Depends(get_settings)):
     if security_scopes.scopes:
@@ -79,7 +88,7 @@ async def get_current_user(security_scopes: SecurityScopes, token: str = Depends
     except JWTError as e:
         raise credentials_exception
     try:
-        user = await User.objects.select_related(["roles", "display_role"]).get(
+        user = await User.objects.select_related(["roles", "display_role", "roles__scopes"]).get(
             id=int(token_data.user_id))
     except UserNotFound:
         raise invalid_username_password_exception
