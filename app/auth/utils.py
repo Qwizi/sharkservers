@@ -18,8 +18,6 @@ from passlib.context import CryptContext
 from sqlalchemy.exc import IntegrityError
 from starlette import status
 from starlette.exceptions import HTTPException
-from starlette.requests import Request
-from starlette.status import HTTP_401_UNAUTHORIZED
 
 from app.auth.exceptions import credentials_exception, invalid_username_password_exception, inactive_user_exception, \
     InvalidActivateCode, UserIsAlreadyActivated
@@ -28,9 +26,6 @@ from app.roles.models import Role
 from app.settings import Settings, get_settings
 from app.users.exceptions import UserNotFound
 from app.users.models import User
-from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
-
-from app.users.schemas import UserEvents
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
