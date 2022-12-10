@@ -8,7 +8,7 @@ import sqlalchemy
 from faker import Faker
 from httpx import AsyncClient
 
-from app.db import metadata
+from app.db import metadata, get_redis, create_redis_pool
 from app.main import app
 from app.roles.models import Role
 from app.roles.utils import get_user_role_scopes, create_default_roles
@@ -35,6 +35,7 @@ def create_test_database():
 
 @pytest_asyncio.fixture(scope="module")
 async def client():
+    app.state.redis = await create_redis_pool()
     async with AsyncClient(app=app, base_url="http://localhost") as c:
         yield c
 

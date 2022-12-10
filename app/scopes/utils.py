@@ -46,24 +46,6 @@ async def create_scopes():
     ])
 
 
-async def get_scopes():
-    scopes_dict = {}
-    scopes = await Scope.objects.all()
-    for scope in scopes:
-        scope_tuple = scope.get_tuple()
-        if scope_tuple[0] not in scopes_dict:
-            scopes_dict[scope_tuple[0]] = scope_tuple[1]
-    return scopes_dict
-
-
-async def get_scopesv2():
-    scopes = await Scope.objects.all()
-    scopes_list = []
-    for scope in scopes:
-        scopes_list.append(scope.get_string())
-    return scopes_list
-
-
 async def get_scopesv3(roles: list[Role]):
     scopes = []
     for role in roles:

@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRES: int = 5
     REFRESH_TOKEN_EXPIRES: int = 43829
+    REDIS_HOST: str = "redis"
+    REDIS_PORT: int = 6379
 
     class Config:
         env_file = '.env'
@@ -22,6 +24,9 @@ class Settings(BaseSettings):
         if self.TESTING:
             return "sqlite:///test.db"
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}/{self.POSTGRES_DB}"
+
+    def get_redis_url(self):
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"
 
 
 @lru_cache()

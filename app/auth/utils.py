@@ -2,6 +2,7 @@ import asyncio
 import random
 import string
 from datetime import timedelta, datetime
+from enum import Enum
 from sqlite3 import IntegrityError as SQLIntegrityError
 from typing import Optional, Dict
 
@@ -10,7 +11,9 @@ from cryptography.fernet import Fernet
 from fastapi import Depends, Security
 from fastapi.security import OAuth2PasswordBearer, OAuth2, SecurityScopes
 from fastapi.security.utils import get_authorization_scheme_param
+from fastapi_events.dispatcher import dispatch
 from jose import jwt, JWTError
+from ormar import NoMatch
 from passlib.context import CryptContext
 from sqlalchemy.exc import IntegrityError
 from starlette import status
@@ -18,14 +21,16 @@ from starlette.exceptions import HTTPException
 from starlette.requests import Request
 from starlette.status import HTTP_401_UNAUTHORIZED
 
-from app.auth.exceptions import credentials_exception, invalid_username_password_exception, inactive_user_exception
-from app.auth.schemas import TokenData, RegisterUser
+from app.auth.exceptions import credentials_exception, invalid_username_password_exception, inactive_user_exception, \
+    InvalidActivateCode, UserIsAlreadyActivated
+from app.auth.schemas import TokenData, RegisterUser, ActivateUserCode
 from app.roles.models import Role
-from app.scopes.utils import get_scopes
 from app.settings import Settings, get_settings
 from app.users.exceptions import UserNotFound
 from app.users.models import User
 from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
+
+from app.users.schemas import UserEvents
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -34,6 +39,10 @@ crypto_key = Fernet.generate_key()
 fernet = Fernet(crypto_key)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
+
+
+class RedisKey(Enum):
+    ACTIVATE_USER = "activate-user-code"
 
 
 def verify_password(plain_password, hashed_password):
@@ -122,9 +131,51 @@ async def register_user(user_data: RegisterUser):
         await created_user.roles.add(user_role)
     except (IntegrityError, SQLIntegrityError, UniqueViolationError) as e:
         raise HTTPException(status_code=422, detail=f"Email or username already exists")
-
     return created_user
 
 
 def generate_code(number: int = 8):
     return ''.join(random.choice(string.digits) for _ in range(number))
+
+
+def create_activate_code_redis_key(code: str):
+    return f"{RedisKey.ACTIVATE_USER.value}:{code}"
+
+
+async def create_activate_code(user_id: int, redis):
+    code = generate_code(5)
+    redis_key = create_activate_code_redis_key(code)
+    if await redis.exists(redis_key):
+        await redis.delete(redis_key)
+    await redis.set(redis_key, user_id)
+    await redis.expire(redis_key, 900)
+    return redis_key.split(":")[1], await redis.get(redis_key),
+
+
+async def get_user_id_by_code(code: str, redis):
+    redis_key = create_activate_code_redis_key(code)
+    code = await redis.get(redis_key)
+    if code:
+        return int(code)
+    return None
+
+
+async def delete_activate_code(code, redis):
+    return await redis.delete(create_activate_code_redis_key(code))
+
+
+async def activate_user(activate_code: ActivateUserCode, redis):
+    code = activate_code.code
+    user_id = await get_user_id_by_code(code, redis)
+    if not user_id:
+        raise InvalidActivateCode
+    try:
+        user = await User.objects.get(id=user_id)
+        if user.is_activated:
+            await delete_activate_code(code, redis)
+            raise UserIsAlreadyActivated()
+        await user.update(is_activated=True)
+        await delete_activate_code(code, redis)
+        return True
+    except NoMatch:
+        raise InvalidActivateCode
