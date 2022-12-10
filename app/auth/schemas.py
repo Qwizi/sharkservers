@@ -1,6 +1,7 @@
+from enum import Enum
 from typing import List
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, constr, Field
 
 
 class RegisterUser(BaseModel):
@@ -28,3 +29,7 @@ class TokenData(BaseModel):
 
 class RefreshToken(BaseModel):
     refresh_token: str
+
+
+class ActivateUserCode(BaseModel):
+    code: str = Field(max_length=5)
