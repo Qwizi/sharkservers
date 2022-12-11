@@ -1,3 +1,6 @@
+from fastapi_pagination.ext import ormar
+from ormar import or_, and_
+
 from app.roles.models import Role
 from app.scopes.models import Scope
 
@@ -7,12 +10,19 @@ async def get_admin_role_scopes():
 
 
 async def get_user_role_scopes():
-    return await Scope.objects.filter(app_name="users", value="me").all()
+    return await Scope.objects.filter(
+        or_(
+            and_(app_name="users", value="me"),
+            and_(app_name="users", value="me:username"),
+            and_(app_name="users", value="me:password"),
+        )
+    ).all()
 
 
 async def create_default_roles():
     admin_role_id = 1
     user_role_id = 2
+    banned_role_id = 3
     admin_role, created = await Role.objects.get_or_create(
         id=admin_role_id,
         name="Admin",
@@ -29,3 +39,9 @@ async def create_default_roles():
     user_scopes = await get_user_role_scopes()
     for scope in user_scopes:
         await user_role.scopes.add(scope)
+
+    banned_role, _ = await Role.objects.get_or_create(
+        id=banned_role_id,
+        name="banned",
+        color="#000000"
+    )

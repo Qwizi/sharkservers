@@ -42,6 +42,16 @@ async def create_scopes():
             "app_name": "users",
             "value": "me",
             "description": "Get logged users data"
+        },
+        {
+            "app_name": "users",
+            "value": "me:username",
+            "description": "Update username"
+        },
+        {
+            "app_name": "users",
+            "value": "me:password",
+            "description": "Update password"
         }
     ])
 

@@ -1,6 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Header
 from fastapi_events.handlers.local import local_handler
 from fastapi_events.middleware import EventHandlerASGIMiddleware
+from starlette.requests import Request
 
 from app.__version import VERSION
 from app.db import database, create_redis_pool
@@ -54,8 +55,8 @@ def create_app():
         await app.state.redis.close()
 
     @_app.get("/")
-    async def home():
-        return {}
+    async def home(request: Request, user_agent: str | None = Header(default=None)):
+        return {"client": request.client.host, "user_agent": user_agent}
 
     return _app
 
