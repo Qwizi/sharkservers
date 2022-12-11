@@ -11,6 +11,8 @@ from app.users.models import User
 class UserEvents(Enum):
     REGISTERED = "USER_REGISTERED"
     ACTIVATED = "USER_ACTIVATED"
+    ACCESS_TOKEN = "ACCESS_TOKEN"
+    REFRESH_TOKEN = "REFRESH_TOKEN"
 
 
 UserOut = User.get_pydantic(exclude={"password", "email"})
@@ -21,6 +23,10 @@ class UserIn(BaseModel):
     username: str
     email: str
     password: str
+
+
+class ChangeUsername(BaseModel):
+    username: str
 
 
 @payload_schema.register(event_name=UserEvents.REGISTERED)

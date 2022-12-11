@@ -104,3 +104,40 @@ async def test_get_logged_user(client):
     assert r.json()['is_superuser'] is False
     assert "roles" in r.json()
     assert "display_role" in r.json()
+
+
+@pytest.mark.asyncio
+async def test_change_logged_user_username(client):
+    await create_scopes()
+    await create_default_roles()
+
+    register_r = await client.post("/auth/register", json=TEST_REGISTER_USER)
+    user = await User.objects.get(username=TEST_LOGIN_USER['username'])
+    token_r = await client.post("/auth/token", data=TEST_LOGIN_USER)
+    access_token = token_r.json()['access_token']
+    await user.update(is_activated=True)
+    assert user.is_activated is True
+
+    change_username_r = await client.post("/users/me/username", json={"username": "New username"}, headers={
+        "Accept": "application/json",
+        "Authorization": f"Bearer {access_token}"
+    })
+    assert change_username_r.status_code == status.HTTP_200_OK
+    assert change_username_r.json()["username"] != user.username
+    assert change_username_r.json()["username"] == "New username"
+
+
+@pytest.mark.asyncio
+async def test_get_last_logged_users(client):
+    await create_scopes()
+    await create_default_roles()
+
+    register_r = await client.post("/auth/register", json=TEST_REGISTER_USER)
+    user = await User.objects.get(username=TEST_LOGIN_USER['username'])
+    await user.update(is_activated=True)
+    assert user.is_activated is True
+    token_r = await client.post("/auth/token", data=TEST_LOGIN_USER)
+
+    online_users_r = await client.get("/users/online")
+    assert online_users_r.status_code == status.HTTP_200_OK
+    assert online_users_r.json()["total"] == 1
