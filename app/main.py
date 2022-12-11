@@ -1,7 +1,9 @@
+import os
 from fastapi import FastAPI, Header
 from fastapi_events.handlers.local import local_handler
 from fastapi_events.middleware import EventHandlerASGIMiddleware
 from starlette.requests import Request
+from starlette.staticfiles import StaticFiles
 
 from app.__version import VERSION
 from app.db import database, create_redis_pool
@@ -30,6 +32,9 @@ def create_app():
     )
     _app.add_middleware(EventHandlerASGIMiddleware, handlers=[local_handler])
 
+    script_dir = os.path.dirname(__file__)
+    st_abs_file_path = os.path.join(script_dir, "static/")
+    _app.mount("/static", StaticFiles(directory=st_abs_file_path), name="static")
     _app.state.database = database
     _app.include_router(users_router, prefix="/users", tags=["users"])
     _app.include_router(auth_router, prefix="/auth", tags=["auth"])
@@ -57,6 +62,16 @@ def create_app():
     @_app.get("/")
     async def home(request: Request, user_agent: str | None = Header(default=None)):
         return {"client": request.client.host, "user_agent": user_agent}
+
+    @_app.get("/images")
+    async def get_images():
+        images_list = []
+        for filename in os.listdir(st_abs_file_path + "images"):
+            images_list.append({
+                "name": filename.split(".")[0],
+                "path": f"/static/images/{filename}"
+            })
+        return images_list
 
     return _app
 
