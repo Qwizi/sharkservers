@@ -120,7 +120,8 @@ async def register_user(user_data: RegisterUser):
             username=user_data.username,
             email=user_data.email,
             password=password,
-            display_role=user_role
+            display_role=user_role,
+            avatar="/static/images/default_avatar.png"
         )
 
         await created_user.roles.add(user_role)
