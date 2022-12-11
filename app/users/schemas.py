@@ -3,7 +3,7 @@ from typing import Optional
 
 from aioredis import Redis
 from fastapi_events.registry.payload_schema import registry as payload_schema
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from app.users.models import User
 
@@ -27,6 +27,17 @@ class UserIn(BaseModel):
 
 class ChangeUsername(BaseModel):
     username: str
+
+
+class ChangePassword(BaseModel):
+    current_password: str
+    new_password: str
+    new_password2: str
+
+    @validator('new_password2')
+    def passwords_match(cls, value, values, **kwargs):
+        if "new_password" in values and value != values["new_password"]:
+            raise ValueError("Passwords do not match")
 
 
 @payload_schema.register(event_name=UserEvents.REGISTERED)

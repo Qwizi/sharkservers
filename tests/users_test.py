@@ -128,6 +128,12 @@ async def test_change_logged_user_username(client):
 
 
 @pytest.mark.asyncio
+async def test_change_logged_user_username_unauthenticated(client):
+    r = await client.post("users/me/username", json={"username": "New username"})
+    assert r.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+@pytest.mark.asyncio
 async def test_get_last_logged_users(client):
     await create_scopes()
     await create_default_roles()

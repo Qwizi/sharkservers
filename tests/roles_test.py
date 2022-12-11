@@ -13,9 +13,10 @@ async def test_get_default_roles(client):
     r = await client.get("roles")
     assert r.status_code == 200
     data = r.json()
-    assert len(data["items"]) == 2
+    assert len(data["items"]) == 3
     assert data["items"][0]["id"] == 1
     assert data["items"][1]["id"] == 2
+    assert data["items"][2]["id"] == 3
 
 
 @pytest.mark.asyncio
@@ -25,7 +26,7 @@ async def test_get_roles(client, faker):
     r = await client.get("roles")
     assert r.status_code == 200
     data = r.json()
-    assert data["total"] == 100 + 2
+    assert data["total"] == 100 + 3
 
 
 @pytest.mark.asyncio
@@ -44,13 +45,13 @@ async def test_get_role(client, faker):
 @pytest.mark.asyncio
 async def test_get_invalid_id_role(client):
     await create_default_roles()
-    r = await client.get("roles/3")
+    r = await client.get("roles/9555")
     assert r.status_code == 401
     assert r.json()["detail"] == "Role not found"
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("role_id", [1, 2])
+@pytest.mark.parametrize("role_id", [1, 2, 3])
 async def test_get_default_role(role_id, client):
     await create_default_roles()
     r = await client.get(f"roles/{role_id}")
@@ -81,3 +82,14 @@ async def test_get_user_role(client):
     data = r.json()
     users_scopes = await get_user_role_scopes()
     assert len(data["scopes"]) == len(users_scopes)
+
+
+@pytest.mark.asyncio
+async def test_get_banned_role(client):
+    banned_role_id = 3
+    await create_scopes()
+    await create_default_roles()
+    r = await client.get(f"roles/{banned_role_id}")
+    assert r.status_code == 200
+    data = r.json()
+    assert len(data["scopes"]) == 0
