@@ -41,6 +41,8 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     scopes = await get_scopesv3(user.roles)
     access_token = create_access_token(settings, data={'sub': str(user.id), "scopes": scopes})
     refresh_token = create_refresh_token(settings, data={'sub': str(user.id)})
+    await user.update(last_login=datetime.datetime.utcnow())
+    dispatch(UserEvents.ACCESS_TOKEN, payload=user)
     return Token(access_token=access_token, refresh_token=refresh_token, token_type="bearer")
 
 
@@ -52,8 +54,10 @@ async def get_access_token_from_refresh_token(token: RefreshToken, settings: Set
             user_id: str = payload.get("sub")
             user = await User.objects.select_related(["roles", "roles__scopes"]).get(id=int(user_id))
             if user:
+                await user.update(last_login=datetime.datetime.utcnow())
                 scopes = await get_scopesv3(user.roles)
                 access_token = create_access_token(settings, data={'sub': str(user.id), "scopes": scopes})
+                dispatch(UserEvents.REFRESH_TOKEN, payload=user)
                 return Token(access_token=access_token, refresh_token=token.refresh_token, token_type="bearer")
     except JWTError as e:
         raise credentials_exception

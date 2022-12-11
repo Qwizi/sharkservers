@@ -6,7 +6,8 @@ from pydantic import BaseModel, validator, constr, Field
 
 class RegisterUser(BaseModel):
     username: str
-    email: str
+    email: str = Field(regex="([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+",
+                       description="Email regex")
     password: str
     password2: str
 
