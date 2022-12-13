@@ -14,3 +14,4 @@ class Role(ormar.Model):
     name: str = ormar.String(max_length=64, unique=True)
     color: str = ormar.String(max_length=256, default="#999999")
     scopes: Optional[List[Scope]] = ormar.ManyToMany(Scope)
+    is_staff: Optional[bool] = ormar.Boolean(default=False)

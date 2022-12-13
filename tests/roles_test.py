@@ -93,3 +93,15 @@ async def test_get_banned_role(client):
     assert r.status_code == 200
     data = r.json()
     assert len(data["scopes"]) == 0
+
+
+@pytest.mark.asyncio
+async def test_get_staff_roles(client):
+    await create_scopes()
+    await create_default_roles()
+    r = await client.get("roles/staff")
+    assert r.status_code == 200
+
+    data = r.json()
+
+    assert data["items"][0]["id"] == 1

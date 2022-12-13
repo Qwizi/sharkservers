@@ -7,9 +7,10 @@ from ormar import NoMatch
 from psycopg2 import IntegrityError
 
 from app.auth.utils import get_current_active_user, verify_password, get_password_hash
+from app.roles.exceptions import RoleNotFound
 from app.users.exceptions import UserNotFound
 from app.users.models import User
-from app.users.schemas import UserOut, UserOutWithEmail, ChangeUsername, ChangePassword
+from app.users.schemas import UserOut, UserOutWithEmail, ChangeUsername, ChangePassword, ChangeDisplayRole
 
 router = APIRouter()
 
@@ -43,6 +44,24 @@ async def change_logged_user_password(change_password: ChangePassword,
     new_password = get_password_hash(change_password.new_password)
     await user.update(password=new_password, updated_date=datetime.datetime.utcnow())
     return {"msg": "Successfully changed password"}
+
+
+@router.post("/me/display-role")
+async def change_logged_user_display_role(
+        change_display_role: ChangeDisplayRole,
+        user: User = Security(get_current_active_user, scopes=["users:me:display-role"])
+):
+    display_role_exists_in_user_roles = False
+    old_user_display_role = user.display_role.id
+    for role in user.roles:
+        if role.id == change_display_role.role_id:
+            display_role_exists_in_user_roles = True
+            break
+    if not display_role_exists_in_user_roles:
+        raise HTTPException(detail="U cannot change your display role if u don't have this role",
+                            status_code=400)
+    await user.update(display_role=change_display_role.role_id, updated_date=datetime.datetime.utcnow())
+    return {"old_display_role": old_user_display_role, "new_display_role": change_display_role.role_id}
 
 
 @router.get("/online", response_model=Page[UserOut])

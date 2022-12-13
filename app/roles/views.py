@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Page, Params, paginate
-from ormar import NoMatch
+from ormar import NoMatch, or_, and_
 
 from app.roles.exceptions import RoleNotFound
 from app.roles.models import Role
-from app.roles.schemas import RoleOut, RoleOutWithScopes
+from app.roles.schemas import RoleOut, RoleOutWithScopes, RoleOutWithoutScopesAndUserRoles, StaffRoles
 
 router = APIRouter()
 
@@ -13,6 +13,22 @@ router = APIRouter()
 async def get_roles(params: Params = Depends()):
     roles = await Role.objects.all()
     return paginate(roles, params)
+
+
+@router.get("/staff", response_model=Page[StaffRoles], response_model_exclude={"password"})
+async def get_staff_roles():
+    roles = await Role.objects.select_related(
+        ["user_display_role"]).filter(
+        is_staff=True
+    ) \
+        .all()
+    # I need fix this
+    return {
+        "items": roles,
+        "total": len(roles),
+        "page": 1,
+        "size": 50
+    }
 
 
 @router.get("/{role_id}", response_model=RoleOutWithScopes)
