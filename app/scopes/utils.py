@@ -52,6 +52,11 @@ async def create_scopes():
             "app_name": "users",
             "value": "me:password",
             "description": "Update password"
+        },
+        {
+            "app_name": "users",
+            "value": "me:display-role",
+            "description": "Change display role"
         }
     ])
 

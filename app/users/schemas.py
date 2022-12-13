@@ -40,6 +40,10 @@ class ChangePassword(BaseModel):
             raise ValueError("Passwords do not match")
 
 
+class ChangeDisplayRole(BaseModel):
+    role_id: int
+
+
 @payload_schema.register(event_name=UserEvents.REGISTERED)
 class RegisteredUserPayload(UserOut):
     redis: Optional[Redis]
