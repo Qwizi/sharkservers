@@ -5,7 +5,9 @@ from datetime import timedelta, datetime
 from enum import Enum
 from sqlite3 import IntegrityError as SQLIntegrityError
 from typing import Optional, Dict
+from urllib import parse
 
+import httpx
 from asyncpg import UniqueViolationError
 from cryptography.fernet import Fernet
 from fastapi import Depends, Security
@@ -18,12 +20,17 @@ from passlib.context import CryptContext
 from sqlalchemy.exc import IntegrityError
 from starlette import status
 from starlette.exceptions import HTTPException
+from starlette.requests import Request
+from starlette.responses import RedirectResponse
 
 from app.auth.exceptions import credentials_exception, invalid_username_password_exception, inactive_user_exception, \
     InvalidActivateCode, UserIsAlreadyActivated
 from app.auth.schemas import TokenData, RegisterUser, ActivateUserCode
 from app.roles.models import Role
 from app.settings import Settings, get_settings
+from app.steamprofile.models import SteamProfile
+from app.steamprofile.schemas import SteamPlayer
+from app.steamprofile.utils import get_steam_user_info
 from app.users.exceptions import UserNotFound
 from app.users.models import User
 
@@ -53,7 +60,7 @@ async def authenticate_user(username: str, password: str) -> User | bool:
         user = await User.objects.select_related(["roles", "roles__scopes"]).get(username=username)
         if not verify_password(password, user.password):
             return False
-    except UserNotFound as e:
+    except NoMatch as e:
         return False
     return user
 
@@ -92,7 +99,7 @@ async def get_current_user(security_scopes: SecurityScopes, token: str = Depends
     except JWTError as e:
         raise credentials_exception
     try:
-        user = await User.objects.select_related(["roles", "display_role", "roles__scopes"]).get(
+        user = await User.objects.select_related(["roles", "display_role", "roles__scopes", "steamprofile"]).get(
             id=int(token_data.user_id))
     except UserNotFound:
         raise invalid_username_password_exception
@@ -175,3 +182,53 @@ async def activate_user(activate_code: ActivateUserCode, redis):
         return True
     except NoMatch:
         raise InvalidActivateCode
+
+
+async def redirect_to_steam():
+    steam_openid_url = "https://steamcommunity.com/openid/login"
+    u = {
+        'openid.ns': "http://specs.openid.net/auth/2.0",
+        'openid.identity': "http://specs.openid.net/auth/2.0/identifier_select",
+        'openid.claimed_id': "http://specs.openid.net/auth/2.0/identifier_select",
+        'openid.mode': 'checkid_setup',
+        'openid.return_to': 'http://localhost:80/callback/steam/',
+        'openid.realm': 'http://localhost:80'
+    }
+    query_string = parse.urlencode(u)
+    auth_url = steam_openid_url + "?" + query_string
+    return RedirectResponse(auth_url)
+
+
+async def validate_steam_callback(request: Request, user: User):
+    steam_login_url_base = "https://steamcommunity.com/openid/login"
+
+    signed_params = request.query_params
+    params_dict = {}
+    for key, value in signed_params.items():
+        params_dict[key] = value
+
+    params_dict["openid.mode"] = "check_authentication"
+    async with httpx.AsyncClient() as client:
+        r = await client.post(url=steam_login_url_base, data=params_dict)
+    if "is_valid:true" not in r.text:
+        raise HTTPException(detail="Cannot validate steam profile", status_code=400)
+    steamid64 = params_dict["openid.claimed_id"].split("/")[-1]
+    steam_player_info: SteamPlayer = get_steam_user_info(steamid64)
+
+    player, _created = await SteamProfile.objects.get_or_create(
+        steamid64=steam_player_info.steamid64,
+        _defaults={
+            "user": user,
+            "username": steam_player_info.username,
+            "steamid32": steam_player_info.steamid32,
+            "steamid3": steam_player_info.steamid3,
+            "avatar": steam_player_info.avatar,
+            "profile_url": steam_player_info.profile_url,
+            "country_code": steam_player_info.country_code
+        }
+    )
+
+    print(player)
+
+    # this fucntion should always return false if the payload is not valid
+    return steam_player_info
