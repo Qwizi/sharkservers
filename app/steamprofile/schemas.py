@@ -16,3 +16,7 @@ class SteamPlayer(BaseModel):
     profile_url: Optional[str] = None
     avatar: Optional[str] = None
     country_code: Optional[str] = None
+
+
+class CreateSteamProfile(BaseModel):
+    steamid64: str
