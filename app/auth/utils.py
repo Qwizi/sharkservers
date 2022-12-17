@@ -24,7 +24,7 @@ from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
 from app.auth.exceptions import credentials_exception, invalid_username_password_exception, inactive_user_exception, \
-    InvalidActivateCode, UserIsAlreadyActivated
+    InvalidActivateCode, UserIsAlreadyActivated, admin_user_exception
 from app.auth.schemas import TokenData, RegisterUser, ActivateUserCode
 from app.roles.models import Role
 from app.settings import Settings, get_settings
@@ -117,6 +117,12 @@ async def get_current_active_user(current_user: User = Security(get_current_user
     if not current_user.is_activated:
         raise inactive_user_exception
     return current_user
+
+
+async def get_admin_user(user: User = Depends(get_current_active_user)):
+    if not user.is_superuser:
+        raise admin_user_exception
+    return user
 
 
 async def register_user(user_data: RegisterUser) -> User:

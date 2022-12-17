@@ -33,6 +33,7 @@ credentials_exception = HTTPException(
 )
 
 inactive_user_exception = HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")
+admin_user_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="U are not a admin")
 invalid_username_password_exception = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
     detail="Incorrect username or password",
