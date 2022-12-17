@@ -48,3 +48,14 @@ class CreateThread(BaseModel):
     content: str
     category: int
     # tags: Optional[List[str]] = None
+
+
+class PostOut(BaseModel):
+    id: int
+    content: str
+    author: ThreadAuthor
+
+
+class CreatePost(BaseModel):
+    thread_id: int
+    content: str

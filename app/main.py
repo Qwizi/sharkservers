@@ -29,6 +29,7 @@ from app.steamprofile.views import router as steamprofile_router
 from app.forum.views_categories import router as forum_categories_router
 from app.forum.views_tags import router as forum_tags_router
 from app.forum.views_threads import router as forum_threads_router
+from app.forum.views_posts import router as forum_posts_router
 
 # Admin Routes
 from app.users.views_admin import router as admin_users_router
@@ -64,6 +65,7 @@ def create_app():
     _app.include_router(forum_categories_router, prefix="/forum/categories", tags=["forum-categories"])
     _app.include_router(forum_tags_router, prefix="/forum/tags", tags=["forum-tags"])
     _app.include_router(forum_threads_router, prefix="/forum/threads", tags=["forum-threads"])
+    _app.include_router(forum_posts_router, prefix="/forum/posts", tags=["forum-posts"])
 
     # Admin routes
     _app.include_router(admin_users_router, prefix="/admin/users", tags=["admin-users"])
