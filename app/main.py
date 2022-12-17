@@ -30,6 +30,7 @@ from app.steamprofile.views import router as steamprofile_router
 from app.users.views_admin import router as admin_users_router
 from app.roles.views_admin import router as admin_roles_router
 from app.scopes.views_admin import router as admin_scopes_router
+from app.steamprofile.views_admin import router as admin_steamprofiles_router
 
 # Events
 from app.users.handlers import (
@@ -60,6 +61,7 @@ def create_app():
     _app.include_router(admin_users_router, prefix="/admin/users", tags=["admin-users"])
     _app.include_router(admin_roles_router, prefix="/admin/roles", tags=["admin-roles"])
     _app.include_router(admin_scopes_router, prefix="/admin/scopes", tags=["admin-scopes"])
+    _app.include_router(admin_steamprofiles_router, prefix="/admin/players", tags=["admin-players"])
 
     add_pagination(_app)
 
