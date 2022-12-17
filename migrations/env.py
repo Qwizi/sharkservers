@@ -26,6 +26,7 @@ from app.users.models import User
 from app.scopes.models import Scope
 from app.roles.models import Role
 from app.steamprofile.models import SteamProfile
+from app.forum.models import Category, Tag, Post, Thread
 
 target_metadata = BaseMeta.metadata
 
