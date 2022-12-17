@@ -25,6 +25,7 @@ if config.config_file_name is not None:
 from app.users.models import User
 from app.scopes.models import Scope
 from app.roles.models import Role
+from app.steamprofile.models import SteamProfile
 
 target_metadata = BaseMeta.metadata
 

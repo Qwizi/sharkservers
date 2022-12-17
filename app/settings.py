@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRES: int = 43829
     REDIS_HOST: str = "redis"
     REDIS_PORT: int = 6379
+    STEAM_API_KEY: str
 
     class Config:
         env_file = '.env'

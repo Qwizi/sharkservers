@@ -1,8 +1,11 @@
 import os
-from fastapi import FastAPI, Header
+
+import httpx
+from fastapi import FastAPI, Header, Depends
 from fastapi_events.handlers.local import local_handler
 from fastapi_events.middleware import EventHandlerASGIMiddleware
 from starlette.requests import Request
+from starlette.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
 
 from app.__version import VERSION
@@ -12,11 +15,13 @@ from app.roles.utils import create_default_roles
 from app.scopes.utils import create_scopes
 from fastapi_pagination import add_pagination
 
+from app.settings import get_settings
 # Routes
 from app.users.views import router as users_router
 from app.auth.views import router as auth_router
 from app.scopes.views import router as scopes_router
 from app.roles.views import router as roles_router
+from app.steamprofile.views import router as steamprofile_router
 
 # Events
 from app.users.handlers import (
@@ -40,6 +45,7 @@ def create_app():
     _app.include_router(auth_router, prefix="/auth", tags=["auth"])
     _app.include_router(scopes_router, prefix="/scopes", tags=["scopes"])
     _app.include_router(roles_router, prefix="/roles", tags=["roles"])
+    _app.include_router(steamprofile_router, prefix="/players", tags=["players"])
     add_pagination(_app)
 
     @_app.on_event("startup")
@@ -60,8 +66,20 @@ def create_app():
         await app.state.redis.close()
 
     @_app.get("/")
-    async def home(request: Request, user_agent: str | None = Header(default=None)):
-        return {"client": request.client.host, "user_agent": user_agent}
+    async def home(settings=Depends(get_settings)):
+        print(settings.STEAM_API_KEY)
+        return {}
+
+    @_app.get("/callback/steam")
+    async def callback_steam(request: Request):
+        signed_params = request.query_params
+        async with httpx.AsyncClient() as client:
+            r = await client.get(url="http://localhost/auth/callback/steam", params=signed_params, headers={
+                "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwic2NvcGVzIjpbInVzZXJzOm1lIiwidXNlcnM6bWU6dXNlcm5hbWUiLCJ1c2VyczptZTpwYXNzd29yZCIsInVzZXJzOm1lOmRpc3BsYXktcm9sZSJdLCJleHAiOjE2NzEyNDAyMzh9.UvLhim1SduLbrVrJMP30MrEF3PK6y-xHHejga1ShYoQ"
+            })
+        if r.status_code != 200:
+            return RedirectResponse("/callback/steam/error")
+        return RedirectResponse("/callback/steam/success")
 
     @_app.get("/images")
     async def get_images():
