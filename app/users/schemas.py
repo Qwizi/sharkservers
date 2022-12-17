@@ -1,10 +1,12 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional, List
 
 from aioredis import Redis
 from fastapi_events.registry.payload_schema import registry as payload_schema
 from pydantic import BaseModel, validator
 
+from app.steamprofile.models import SteamProfile
+from app.steamprofile.schemas import SteamPlayer
 from app.users.models import User
 
 
@@ -23,6 +25,22 @@ class UserIn(BaseModel):
     username: str
     email: str
     password: str
+
+
+class UserOutRole(BaseModel):
+    id: int
+    name: Optional[str] = None
+    color: Optional[str] = None
+    is_staff: Optional[bool] = None
+
+
+class UserOut2(BaseModel):
+    id: int
+    username: Optional[str] = None
+    avatar: Optional[str] = None
+    display_role: Optional[UserOutRole] = None
+    roles: Optional[List[UserOutRole]] = None
+    steamprofile: Optional[SteamPlayer] = None
 
 
 class ChangeUsername(BaseModel):
