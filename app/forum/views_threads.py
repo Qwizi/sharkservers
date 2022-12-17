@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.ormar import paginate
 from ormar import NoMatch
@@ -26,7 +26,8 @@ async def get_threads(category: int, params: Params = Depends()):
 
 
 @router.post("", response_model=thread_out)
-async def create_thread(thread_data: CreateThread, user: User = Depends(get_current_active_user)):
+async def create_thread(thread_data: CreateThread,
+                        user: User = Security(get_current_active_user, scopes=["threads:create"])):
     try:
         category = await Category.objects.get(id=thread_data.category)
     except NoMatch:

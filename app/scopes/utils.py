@@ -48,7 +48,16 @@ async def _create_scopes(applications, additional=None):
 
 
 async def create_scopes():
-    return await _create_scopes(["users", "roles", "scopes", "steamprofile"], additional=ADDITIONAL_SCOPES)
+    return await _create_scopes([
+        "users",
+        "roles",
+        "scopes",
+        "steamprofile",
+        "categories",
+        "tags",
+        "threads",
+        "posts"
+    ], additional=ADDITIONAL_SCOPES)
 
 
 async def get_scopesv3(roles: list[Role]):
