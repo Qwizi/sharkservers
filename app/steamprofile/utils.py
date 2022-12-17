@@ -2,12 +2,13 @@ from steam.steamid import SteamID
 from steam.webapi import WebAPI
 
 from app.settings import get_settings
+from app.steamprofile.models import SteamProfile
 from app.steamprofile.schemas import SteamPlayer
 
 settings = get_settings()
 
 
-def get_steam_user_info(steamid64: str):
+def get_steam_user_info(steamid64: str) -> SteamPlayer:
     steam_api = WebAPI(settings.STEAM_API_KEY)
     results = steam_api.call('ISteamUser.GetPlayerSummaries', steamids=steamid64)
     if not len(results['response']['players']):
@@ -31,3 +32,9 @@ def get_steam_user_info(steamid64: str):
         avatar=avatar,
         country_code=loccountrycode
     )
+
+
+async def create_steam_profile(steamid64: str) -> SteamProfile:
+    player = get_steam_user_info(steamid64)
+    steam_profile = await SteamProfile.objects.create(**player.dict())
+    return steam_profile
