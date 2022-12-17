@@ -10,14 +10,15 @@ from app.auth.utils import get_current_active_user, verify_password, get_passwor
 from app.roles.exceptions import RoleNotFound
 from app.users.exceptions import UserNotFound
 from app.users.models import User
-from app.users.schemas import UserOut, UserOutWithEmail, ChangeUsername, ChangePassword, ChangeDisplayRole
+from app.users.schemas import UserOut, UserOutWithEmail, ChangeUsername, ChangePassword, ChangeDisplayRole, UserOut2
 
 router = APIRouter()
 
 
-@router.get("", response_model=Page[UserOut])
+@router.get("", response_model=Page[UserOut2])
 async def get_users(params: Params = Depends()):
-    users = await User.objects.select_related(["roles", "display_role"]).all()
+    users = await User.objects.select_related(["display_role"]).all()
+    print(users)
     return paginate(users, params)
 
 

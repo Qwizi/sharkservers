@@ -215,3 +215,4 @@ fabric.properties
 # End of https://mrkandreev.name/snippets/gitignore-generator/#Python,PyCharm
 
 test.db
+installed

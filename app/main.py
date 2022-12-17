@@ -1,7 +1,7 @@
 import os
 
 import httpx
-from fastapi import FastAPI, Header, Depends
+from fastapi import FastAPI, Header, Depends, HTTPException
 from fastapi_events.handlers.local import local_handler
 from fastapi_events.middleware import EventHandlerASGIMiddleware
 from starlette.requests import Request
@@ -9,6 +9,8 @@ from starlette.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
 
 from app.__version import VERSION
+from app.auth.schemas import RegisterUser
+from app.auth.utils import create_admin_user
 from app.db import database, create_redis_pool
 from app.logger import logger
 from app.roles.utils import create_default_roles
@@ -29,6 +31,10 @@ from app.users.handlers import (
     create_activate_code_after_register
 )
 
+script_dir = os.path.dirname(__file__)
+st_abs_file_path = os.path.join(script_dir, "static/")
+installed_file_path = os.path.join(script_dir, "installed")
+
 
 def create_app():
     _app = FastAPI(
@@ -37,8 +43,6 @@ def create_app():
     )
     _app.add_middleware(EventHandlerASGIMiddleware, handlers=[local_handler])
 
-    script_dir = os.path.dirname(__file__)
-    st_abs_file_path = os.path.join(script_dir, "static/")
     _app.mount("/static", StaticFiles(directory=st_abs_file_path), name="static")
     _app.state.database = database
     _app.include_router(users_router, prefix="/users", tags=["users"])
@@ -55,8 +59,6 @@ def create_app():
         if not database_.is_connected:
             await database.connect()
         _app.state.redis = await create_redis_pool()
-        await create_scopes()
-        await create_default_roles()
 
     @_app.on_event("shutdown")
     async def shutdown():
@@ -90,6 +92,21 @@ def create_app():
                 "path": f"/static/images/{filename}"
             })
         return images_list
+
+    @_app.post("/install")
+    async def install(user_data: RegisterUser):
+        logger.info("#0 - Install started")
+        if os.path.exists(installed_file_path):
+            raise HTTPException(detail="Its already installed", status_code=400)
+        await create_scopes()
+        logger.info("#1 - Created scopes")
+        await create_default_roles()
+        logger.info("#2 - Created roles")
+        await create_admin_user(user_data)
+        logger.info("#3 - Created admin user")
+        install_finish_file = open(installed_file_path, "w+")
+        logger.info("#4 - Created installed file")
+        return {"msg": "Successfully installed"}
 
     return _app
 

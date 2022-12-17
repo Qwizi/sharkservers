@@ -119,7 +119,7 @@ async def get_current_active_user(current_user: User = Security(get_current_user
     return current_user
 
 
-async def register_user(user_data: RegisterUser):
+async def register_user(user_data: RegisterUser) -> User:
     password = get_password_hash(user_data.password)
     try:
         user_role = await Role.objects.get(id=2)
@@ -135,6 +135,19 @@ async def register_user(user_data: RegisterUser):
     except (IntegrityError, SQLIntegrityError, UniqueViolationError) as e:
         raise HTTPException(status_code=422, detail=f"Email or username already exists")
     return created_user
+
+
+async def create_admin_user(user_data: RegisterUser):
+    registered_user = await register_user(user_data)
+    admin_role = await Role.objects.get(id=1)
+    await registered_user.roles.add(admin_role)
+    await registered_user.update(
+        is_activated=True,
+        is_superuser=True,
+        display_role=admin_role
+    )
+    print(registered_user)
+    return registered_user
 
 
 def generate_code(number: int = 8):
