@@ -58,5 +58,6 @@ async def admin_delete_role(role_id: int, user: User = Security(get_admin_user, 
         raise HTTPException(detail="U cannot delete protected role", status_code=400)
     try:
         role = await Role.objects.get(id=role_id)
+        return role
     except NoMatch:
         raise RoleNotFound
