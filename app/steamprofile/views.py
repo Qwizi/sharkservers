@@ -1,6 +1,6 @@
-from fastapi import APIRouter, HTTPException
-from fastapi_pagination import Page, paginate
-from steam.protobufs.steammessages_player_pb2 import Player
+from fastapi import APIRouter, HTTPException, Depends
+from fastapi_pagination import Page, Params
+from fastapi_pagination.ext.ormar import paginate
 
 from app.steamprofile.models import SteamProfile
 from app.steamprofile.schemas import SteamPlayer, steam_profile_out
@@ -10,9 +10,8 @@ router = APIRouter()
 
 
 @router.get("", response_model=Page[steam_profile_out])
-async def get_steam_profiles():
-    profiles = await SteamProfile.objects.select_related(["user", "user__display_role"]).all()
-    return paginate(profiles)
+async def get_steam_profiles(params: Params = Depends()):
+    return await paginate(SteamProfile.objects.select_related(["user", "user__display_role"]), params)
 
 
 @router.get("/info")

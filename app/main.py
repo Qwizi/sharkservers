@@ -18,12 +18,16 @@ from app.scopes.utils import create_scopes
 from fastapi_pagination import add_pagination
 
 from app.settings import get_settings
+
 # Routes
 from app.users.views import router as users_router
 from app.auth.views import router as auth_router
 from app.scopes.views import router as scopes_router
 from app.roles.views import router as roles_router
 from app.steamprofile.views import router as steamprofile_router
+
+# Admin Routes
+from app.users.views_admin import router as admin_users_router
 
 # Events
 from app.users.handlers import (
@@ -50,6 +54,8 @@ def create_app():
     _app.include_router(scopes_router, prefix="/scopes", tags=["scopes"])
     _app.include_router(roles_router, prefix="/roles", tags=["roles"])
     _app.include_router(steamprofile_router, prefix="/players", tags=["players"])
+
+    _app.include_router(admin_users_router, prefix="/admin/users", tags=["admin-users"])
     add_pagination(_app)
 
     @_app.on_event("startup")

@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends
-from fastapi_pagination import Page, Params, paginate
+from fastapi_pagination import Page, Params
+from fastapi_pagination.ext.ormar import paginate
+
 from ormar import NoMatch, or_, and_
 
 from app.roles.exceptions import RoleNotFound
@@ -11,8 +13,7 @@ router = APIRouter()
 
 @router.get("", response_model=Page[RoleOut], response_model_exclude_none=True)
 async def get_roles(params: Params = Depends()):
-    roles = await Role.objects.all()
-    return paginate(roles, params)
+    return await paginate(Role.objects, params)
 
 
 @router.get("/staff", response_model=Page[StaffRoles], response_model_exclude={"password"})

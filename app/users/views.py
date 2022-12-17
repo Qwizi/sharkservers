@@ -2,7 +2,9 @@ import datetime
 
 from asyncpg import UniqueViolationError
 from fastapi import APIRouter, Depends, HTTPException, Security
-from fastapi_pagination import Page, paginate, Params
+from fastapi_pagination import Page, Params
+from fastapi_pagination.ext.ormar import paginate
+
 from ormar import NoMatch
 from psycopg2 import IntegrityError
 
@@ -17,9 +19,7 @@ router = APIRouter()
 
 @router.get("", response_model=Page[UserOut2])
 async def get_users(params: Params = Depends()):
-    users = await User.objects.select_related(["display_role"]).all()
-    print(users)
-    return paginate(users, params)
+    return await paginate(User.objects.select_related(["display_role"]), params)
 
 
 @router.get("/me", response_model=UserOutWithEmail)
@@ -68,9 +68,8 @@ async def change_logged_user_display_role(
 @router.get("/online", response_model=Page[UserOut])
 async def get_last_logged_users(params: Params = Depends()):
     filter_after = datetime.datetime.utcnow() - datetime.timedelta(minutes=15)
-    users = await User.objects.select_related("display_role").filter(
-        last_login__gt=filter_after).all()
-    return paginate(users, params)
+    return await paginate(User.objects.select_related("display_role").filter(
+        last_login__gt=filter_after), params)
 
 
 @router.get("/{user_id}", response_model=UserOut)

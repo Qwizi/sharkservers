@@ -62,6 +62,15 @@ class ChangeDisplayRole(BaseModel):
     role_id: int
 
 
+class CreateUser(BaseModel):
+    username: str
+    email: str
+    password: str
+    display_role: Optional[int] = None
+    roles: Optional[List[int]] = None
+    is_activated: bool = True
+
+
 @payload_schema.register(event_name=UserEvents.REGISTERED)
 class RegisteredUserPayload(UserOut):
     redis: Optional[Redis]
