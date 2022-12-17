@@ -13,8 +13,7 @@ router = APIRouter()
 async def get_all_scopes(params: Params = Depends(), role_id: int = None):
     if role_id:
         scopes = Scope.objects.select_related("roles").filter(roles__id=role_id)
-        if not len(scopes):
-            raise RoleScopeNotFound()
+        return await paginate(scopes, params)
     else:
         scopes = Scope.objects
-    return await paginate(scopes, params)
+        return await paginate(scopes, params)

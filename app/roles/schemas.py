@@ -1,3 +1,5 @@
+from typing import Optional, List
+
 from pydantic import BaseModel
 
 from app.roles.models import Role
@@ -19,3 +21,10 @@ class StaffRoles(BaseModel):
     name: str
     color: str
     user_display_role: list[StaffUserInRoles]
+
+
+class CreateRole(BaseModel):
+    name: str
+    color: str
+    is_staff: bool = False
+    scopes: Optional[List[int]] = None

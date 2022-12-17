@@ -33,9 +33,9 @@ async def get_staff_roles():
 
 
 @router.get("/{role_id}", response_model=RoleOutWithScopes)
-async def get_user(role_id: int):
+async def get_role(role_id: int):
     try:
-        user = await Role.objects.select_related("scopes").get(id=role_id)
-        return user
+        role = await Role.objects.select_related("scopes").get(id=role_id)
+        return role
     except NoMatch as e:
         raise RoleNotFound()

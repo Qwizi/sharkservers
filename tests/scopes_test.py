@@ -36,5 +36,5 @@ async def test_scopes_list_with_role_id(role_id, client):
 async def test_scopes_list_with_invalid_role_id(client):
     await create_scopes()
     r = await client.get("/scopes?role_id=-1")
-    assert r.status_code == 401
-    assert r.json()["detail"] == "Scopes for this role not exists"
+    assert r.status_code == 200
+    assert r.json()["total"] == 0
