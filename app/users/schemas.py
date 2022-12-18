@@ -10,45 +10,37 @@ from app.steamprofile.models import SteamProfile
 from app.steamprofile.schemas import SteamPlayer
 from app.users.models import User
 
-
-class UserEvents(Enum):
-    REGISTERED = "USER_REGISTERED"
-    ACTIVATED = "USER_ACTIVATED"
-    ACCESS_TOKEN = "ACCESS_TOKEN"
-    REFRESH_TOKEN = "REFRESH_TOKEN"
-
-
 UserOut = User.get_pydantic(exclude={"password", "email"})
 UserOutWithEmail = User.get_pydantic(exclude={"password"})
 
 
-class UserIn(BaseModel):
+class UserInSchema(BaseModel):
     username: str
     email: str
     password: str
 
 
-class UserOutRole(BaseModel):
+class UserOutRoleSchema(BaseModel):
     id: int
     name: Optional[str] = None
     color: Optional[str] = None
     is_staff: Optional[bool] = None
 
 
-class UserOut2(BaseModel):
+class UserOut2Schema(BaseModel):
     id: int
     username: Optional[str] = None
     avatar: Optional[str] = None
-    display_role: Optional[UserOutRole] = None
-    roles: Optional[List[UserOutRole]] = None
+    display_role: Optional[UserOutRoleSchema] = None
+    roles: Optional[List[UserOutRoleSchema]] = None
     steamprofile: Optional[SteamPlayer] = None
 
 
-class ChangeUsername(BaseModel):
+class ChangeUsernameSchema(BaseModel):
     username: str
 
 
-class ChangePassword(BaseModel):
+class ChangePasswordSchema(BaseModel):
     current_password: str
     new_password: str
     new_password2: str
@@ -59,22 +51,14 @@ class ChangePassword(BaseModel):
             raise ValueError("Passwords do not match")
 
 
-class ChangeDisplayRole(BaseModel):
+class ChangeDisplayRoleSchema(BaseModel):
     role_id: int
 
 
-class CreateUser(BaseModel):
+class CreateUserSchema(BaseModel):
     username: str
     email: str
     password: str
     display_role: Optional[int] = None
     roles: Optional[List[int]] = None
     is_activated: bool = True
-
-
-@payload_schema.register(event_name=AuthEventsEnum.REGISTERED_POST)
-class RegisteredUserPayload(UserOut):
-    redis: Optional[Redis]
-
-    class Config:
-        arbitrary_types_allowed = True
