@@ -4,7 +4,7 @@ from ormar import NoMatch
 from starlette import status
 from starlette.exceptions import HTTPException
 
-from app.auth.schemas import Token
+from app.auth.schemas import TokenSchema
 from app.main import app
 from app.roles.utils import create_default_roles
 from app.scopes.utils import create_scopes
@@ -80,7 +80,7 @@ async def test_get_unactivated_logged_user(client):
     r = await client.get("/users/me", headers={
         "Authorization": f"Bearer {access_token}"
     })
-    assert r.status_code == status.HTTP_400_BAD_REQUEST
+    assert r.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 @pytest.mark.asyncio

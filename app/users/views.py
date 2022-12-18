@@ -3,6 +3,7 @@ import datetime
 from asyncpg import UniqueViolationError
 from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
+from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.ormar import paginate
 
 from ormar import NoMatch
@@ -10,20 +11,29 @@ from psycopg2 import IntegrityError
 
 from app.auth.utils import get_current_active_user, verify_password, get_password_hash
 from app.roles.exceptions import RoleNotFound
+from app.schemas import HTTPError404Schema, HTTPError401Schema
+from app.users.schemas_exceptions import UserNotFoundSchema
 from app.users.exceptions import UserNotFound
 from app.users.models import User
 from app.users.schemas import UserOut, UserOutWithEmail, ChangeUsername, ChangePassword, ChangeDisplayRole, UserOut2
+from app.users.utils import _get_users
 
 router = APIRouter()
 
 
 @router.get("", response_model=Page[UserOut2])
-async def get_users(params: Params = Depends()):
-    return await paginate(User.objects.select_related(["display_role"]), params)
+async def get_users(params: Params = Depends()) -> AbstractPage:
+    """
+    Get users list
+    """
+    return await _get_users(params)
 
 
-@router.get("/me", response_model=UserOutWithEmail)
+@router.get("/me", response_model=UserOutWithEmail, responses={401: {"model": HTTPError401Schema}})
 async def get_logged_user(user: User = Depends(get_current_active_user)):
+    """
+    Get logged user data
+    """
     return user
 
 
@@ -72,7 +82,8 @@ async def get_last_logged_users(params: Params = Depends()):
         last_login__gt=filter_after), params)
 
 
-@router.get("/{user_id}", response_model=UserOut)
+@router.get("/{user_id}", response_model=UserOut,
+            responses={404: {"model": UserNotFoundSchema}})
 async def get_user(user_id: int):
     try:
         user = await User.objects.select_related(["roles", "display_role"]).get(id=user_id)

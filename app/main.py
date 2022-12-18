@@ -9,7 +9,7 @@ from starlette.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
 
 from app.__version import VERSION
-from app.auth.schemas import RegisterUser
+from app.auth.schemas import RegisterUserSchema
 from app.auth.utils import create_admin_user
 from app.db import database, create_redis_pool
 from app.forum.models import Category
@@ -38,8 +38,15 @@ from app.scopes.views_admin import router as admin_scopes_router
 from app.steamprofile.views_admin import router as admin_steamprofiles_router
 
 # Events
-from app.users.handlers import (
-    handle_user_register_event,
+from app.auth.handlers import (
+    handle_auth_event_registered_pre,
+    handle_auth_event_registered_post,
+    handle_auth_event_access_token_pre,
+    handle_auth_event_access_token_post,
+    handle_auth_event_refresh_token_pre,
+    handle_auth_event_refresh_token_post,
+    handle_auth_event_activated_pre,
+    handle_auth_event_activated_post,
     create_activate_code_after_register
 )
 
@@ -120,7 +127,7 @@ def create_app():
         return images_list
 
     @_app.post("/install")
-    async def install(user_data: RegisterUser):
+    async def install(user_data: RegisterUserSchema):
         logger.info("#0 - Install started")
         if os.path.exists(installed_file_path):
             raise HTTPException(detail="Its already installed", status_code=400)

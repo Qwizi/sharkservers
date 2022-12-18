@@ -1,41 +1,44 @@
 from starlette import status
 from starlette.exceptions import HTTPException
+from .enums import AuthExceptionsDetailEnum
 
-
-class UsernameIsTaken(HTTPException):
-    def __init__(self):
-        self.status_code = 401
-        self.detail = "Username is taken"
-
-
-class EmailIsTaken(HTTPException):
-    def __init__(self):
-        self.status_code = 401
-        self.detail = "Email is taken"
-
-
-class InvalidActivateCode(HTTPException):
-    def __init__(self):
-        self.status_code = 401
-        self.detail = "Invalid code"
-
-
-class UserIsAlreadyActivated(HTTPException):
-    def __init__(self):
-        self.status_code = 401
-        self.detail = "User is already activated"
-
-
-credentials_exception = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Invalid credentials",
-    headers={"WWW-Authenticate": "Bearer"},
+username_taken_exception = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail=AuthExceptionsDetailEnum.USERNAME_TAKEN
 )
-
-inactive_user_exception = HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")
-admin_user_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="U are not a admin")
-invalid_username_password_exception = HTTPException(
+email_taken_exception = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail=AuthExceptionsDetailEnum.EMAIL_TAKEN
+)
+invalid_activation_code_exception = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail=AuthExceptionsDetailEnum.INVALID_CODE
+)
+user_activated_exception = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail=AuthExceptionsDetailEnum.USER_ACTIVATED
+)
+not_admin_user_exception = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Incorrect username or password",
-    headers={"WWW-Authenticate": "Bearer"},
+    detail=AuthExceptionsDetailEnum.NOT_ADMIN_USER
+)
+incorrect_username_password_exception = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail=AuthExceptionsDetailEnum.INCORRECT_USERNAME_PASSWORD
+)
+no_permissions_exception = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail=AuthExceptionsDetailEnum.NO_PERMISSIONS
+)
+invalid_credentials_exception = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail=AuthExceptionsDetailEnum.INVALID_CREDENTIALS
+)
+inactivate_user_exception = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail=AuthExceptionsDetailEnum.INACTIVE_USER
+)
+user_exists_exception = HTTPException(
+    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+    detail=AuthExceptionsDetailEnum.USER_EXISTS
 )

@@ -3,7 +3,7 @@ from fastapi_pagination import Page, Params, paginate
 from fastapi_pagination.ext.ormar import paginate
 from ormar import NoMatch
 
-from app.auth.schemas import RegisterUser
+from app.auth.schemas import RegisterUserSchema
 from app.auth.utils import register_user, get_current_active_user, get_admin_user
 from app.roles.exceptions import RoleNotFound
 from app.roles.models import Role
@@ -33,7 +33,7 @@ async def admin_get_user(user_id: int, user: User = Security(get_admin_user, sco
 @router.post("", response_model=UserOutWithEmail)
 async def admin_create_user(user_data: CreateUser,
                             user: User = Security(get_admin_user, scopes=["users:create"])):
-    register_user_schema = RegisterUser(
+    register_user_schema = RegisterUserSchema(
         username=user_data.username,
         email=user_data.email,
         password=user_data.password,

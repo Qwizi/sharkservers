@@ -1,68 +1,64 @@
-import datetime
 import json
-from urllib import parse
 
-import httpx
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_events.dispatcher import dispatch
-from jose import jwt, JWTError
 from starlette.requests import Request
-from starlette.responses import RedirectResponse
 
-from app.auth.exceptions import invalid_username_password_exception, credentials_exception
-from app.auth.schemas import RegisterUser, Token, RefreshToken, ActivateUserCode
-from app.auth.utils import authenticate_user, create_access_token, register_user, create_refresh_token, \
-    get_current_user, get_current_active_user, redirect_to_steam, validate_steam_callback, login_user
+from app.auth.enums import AuthEventsEnum
+from app.auth.schemas import RegisterUserSchema, TokenSchema, RefreshTokenSchema, ActivateUserCodeSchema
+from app.auth.utils import _activate_user
+from app.auth.utils import register_user, get_current_active_user, redirect_to_steam, validate_steam_callback, \
+    _login_user, \
+    _get_access_token_from_refresh_token
 from app.db import get_redis
-from app.roles.models import Role
-from app.scopes.utils import get_scopesv3
 from app.settings import Settings, get_settings
-from app.steamprofile.utils import get_steam_user_info
 from app.users.models import User
-from app.users.schemas import UserOut, UserEvents
-from app.auth.utils import activate_user
+from app.users.schemas import UserOut
 
 router = APIRouter()
 
 
 @router.post("/register", response_model=UserOut)
-async def register(user: RegisterUser, redis=Depends(get_redis)):
-    registered_user: User = await register_user(user_data=user)
+async def register(user_data: RegisterUserSchema, redis=Depends(get_redis)):
+    dispatch(AuthEventsEnum.REGISTERED_PRE, payload={"user_data": user_data})
+    registered_user: User = await register_user(user_data=user_data)
     registered_user_dict: dict = json.loads(registered_user.json())
     registered_user_dict.update({"redis": redis})
-    dispatch(UserEvents.REGISTERED, payload=registered_user_dict)
+    dispatch(AuthEventsEnum.REGISTERED_POST, payload=registered_user_dict)
     return registered_user
 
 
-@router.post("/token", response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
-                                 settings: Settings = Depends(get_settings)):
-    token, user = await login_user(form_data, settings)
-    dispatch(UserEvents.ACCESS_TOKEN, payload=user)
+@router.post("/token", response_model=TokenSchema)
+async def login_user(form_data: OAuth2PasswordRequestForm = Depends(),
+                     settings: Settings = Depends(get_settings)):
+    dispatch(AuthEventsEnum.ACCESS_TOKEN_PRE, payload={"form_data": form_data.__dict__})
+    token, user = await _login_user(form_data, settings)
+    payload = {
+        "user": json.loads(user.json()),
+        "token": json.loads(token.json())
+    }
+    dispatch(AuthEventsEnum.ACCESS_TOKEN_POST, payload=payload)
     return token
 
 
-@router.post("/token/refresh", response_model=Token)
-async def get_access_token_from_refresh_token(token: RefreshToken, settings: Settings = Depends(get_settings)):
-    try:
-        payload = jwt.decode(token.refresh_token, settings.REFRESH_SECRET_KEY, algorithms=[settings.ALGORITHM])
-        if datetime.datetime.utcfromtimestamp(payload["exp"]) > datetime.datetime.utcnow():
-            user_id: str = payload.get("sub")
-            user = await User.objects.select_related(["roles", "roles__scopes"]).get(id=int(user_id))
-            if user:
-                await user.update(last_login=datetime.datetime.utcnow())
-                scopes = await get_scopesv3(user.roles)
-                access_token = create_access_token(settings, data={'sub': str(user.id), "scopes": scopes})
-                dispatch(UserEvents.REFRESH_TOKEN, payload=user)
-                return Token(access_token=access_token, refresh_token=token.refresh_token, token_type="bearer")
-    except JWTError as e:
-        raise credentials_exception
+@router.post("/token/refresh", response_model=TokenSchema)
+async def get_access_token_from_refresh_token(token_data: RefreshTokenSchema,
+                                              settings: Settings = Depends(get_settings)):
+    token, user = await _get_access_token_from_refresh_token(token_data, settings)
+    payload = {
+        "user": json.loads(user.json()),
+        "token": json.loads(token.json())
+    }
+    dispatch(AuthEventsEnum.REFRESH_TOKEN_POST, payload=payload)
+    return token
 
 
 @router.post("/activate")
-async def activate_user_by_code(activate_code: ActivateUserCode, redis=Depends(get_redis)):
-    user_activated = await activate_user(activate_code=activate_code, redis=redis)
+async def activate_user(activate_code_data: ActivateUserCodeSchema, redis=Depends(get_redis)):
+    dispatch(AuthEventsEnum.ACTIVATED_PRE, payload={"activate_code": activate_code_data})
+    user_activated, user = await _activate_user(activate_code=activate_code_data, redis=redis)
+    dispatch(AuthEventsEnum.ACTIVATED_POST, payload={"activated": user_activated, "user": user})
     return user_activated
 
 
