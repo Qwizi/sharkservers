@@ -13,7 +13,7 @@ from starlette.responses import RedirectResponse
 from app.auth.exceptions import invalid_username_password_exception, credentials_exception
 from app.auth.schemas import RegisterUser, Token, RefreshToken, ActivateUserCode
 from app.auth.utils import authenticate_user, create_access_token, register_user, create_refresh_token, \
-    get_current_user, get_current_active_user, redirect_to_steam, validate_steam_callback
+    get_current_user, get_current_active_user, redirect_to_steam, validate_steam_callback, login_user
 from app.db import get_redis
 from app.roles.models import Role
 from app.scopes.utils import get_scopesv3
@@ -38,16 +38,9 @@ async def register(user: RegisterUser, redis=Depends(get_redis)):
 @router.post("/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
                                  settings: Settings = Depends(get_settings)):
-    user = await authenticate_user(username=form_data.username, password=form_data.password)
-    if not user:
-        raise invalid_username_password_exception
-
-    scopes = await get_scopesv3(user.roles)
-    access_token = create_access_token(settings, data={'sub': str(user.id), "scopes": scopes})
-    refresh_token = create_refresh_token(settings, data={'sub': str(user.id)})
-    await user.update(last_login=datetime.datetime.utcnow())
+    token, user = await login_user(form_data, settings)
     dispatch(UserEvents.ACCESS_TOKEN, payload=user)
-    return Token(access_token=access_token, refresh_token=refresh_token, token_type="bearer")
+    return token
 
 
 @router.post("/token/refresh", response_model=Token)

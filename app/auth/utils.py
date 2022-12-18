@@ -11,7 +11,7 @@ import httpx
 from asyncpg import UniqueViolationError
 from cryptography.fernet import Fernet
 from fastapi import Depends, Security
-from fastapi.security import OAuth2PasswordBearer, OAuth2, SecurityScopes
+from fastapi.security import OAuth2PasswordBearer, OAuth2, SecurityScopes, OAuth2PasswordRequestForm
 from fastapi.security.utils import get_authorization_scheme_param
 from fastapi_events.dispatcher import dispatch
 from jose import jwt, JWTError
@@ -25,8 +25,9 @@ from starlette.responses import RedirectResponse
 
 from app.auth.exceptions import credentials_exception, invalid_username_password_exception, inactive_user_exception, \
     InvalidActivateCode, UserIsAlreadyActivated, admin_user_exception
-from app.auth.schemas import TokenData, RegisterUser, ActivateUserCode
+from app.auth.schemas import TokenData, RegisterUser, ActivateUserCode, Token
 from app.roles.models import Role
+from app.scopes.utils import get_scopesv3
 from app.settings import Settings, get_settings
 from app.steamprofile.models import SteamProfile
 from app.steamprofile.schemas import SteamPlayer
@@ -141,6 +142,18 @@ async def register_user(user_data: RegisterUser) -> User:
     except (IntegrityError, SQLIntegrityError, UniqueViolationError) as e:
         raise HTTPException(status_code=422, detail=f"Email or username already exists")
     return created_user
+
+
+async def login_user(form_data: OAuth2PasswordRequestForm, settings: Settings):
+    user = await authenticate_user(username=form_data.username, password=form_data.password)
+    if not user:
+        raise invalid_username_password_exception
+
+    scopes = await get_scopesv3(user.roles)
+    access_token = create_access_token(settings, data={'sub': str(user.id), "scopes": scopes})
+    refresh_token = create_refresh_token(settings, data={'sub': str(user.id)})
+    await user.update(last_login=datetime.utcnow())
+    return Token(access_token=access_token, refresh_token=refresh_token, token_type="bearer"), user
 
 
 async def create_admin_user(user_data: RegisterUser):
