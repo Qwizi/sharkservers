@@ -9,7 +9,7 @@ from app.roles.exceptions import RoleNotFound
 from app.roles.models import Role
 from app.users.exceptions import UserNotFound
 from app.users.models import User
-from app.users.schemas import UserOutWithEmail, CreateUser
+from app.users.schemas import UserOutWithEmail, CreateUserSchema
 
 router = APIRouter()
 
@@ -31,7 +31,7 @@ async def admin_get_user(user_id: int, user: User = Security(get_admin_user, sco
 
 
 @router.post("", response_model=UserOutWithEmail)
-async def admin_create_user(user_data: CreateUser,
+async def admin_create_user(user_data: CreateUserSchema,
                             user: User = Security(get_admin_user, scopes=["users:create"])):
     register_user_schema = RegisterUserSchema(
         username=user_data.username,

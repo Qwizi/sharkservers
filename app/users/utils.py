@@ -10,7 +10,7 @@ from app.auth.utils import verify_password, get_password_hash
 from app.users.exceptions import username_not_available_exception, invalid_current_password_exception, \
     cannot_change_display_role_exception, user_not_found_exception
 from app.users.models import User
-from app.users.schemas import ChangeUsername, ChangePassword, ChangeDisplayRole
+from app.users.schemas import ChangeUsernameSchema, ChangePasswordSchema, ChangeDisplayRoleSchema
 
 
 async def _get_users(params: Params) -> AbstractPage:
@@ -22,7 +22,7 @@ async def _get_users(params: Params) -> AbstractPage:
     return await paginate(User.objects.select_related(["display_role"]), params)
 
 
-async def _change_user_username(change_username_data: ChangeUsername, user: User) -> User:
+async def _change_user_username(change_username_data: ChangeUsernameSchema, user: User) -> User:
     """
     Change user username
     :param change_username_data:
@@ -36,7 +36,7 @@ async def _change_user_username(change_username_data: ChangeUsername, user: User
         raise username_not_available_exception
 
 
-async def _change_user_password(change_password_data: ChangePassword, user: User) -> User:
+async def _change_user_password(change_password_data: ChangePasswordSchema, user: User) -> User:
     if not verify_password(change_password_data.current_password, user.password):
         raise invalid_current_password_exception
     new_password = get_password_hash(change_password_data.new_password)
@@ -44,7 +44,7 @@ async def _change_user_password(change_password_data: ChangePassword, user: User
     return user
 
 
-async def _change_user_display_role(change_display_role_data: ChangeDisplayRole, user: User) -> (User, int):
+async def _change_user_display_role(change_display_role_data: ChangeDisplayRoleSchema, user: User) -> (User, int):
     """
     Change user display role
     :param change_display_role_data:

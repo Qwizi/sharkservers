@@ -1,30 +1,21 @@
-import datetime
-
-from asyncpg import UniqueViolationError
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import APIRouter, Depends, Security
 from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
-from fastapi_pagination.ext.ormar import paginate
 
-from ormar import NoMatch
-from psycopg2 import IntegrityError
-
-from app.auth.utils import get_current_active_user, verify_password, get_password_hash
-from app.roles.exceptions import RoleNotFound
-from app.schemas import HTTPError404Schema, HTTPError401Schema
+from app.auth.utils import get_current_active_user
+from app.schemas import HTTPError401Schema
 from app.users.enums import UsersEventsEnum
-from app.users.schemas_exceptions import UserNotFoundSchema
-from app.users.exceptions import UserNotFound
 from app.users.models import User
-from app.users.schemas import UserOut, UserOutWithEmail, ChangeUsername, ChangePassword, ChangeDisplayRole, UserOut2
+from app.users.schemas import UserOut, UserOutWithEmail, ChangeUsernameSchema, ChangePasswordSchema, \
+    ChangeDisplayRoleSchema, UserOut2Schema
 from app.users.utils import _get_users, _change_user_username, _change_user_password, _change_user_display_role, \
     _get_last_logged_users, _get_user
 
 router = APIRouter()
 
 
-@router.get("", response_model=Page[UserOut2])
+@router.get("", response_model=Page[UserOut2Schema])
 async def get_users(params: Params = Depends()) -> AbstractPage:
     """
     Get users
@@ -50,7 +41,7 @@ async def get_logged_user(user: User = Depends(get_current_active_user)) -> User
 
 
 @router.post("/me/username", response_model=UserOut)
-async def change_user_username(change_username_data: ChangeUsername,
+async def change_user_username(change_username_data: ChangeUsernameSchema,
                                user: User = Security(get_current_active_user, scopes=["users:me:username"])) -> UserOut:
     """
     Change user username
@@ -65,7 +56,7 @@ async def change_user_username(change_username_data: ChangeUsername,
 
 
 @router.post("/me/password")
-async def change_user_password(change_password_data: ChangePassword,
+async def change_user_password(change_password_data: ChangePasswordSchema,
                                user: User = Security(get_current_active_user, scopes=["users:me:password"])) -> dict:
     """
     Change user password
@@ -81,7 +72,7 @@ async def change_user_password(change_password_data: ChangePassword,
 
 @router.post("/me/display-role")
 async def change_user_display_role(
-        change_display_role_data: ChangeDisplayRole,
+        change_display_role_data: ChangeDisplayRoleSchema,
         user: User = Security(get_current_active_user, scopes=["users:me:display-role"])
 ) -> dict:
     """
@@ -110,8 +101,7 @@ async def get_last_logged_users(params: Params = Depends()) -> AbstractPage:
     return logged_users
 
 
-@router.get("/{user_id}", response_model=UserOut,
-            responses={404: {"model": UserNotFoundSchema}})
+@router.get("/{user_id}", response_model=UserOut)
 async def get_user(user_id: int) -> UserOut:
     """
     Get user
