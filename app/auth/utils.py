@@ -1,31 +1,29 @@
-import asyncio
 import random
 import string
 from datetime import timedelta, datetime
 from enum import Enum
 from sqlite3 import IntegrityError as SQLIntegrityError
-from typing import Optional, Dict
 from urllib import parse
 
 import httpx
 from asyncpg import UniqueViolationError
 from cryptography.fernet import Fernet
 from fastapi import Depends, Security
-from fastapi.security import OAuth2PasswordBearer, OAuth2, SecurityScopes, OAuth2PasswordRequestForm
-from fastapi.security.utils import get_authorization_scheme_param
-from fastapi_events.dispatcher import dispatch
+from fastapi.security import OAuth2PasswordBearer, SecurityScopes, OAuth2PasswordRequestForm
 from jose import jwt, JWTError
 from ormar import NoMatch
 from passlib.context import CryptContext
 from sqlalchemy.exc import IntegrityError
-from starlette import status
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
-from app.auth.exceptions import credentials_exception, invalid_username_password_exception, inactive_user_exception, \
-    InvalidActivateCode, UserIsAlreadyActivated, admin_user_exception
-from app.auth.schemas import TokenData, RegisterUser, ActivateUserCode, Token
+from app.auth.enums import RedisKeyEnum
+from app.auth.exceptions import invalid_credentials_exception, incorrect_username_password_exception, \
+    no_permissions_exception, inactivate_user_exception, not_admin_user_exception, user_exists_exception, \
+    invalid_activation_code_exception, user_activated_exception
+from app.auth.schemas import TokenDataSchema, RegisterUserSchema, ActivateUserCodeSchema, TokenSchema, \
+    RefreshTokenSchema
 from app.roles.models import Role
 from app.scopes.utils import get_scopesv3
 from app.settings import Settings, get_settings
@@ -42,10 +40,6 @@ crypto_key = Fernet.generate_key()
 fernet = Fernet(crypto_key)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
-
-
-class RedisKey(Enum):
-    ACTIVATE_USER = "activate-user-code"
 
 
 def verify_password(plain_password, hashed_password):
@@ -85,48 +79,39 @@ def create_refresh_token(settings: Settings = Depends(get_settings), data: dict 
 
 async def get_current_user(security_scopes: SecurityScopes, token: str = Depends(oauth2_scheme),
                            settings: Settings = Depends(get_settings)):
-    if security_scopes.scopes:
-        authenticate_value = f'Bearer scope="{security_scopes.scope_str}"'
-    else:
-        authenticate_value = "Bearer"
-
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id: str = payload.get("sub")
         if user_id is None:
-            raise credentials_exception
+            raise invalid_credentials_exception
         token_scopes = payload.get("scopes", [])
-        token_data = TokenData(user_id=user_id, scopes=token_scopes)
+        token_data = TokenDataSchema(user_id=int(user_id), scopes=token_scopes)
     except JWTError as e:
-        raise credentials_exception
+        raise invalid_credentials_exception
     try:
         user = await User.objects.select_related(["roles", "display_role", "roles__scopes", "steamprofile"]).get(
             id=int(token_data.user_id))
     except UserNotFound:
-        raise invalid_username_password_exception
+        raise incorrect_username_password_exception
     for scope in security_scopes.scopes:
         if scope not in token_data.scopes:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Not enough permissions",
-                headers={"WWW-Authenticate": authenticate_value},
-            )
+            raise no_permissions_exception
     return user
 
 
 async def get_current_active_user(current_user: User = Security(get_current_user, scopes=["users:me"])):
     if not current_user.is_activated:
-        raise inactive_user_exception
+        raise inactivate_user_exception
     return current_user
 
 
 async def get_admin_user(user: User = Depends(get_current_active_user)):
     if not user.is_superuser:
-        raise admin_user_exception
+        raise not_admin_user_exception
     return user
 
 
-async def register_user(user_data: RegisterUser) -> User:
+async def register_user(user_data: RegisterUserSchema) -> User:
     password = get_password_hash(user_data.password)
     try:
         user_role = await Role.objects.get(id=2)
@@ -140,23 +125,39 @@ async def register_user(user_data: RegisterUser) -> User:
 
         await created_user.roles.add(user_role)
     except (IntegrityError, SQLIntegrityError, UniqueViolationError) as e:
-        raise HTTPException(status_code=422, detail=f"Email or username already exists")
+        raise user_exists_exception
     return created_user
 
 
-async def login_user(form_data: OAuth2PasswordRequestForm, settings: Settings):
+async def _login_user(form_data: OAuth2PasswordRequestForm, settings: Settings):
     user = await authenticate_user(username=form_data.username, password=form_data.password)
     if not user:
-        raise invalid_username_password_exception
+        raise incorrect_username_password_exception
 
     scopes = await get_scopesv3(user.roles)
     access_token = create_access_token(settings, data={'sub': str(user.id), "scopes": scopes})
     refresh_token = create_refresh_token(settings, data={'sub': str(user.id)})
     await user.update(last_login=datetime.utcnow())
-    return Token(access_token=access_token, refresh_token=refresh_token, token_type="bearer"), user
+    return TokenSchema(access_token=access_token, refresh_token=refresh_token, token_type="bearer"), user
 
 
-async def create_admin_user(user_data: RegisterUser):
+async def _get_access_token_from_refresh_token(token_data: RefreshTokenSchema, settings: Settings):
+    try:
+        payload = jwt.decode(token_data.refresh_token, settings.REFRESH_SECRET_KEY, algorithms=[settings.ALGORITHM])
+        if datetime.utcfromtimestamp(payload["exp"]) > datetime.utcnow():
+            user_id: str = payload.get("sub")
+            user = await User.objects.select_related(["roles", "roles__scopes"]).get(id=int(user_id))
+            if user:
+                await user.update(last_login=datetime.utcnow())
+                scopes = await get_scopesv3(user.roles)
+                access_token = create_access_token(settings, data={'sub': str(user.id), "scopes": scopes})
+                return TokenSchema(access_token=access_token, refresh_token=token_data.refresh_token,
+                                   token_type="bearer"), user
+    except JWTError as e:
+        raise invalid_credentials_exception
+
+
+async def create_admin_user(user_data: RegisterUserSchema):
     registered_user = await register_user(user_data)
     admin_role = await Role.objects.get(id=1)
     await registered_user.roles.add(admin_role)
@@ -174,7 +175,7 @@ def generate_code(number: int = 8):
 
 
 def create_activate_code_redis_key(code: str):
-    return f"{RedisKey.ACTIVATE_USER.value}:{code}"
+    return f"{RedisKeyEnum.ACTIVATE_USER.value}:{code}"
 
 
 async def create_activate_code(user_id: int, redis):
@@ -199,21 +200,21 @@ async def delete_activate_code(code, redis):
     return await redis.delete(create_activate_code_redis_key(code))
 
 
-async def activate_user(activate_code: ActivateUserCode, redis):
+async def _activate_user(activate_code: ActivateUserCodeSchema, redis):
     code = activate_code.code
     user_id = await get_user_id_by_code(code, redis)
     if not user_id:
-        raise InvalidActivateCode
+        raise invalid_activation_code_exception
     try:
         user = await User.objects.get(id=user_id)
         if user.is_activated:
             await delete_activate_code(code, redis)
-            raise UserIsAlreadyActivated()
+            raise user_activated_exception
         await user.update(is_activated=True)
         await delete_activate_code(code, redis)
-        return True
+        return True, user
     except NoMatch:
-        raise InvalidActivateCode
+        raise invalid_activation_code_exception
 
 
 async def redirect_to_steam():

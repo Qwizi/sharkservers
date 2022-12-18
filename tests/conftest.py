@@ -9,8 +9,8 @@ from faker import Faker
 from fastapi.security import OAuth2PasswordRequestForm
 from httpx import AsyncClient
 
-from app.auth.schemas import RegisterUser
-from app.auth.utils import create_admin_user, login_user
+from app.auth.schemas import RegisterUserSchema
+from app.auth.utils import create_admin_user, _login_user
 from app.db import metadata, get_redis, create_redis_pool
 from app.main import app
 from app.roles.models import Role
@@ -54,14 +54,14 @@ async def admin_client():
     await create_scopes()
     await create_default_roles()
     app.state.redis = await create_redis_pool()
-    admin_user = await create_admin_user(user_data=RegisterUser(
+    admin_user = await create_admin_user(user_data=RegisterUserSchema(
         username=TEST_ADMIN_USER.get("username"),
         email=TEST_ADMIN_USER.get("email"),
         password=TEST_ADMIN_USER.get("password"),
         password2=TEST_ADMIN_USER.get("password")
     ))
     settings = get_settings()
-    token, user = await login_user(form_data=OAuth2PasswordRequestForm(
+    token, user = await _login_user(form_data=OAuth2PasswordRequestForm(
         username=admin_user.username,
         password=TEST_ADMIN_USER.get("password"),
         scope=""

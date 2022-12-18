@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Security
 from fastapi_pagination import Params, Page
 from fastapi_pagination.ext.ormar import paginate
 from ormar import NoMatch
@@ -20,7 +20,7 @@ async def get_posts(thread_id: int, params: Params = Depends()):
 
 
 @router.post("", response_model=PostOut)
-async def create_post(post_data: CreatePost, user: User = Depends(get_current_active_user)):
+async def create_post(post_data: CreatePost, user: User = Security(get_current_active_user, scopes=["posts:create"])):
     try:
         thread = await Thread.objects.get(id=post_data.thread_id)
     except NoMatch:

@@ -5,6 +5,7 @@ from aioredis import Redis
 from fastapi_events.registry.payload_schema import registry as payload_schema
 from pydantic import BaseModel, validator
 
+from app.auth.enums import AuthEventsEnum
 from app.steamprofile.models import SteamProfile
 from app.steamprofile.schemas import SteamPlayer
 from app.users.models import User
@@ -71,7 +72,7 @@ class CreateUser(BaseModel):
     is_activated: bool = True
 
 
-@payload_schema.register(event_name=UserEvents.REGISTERED)
+@payload_schema.register(event_name=AuthEventsEnum.REGISTERED_POST)
 class RegisteredUserPayload(UserOut):
     redis: Optional[Redis]
 

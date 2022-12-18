@@ -1,7 +1,7 @@
 import pytest
 from jose import jwt
 
-from app.auth.schemas import Token
+from app.auth.schemas import TokenSchema
 from app.roles.utils import create_default_roles
 from app.scopes.utils import create_scopes
 from app.settings import get_settings
