@@ -119,6 +119,6 @@ async def create_fake_roles(faker: Faker, number: int = 50):
         )
         user_scopes = await get_user_role_scopes()
         for scope in user_scopes:
-            role.scopes.add(scope)
+            await role.scopes.add(scope)
         roles_list.append(role)
     return roles_list

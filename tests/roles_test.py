@@ -46,7 +46,7 @@ async def test_get_role(client, faker):
 async def test_get_invalid_id_role(client):
     await create_default_roles()
     r = await client.get("roles/9555")
-    assert r.status_code == 401
+    assert r.status_code == 404
     assert r.json()["detail"] == "Role not found"
 
 
