@@ -20,7 +20,13 @@ router = APIRouter()
 
 
 @router.post("/register", response_model=UserOut)
-async def register(user_data: RegisterUserSchema, redis=Depends(get_redis)):
+async def register(user_data: RegisterUserSchema, redis=Depends(get_redis)) -> UserOut:
+    """
+    Register a new user
+    :param user_data:
+    :param redis:
+    :return UserOut:
+    """
     dispatch(AuthEventsEnum.REGISTERED_PRE, payload={"user_data": user_data})
     registered_user: User = await register_user(user_data=user_data)
     registered_user_dict: dict = json.loads(registered_user.json())
@@ -31,7 +37,13 @@ async def register(user_data: RegisterUserSchema, redis=Depends(get_redis)):
 
 @router.post("/token", response_model=TokenSchema)
 async def login_user(form_data: OAuth2PasswordRequestForm = Depends(),
-                     settings: Settings = Depends(get_settings)):
+                     settings: Settings = Depends(get_settings)) -> TokenSchema:
+    """
+    Login user
+    :param form_data:
+    :param settings:
+    :return TokenSchema:
+    """
     dispatch(AuthEventsEnum.ACCESS_TOKEN_PRE, payload={"form_data": form_data.__dict__})
     token, user = await _login_user(form_data, settings)
     payload = {
@@ -44,7 +56,13 @@ async def login_user(form_data: OAuth2PasswordRequestForm = Depends(),
 
 @router.post("/token/refresh", response_model=TokenSchema)
 async def get_access_token_from_refresh_token(token_data: RefreshTokenSchema,
-                                              settings: Settings = Depends(get_settings)):
+                                              settings: Settings = Depends(get_settings)) -> TokenSchema:
+    """
+    Get access token from refresh token
+    :param token_data:
+    :param settings:
+    :return TokenSchema:
+    """
     token, user = await _get_access_token_from_refresh_token(token_data, settings)
     payload = {
         "user": json.loads(user.json()),
@@ -55,7 +73,13 @@ async def get_access_token_from_refresh_token(token_data: RefreshTokenSchema,
 
 
 @router.post("/activate")
-async def activate_user(activate_code_data: ActivateUserCodeSchema, redis=Depends(get_redis)):
+async def activate_user(activate_code_data: ActivateUserCodeSchema, redis=Depends(get_redis)) -> bool:
+    """
+    Activate user
+    :param activate_code_data:
+    :param redis:
+    :return bool:
+    """
     dispatch(AuthEventsEnum.ACTIVATED_PRE, payload={"activate_code": activate_code_data})
     user_activated, user = await _activate_user(activate_code=activate_code_data, redis=redis)
     dispatch(AuthEventsEnum.ACTIVATED_POST, payload={"activated": user_activated, "user": user})

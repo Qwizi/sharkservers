@@ -50,6 +50,24 @@ from app.auth.handlers import (
     create_activate_code_after_register
 )
 
+from app.users.handlers import (
+    handle_users_event_get_all_pre,
+    handle_users_event_get_all_post,
+    handle_users_event_get_one_pre,
+    handle_users_event_get_one_post,
+    handle_users_event_me_pre,
+    handle_users_event_me_post,
+    handle_users_event_change_username_pre,
+    handle_users_event_change_username_post,
+    handle_users_event_change_password_pre,
+    handle_users_event_change_password_post,
+    handle_users_event_get_online_pre,
+    handle_users_event_get_online_post,
+    handle_users_event_get_last_logged_pre,
+    handle_users_event_get_last_logged_post
+
+)
+
 script_dir = os.path.dirname(__file__)
 st_abs_file_path = os.path.join(script_dir, "static/")
 installed_file_path = os.path.join(script_dir, "installed")
@@ -64,8 +82,8 @@ def create_app():
 
     _app.mount("/static", StaticFiles(directory=st_abs_file_path), name="static")
     _app.state.database = database
-    _app.include_router(users_router, prefix="/users", tags=["users"])
     _app.include_router(auth_router, prefix="/auth", tags=["auth"])
+    _app.include_router(users_router, prefix="/users", tags=["users"])
     _app.include_router(scopes_router, prefix="/scopes", tags=["scopes"])
     _app.include_router(roles_router, prefix="/roles", tags=["roles"])
     _app.include_router(steamprofile_router, prefix="/players", tags=["players"])

@@ -3,12 +3,8 @@ from fastapi_events.typing import Event
 
 from app.auth.enums import AuthEventsEnum
 from app.auth.utils import create_activate_code
+from app.handlers import log_debug_event
 from app.logger import logger
-
-
-def log_debug_event(event: Event):
-    event_name, payload = event
-    logger.debug(f"Event {event_name} with payload {payload}")
 
 
 @local_handler.register(event_name=AuthEventsEnum.REGISTERED_PRE)
