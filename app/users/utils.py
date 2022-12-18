@@ -6,11 +6,14 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.ormar import paginate
 from ormar import NoMatch
 
-from app.auth.utils import verify_password, get_password_hash
+from app.auth.schemas import RegisterUserSchema
+from app.auth.utils import verify_password, get_password_hash, register_user
+from app.roles.exceptions import RoleNotFound
+from app.roles.models import Role
 from app.users.exceptions import username_not_available_exception, invalid_current_password_exception, \
     cannot_change_display_role_exception, user_not_found_exception
 from app.users.models import User
-from app.users.schemas import ChangeUsernameSchema, ChangePasswordSchema, ChangeDisplayRoleSchema
+from app.users.schemas import ChangeUsernameSchema, ChangePasswordSchema, ChangeDisplayRoleSchema, CreateUserSchema
 
 
 async def _get_users(params: Params) -> AbstractPage:
@@ -72,5 +75,55 @@ async def _get_last_logged_users(params: Params) -> AbstractPage:
 async def _get_user(user_id: int) -> User:
     try:
         return await User.objects.select_related(["roles", "display_role"]).get(id=user_id)
+    except NoMatch:
+        raise user_not_found_exception
+
+
+async def _admin_get_users(params: Params) -> AbstractPage:
+    return await paginate(User.objects.select_related(["display_role"]), params)
+
+
+async def _admin_get_user(user_id: int) -> User:
+    try:
+        return await User.objects.select_related(["display_role", "roles", "steamprofile"]).get(id=user_id)
+    except NoMatch:
+        raise user_not_found_exception
+
+
+async def _admin_create_user(user_data: CreateUserSchema) -> User:
+    """
+    Create user
+    :param user_data:
+    :return:
+    """
+    register_user_schema = RegisterUserSchema(
+        username=user_data.username,
+        email=user_data.email,
+        password=user_data.password,
+        password2=user_data.password
+    )
+    created_user = await register_user(register_user_schema)
+    if user_data.is_activated:
+        await created_user.update(is_activated=True)
+    if user_data.display_role:
+        try:
+            role = await Role.objects.get(id=user_data.display_role)
+            await created_user.update(display_role=role)
+            await created_user.roles.add(role)
+        except NoMatch:
+            raise RoleNotFound()
+    return created_user
+
+
+async def _admin_delete_user(user_id: int) -> User:
+    """
+    Delete user
+    :param user_id:
+    :return:
+    """
+    try:
+        user = await User.objects.get(id=user_id)
+        await user.delete()
+        return user
     except NoMatch:
         raise user_not_found_exception

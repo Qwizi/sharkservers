@@ -64,7 +64,16 @@ from app.users.handlers import (
     handle_users_event_get_online_pre,
     handle_users_event_get_online_post,
     handle_users_event_get_last_logged_pre,
-    handle_users_event_get_last_logged_post
+    handle_users_event_get_last_logged_post,
+
+    handle_users_admin_event_get_all_pre,
+    handle_users_admin_event_get_all_post,
+    handle_users_admin_event_get_one_pre,
+    handle_users_admin_event_get_one_post,
+    handle_users_admin_event_create_pre,
+    handle_users_admin_event_create_post,
+    handle_users_admin_event_delete_pre,
+    handle_users_admin_event_delete_post,
 
 )
 
@@ -122,17 +131,6 @@ def create_app():
     async def home(settings=Depends(get_settings)):
         print(settings.STEAM_API_KEY)
         return {}
-
-    @_app.get("/callback/steam")
-    async def callback_steam(request: Request):
-        signed_params = request.query_params
-        async with httpx.AsyncClient() as client:
-            r = await client.get(url="http://localhost/auth/callback/steam", params=signed_params, headers={
-                "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwic2NvcGVzIjpbInVzZXJzOm1lIiwidXNlcnM6bWU6dXNlcm5hbWUiLCJ1c2VyczptZTpwYXNzd29yZCIsInVzZXJzOm1lOmRpc3BsYXktcm9sZSJdLCJleHAiOjE2NzEyNDAyMzh9.UvLhim1SduLbrVrJMP30MrEF3PK6y-xHHejga1ShYoQ"
-            })
-        if r.status_code != 200:
-            return RedirectResponse("/callback/steam/error")
-        return RedirectResponse("/callback/steam/success")
 
     @_app.get("/images")
     async def get_images():
