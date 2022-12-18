@@ -6,13 +6,17 @@ import pytest
 import pytest_asyncio
 import sqlalchemy
 from faker import Faker
+from fastapi.security import OAuth2PasswordRequestForm
 from httpx import AsyncClient
 
+from app.auth.schemas import RegisterUser
+from app.auth.utils import create_admin_user, login_user
 from app.db import metadata, get_redis, create_redis_pool
 from app.main import app
 from app.roles.models import Role
 from app.roles.utils import get_user_role_scopes, create_default_roles
 from app.scopes.utils import create_scopes
+from app.settings import get_settings
 from app.users.models import User
 
 DATABASE_URL = "sqlite:///test.db"
@@ -21,7 +25,12 @@ TEST_USER = {
     "username": "Test user",
     "email": "test@test.pl",
     "password": "test",
-    "avatar": "asdasd"
+}
+
+TEST_ADMIN_USER = {
+    "username": "Admin",
+    "email": "admin@test.pl",
+    "password": "admin",
 }
 
 
@@ -37,6 +46,30 @@ def create_test_database():
 async def client():
     app.state.redis = await create_redis_pool()
     async with AsyncClient(app=app, base_url="http://localhost") as c:
+        yield c
+
+
+@pytest_asyncio.fixture(scope="function")
+async def admin_client():
+    await create_scopes()
+    await create_default_roles()
+    app.state.redis = await create_redis_pool()
+    admin_user = await create_admin_user(user_data=RegisterUser(
+        username=TEST_ADMIN_USER.get("username"),
+        email=TEST_ADMIN_USER.get("email"),
+        password=TEST_ADMIN_USER.get("password"),
+        password2=TEST_ADMIN_USER.get("password")
+    ))
+    settings = get_settings()
+    token, user = await login_user(form_data=OAuth2PasswordRequestForm(
+        username=admin_user.username,
+        password=TEST_ADMIN_USER.get("password"),
+        scope=""
+    ), settings=settings)
+    headers = {
+        "Authorization": f"Bearer {token.access_token}"
+    }
+    async with AsyncClient(app=app, base_url="http://localhost", headers=headers) as c:
         yield c
 
 
