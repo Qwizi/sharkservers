@@ -96,6 +96,7 @@ async def test_get_banned_role(client):
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_get_staff_roles(client):
     await create_scopes()
     await create_default_roles()

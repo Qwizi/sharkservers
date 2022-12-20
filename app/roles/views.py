@@ -23,16 +23,19 @@ async def get_roles(params: Params = Depends()) -> AbstractPage:
     return roles
 
 
-@router.get("/staff", response_model=Page[StaffRolesSchema], response_model_exclude={"password"})
-async def get_staff_roles() -> dict:
+@router.get("/staff")
+async def get_staff_roles():
     """
     Get staff roles
     :return:
+    """
     """
     dispatch(event_name=RolesEventsEnum.STAFF_GET_ALL_PRE, payload={})
     roles = await _get_staff_roles()
     dispatch(event_name=RolesEventsEnum.STAFF_GET_ALL_POST, payload={"data": roles})
     return roles
+    """
+    return {"msg": "Not implemented"}
 
 
 @router.get("/{role_id}", response_model=RoleOutWithScopes)

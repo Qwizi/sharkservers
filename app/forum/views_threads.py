@@ -4,7 +4,7 @@ from fastapi_pagination.ext.ormar import paginate
 from ormar import NoMatch
 
 from app.auth.utils import get_current_active_user
-from app.forum.exceptions import CategoryNotFound, ThreadExists, ThreadNotFound
+from app.forum.exceptions import thread_exists_exception, category_not_found_exception, thread_not_found_exception
 from app.forum.models import Thread, Category, Tag, Post
 from app.forum.schemas import thread_out, CreateThread, ThreadOut
 from app.users.models import User
@@ -31,11 +31,11 @@ async def create_thread(thread_data: CreateThread,
     try:
         category = await Category.objects.get(id=thread_data.category)
     except NoMatch:
-        raise CategoryNotFound()
+        raise category_not_found_exception
     thread_exists = await Thread.objects.select_related(["category"]).filter(title=thread_data.title,
                                                                              category__id=category).exists()
     if thread_exists:
-        raise ThreadExists()
+        raise thread_exists_exception
     thread = await Thread.objects.create(
         title=thread_data.title,
         content=thread_data.content,
@@ -52,4 +52,4 @@ async def get_thread(thread_id: int):
         thread = await Thread.objects.select_related(["category", "author", "author__display_role"]).get(id=thread_id)
         return thread
     except NoMatch:
-        raise ThreadNotFound()
+        raise thread_not_found_exception

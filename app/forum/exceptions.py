@@ -1,25 +1,22 @@
 from fastapi import HTTPException
+from starlette import status
 
+from app.forum.enums import CategoriesExceptionsEnum, TagsExceptionsEnum, ThreadsExceptionsEnum
 
-class CategoryNotFound(HTTPException):
-    def __init__(self):
-        self.status_code = 404
-        self.detail = "Category not found"
+category_not_found_exception = HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND,
+    detail=CategoriesExceptionsEnum.NOT_FOUND,
+)
 
-
-class TagNotFound(HTTPException):
-    def __init__(self):
-        self.status_code = 404
-        self.detail = "Tag not found"
-
-
-class ThreadNotFound(HTTPException):
-    def __init__(self):
-        self.status_code = 404
-        self.detail = "Thread not found"
-
-
-class ThreadExists(HTTPException):
-    def __init__(self):
-        self.status_code = 404
-        self.detail = "Thread with this title on this category exists"
+tag_not_found_exception = HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND,
+    detail=TagsExceptionsEnum.NOT_FOUND,
+)
+thread_not_found_exception = HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND,
+    detail=ThreadsExceptionsEnum.NOT_FOUND,
+)
+thread_exists_exception = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail=ThreadsExceptionsEnum.ALREADY_EXISTS,
+)
