@@ -12,7 +12,7 @@ from app.auth.utils import get_admin_user
 from app.roles.enums import RolesAdminEventsEnum
 from app.roles.exceptions import role_exists_exception, role_not_found_exception
 from app.roles.models import Role
-from app.roles.schemas import RoleOut, RoleOutWithScopes, CreateRole
+from app.roles.schemas import RoleOut, RoleOutWithScopes, CreateRoleSchema
 from app.roles.utils import _get_roles, _get_role, _delete_role
 from app.scopes.models import Scope
 from app.users.models import User
@@ -51,7 +51,8 @@ async def admin_get_role(role_id: int,
 
 
 @router.post("", response_model=RoleOutWithScopes)
-async def admin_create_role(role_data: CreateRole, user: User = Security(get_admin_user, scopes=["roles:create"])):
+async def admin_create_role(role_data: CreateRoleSchema,
+                            user: User = Security(get_admin_user, scopes=["roles:create"])):
     scopes = None
     if role_data.scopes:
         scopes = await Scope.objects.filter(id__in=role_data.scopes).all()

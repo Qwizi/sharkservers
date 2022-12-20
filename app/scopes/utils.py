@@ -1,6 +1,13 @@
+from fastapi_pagination import Params
+from fastapi_pagination.bases import AbstractPage
+from fastapi_pagination.ext.ormar import paginate
+from ormar import NoMatch
+
 from app.roles.models import Role
 from app.scopes.enums import ScopeEnum
+from app.scopes.exceptions import scope_not_found_exception
 from app.scopes.models import Scope
+from app.scopes.schemas import CreateScopeSchema
 
 ADDITIONAL_SCOPES = [
     {
@@ -68,3 +75,30 @@ async def get_scopesv3(roles: list[Role]):
             if scope_str not in scopes:
                 scopes.append(scope.get_string())
     return scopes
+
+
+async def _get_scopes(params: Params, role_id: int = None) -> AbstractPage:
+    if role_id:
+        return await paginate(Scope.objects.select_related("roles").filter(roles__id=role_id), params)
+    return await paginate(Scope.objects, params)
+
+
+async def _get_scope(scope_id: int) -> Scope:
+    try:
+        scope = await Scope.objects.get(id=scope_id)
+        return scope
+    except NoMatch:
+        raise scope_not_found_exception
+
+
+async def _create_scope(scope_data: CreateScopeSchema) -> Scope:
+    return await Scope.objects.create(**scope_data.dict())
+
+
+async def _delete_scope(scope_id: int) -> Scope:
+    try:
+        scope = await Scope.objects.get(id=scope_id, protected=False)
+        await scope.delete()
+        return scope
+    except NoMatch:
+        raise scope_not_found_exception

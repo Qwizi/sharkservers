@@ -10,20 +10,20 @@ RoleOutWithScopes = Role.get_pydantic()
 RoleOutWithoutScopesAndUserRoles = Role.get_pydantic(exclude={"roles", "scopes"})
 
 
-class StaffUserInRoles(BaseModel):
+class StaffUserInRolesSchema(BaseModel):
     id: int
     username: str
     avatar: str
 
 
-class StaffRoles(BaseModel):
+class StaffRolesSchema(BaseModel):
     id: int
     name: str
     color: str
-    user_display_role: list[StaffUserInRoles]
+    user_display_role: list[StaffUserInRolesSchema]
 
 
-class CreateRole(BaseModel):
+class CreateRoleSchema(BaseModel):
     name: str
     color: str
     is_staff: bool = False

@@ -8,3 +8,31 @@ class ScopeEnum(Enum):
     RETRIEVE = "retrieve"
     GET = "get"
     GET_ALL = "get_all"
+
+
+class ScopesExceptionsDetailEnum(str, Enum):
+    """Scopes exceptions detail enum."""
+
+    NOT_FOUND = "Scope not found"
+
+
+class ScopesEventsEnum(str, Enum):
+    """Scopes events enum."""
+
+    GET_ALL_PRE = "SCOPES_GET_ALL_PRE"
+    GET_ALL_POST = "SCOPES_GET_ALL_POST"
+    GET_ONE_PRE = "SCOPES_GET_ONE_PRE"
+    GET_ONE_POST = "SCOPES_GET_ONE_POST"
+
+
+class ScopesAdminEventsEnum(str, Enum):
+    """Scopes events enum."""
+
+    GET_ALL_PRE = "SCOPES_ADMIN_GET_ALL_PRE"
+    GET_ALL_POST = "SCOPES_ADMIN_GET_ALL_POST"
+    GET_ONE_PRE = "SCOPES_ADMIN_GET_ONE_PRE"
+    GET_ONE_POST = "SCOPES_ADMIN_GET_ONE_POST"
+    CREATE_PRE = "SCOPES_ADMIN_CREATE_PRE"
+    CREATE_POST = "SCOPES_ADMIN_CREATE_POST"
+    DELETE_PRE = "SCOPES_ADMIN_DELETE_PRE"
+    DELETE_POST = "SCOPES_ADMIN_DELETE_POST"

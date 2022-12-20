@@ -5,7 +5,7 @@ from app.scopes.models import Scope
 ScopeOut = Scope.get_pydantic(exclude={"roles"})
 
 
-class CreateScope(BaseModel):
+class CreateScopeSchema(BaseModel):
     app_name: str
     value: str
     description: str

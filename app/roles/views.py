@@ -4,7 +4,7 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 
 from app.roles.enums import RolesEventsEnum
-from app.roles.schemas import RoleOut, RoleOutWithScopes, RoleOutWithoutScopesAndUserRoles, StaffRoles
+from app.roles.schemas import RoleOut, RoleOutWithScopes, RoleOutWithoutScopesAndUserRoles, StaffRolesSchema
 from app.roles.utils import _get_roles, _get_staff_roles, _get_role
 
 router = APIRouter()
@@ -23,7 +23,7 @@ async def get_roles(params: Params = Depends()) -> AbstractPage:
     return roles
 
 
-@router.get("/staff", response_model=Page[StaffRoles], response_model_exclude={"password"})
+@router.get("/staff", response_model=Page[StaffRolesSchema], response_model_exclude={"password"})
 async def get_staff_roles() -> dict:
     """
     Get staff roles
