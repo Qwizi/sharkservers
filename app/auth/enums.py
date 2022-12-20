@@ -1,12 +1,6 @@
 from enum import Enum
 
 
-class ProtectedDefaultRolesEnum(int, Enum):
-    ADMIN = 1
-    USER = 2
-    BANNED = 3
-
-
 class RedisKeyEnum(Enum):
     ACTIVATE_USER = "activate-user-code"
 

@@ -39,19 +39,12 @@ from app.steamprofile.views_admin import router as admin_steamprofiles_router
 
 # Events
 from app.auth.handlers import (
-    handle_auth_event_registered_pre,
-    handle_auth_event_registered_post,
-    handle_auth_event_access_token_pre,
-    handle_auth_event_access_token_post,
-    handle_auth_event_refresh_token_pre,
-    handle_auth_event_refresh_token_post,
-    handle_auth_event_activated_pre,
-    handle_auth_event_activated_post,
     create_activate_code_after_register
 )
 
+"""
 from app.users.handlers import (
-    handle_users_event_get_all_pre,
+    # handle_users_event_get_all_pre,
     handle_users_event_get_all_post,
     handle_users_event_get_one_pre,
     handle_users_event_get_one_post,
@@ -76,6 +69,16 @@ from app.users.handlers import (
     handle_users_admin_event_delete_post,
 
 )
+from app.roles.handlers import (
+    handle_roles_event_get_all_pre,
+    handle_roles_event_get_all_post,
+    handle_roles_event_get_one_pre,
+    handle_roles_event_get_one_post,
+    handle_roles_event_staff_get_all_pre,
+    handle_roles_event_staff_get_all_post
+)
+"""
+from .handlers import handle_all_events_and_debug_log
 
 script_dir = os.path.dirname(__file__)
 st_abs_file_path = os.path.join(script_dir, "static/")

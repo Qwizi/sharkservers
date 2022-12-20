@@ -8,7 +8,7 @@ from ormar import NoMatch
 
 from app.auth.schemas import RegisterUserSchema
 from app.auth.utils import verify_password, get_password_hash, register_user
-from app.roles.exceptions import RoleNotFound
+from app.roles.exceptions import role_not_found_exception
 from app.roles.models import Role
 from app.users.exceptions import username_not_available_exception, invalid_current_password_exception, \
     cannot_change_display_role_exception, user_not_found_exception
@@ -111,7 +111,7 @@ async def _admin_create_user(user_data: CreateUserSchema) -> User:
             await created_user.update(display_role=role)
             await created_user.roles.add(role)
         except NoMatch:
-            raise RoleNotFound()
+            raise role_not_found_exception
     return created_user
 
 

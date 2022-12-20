@@ -7,7 +7,6 @@ from ormar import NoMatch
 
 from app.auth.schemas import RegisterUserSchema
 from app.auth.utils import register_user, get_current_active_user, get_admin_user
-from app.roles.exceptions import RoleNotFound
 from app.roles.models import Role
 from app.users.enums import UsersAdminEventsEnum
 from app.users.exceptions import UserNotFound
