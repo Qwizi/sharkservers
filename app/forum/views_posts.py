@@ -4,7 +4,7 @@ from fastapi_pagination.ext.ormar import paginate
 from ormar import NoMatch
 
 from app.auth.utils import get_current_active_user
-from app.forum.exceptions import ThreadNotFound
+from app.forum.exceptions import thread_not_found_exception
 from app.forum.models import Post, Thread
 from app.forum.schemas import PostOut, CreatePost
 from app.users.models import User
@@ -24,7 +24,7 @@ async def create_post(post_data: CreatePost, user: User = Security(get_current_a
     try:
         thread = await Thread.objects.get(id=post_data.thread_id)
     except NoMatch:
-        raise ThreadNotFound()
+        raise thread_not_found_exception
 
     post = await Post.objects.create(
         content=post_data.content,

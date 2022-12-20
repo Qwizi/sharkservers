@@ -3,7 +3,7 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.ormar import paginate
 from ormar import NoMatch
 
-from app.forum.exceptions import TagNotFound
+from app.forum.exceptions import tag_not_found_exception
 from app.forum.models import Tag
 from app.forum.schemas import tags_out
 
@@ -22,4 +22,4 @@ async def get_tag(tag_id: int):
         tag = await Tag.objects.get(id=tag_id)
         return tag
     except NoMatch:
-        raise TagNotFound()
+        raise tag_not_found_exception
