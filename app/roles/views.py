@@ -1,41 +1,48 @@
 from fastapi import APIRouter, Depends
+from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
-from fastapi_pagination.ext.ormar import paginate
+from fastapi_pagination.bases import AbstractPage
 
-from ormar import NoMatch, or_, and_
-
-from app.roles.exceptions import RoleNotFound
-from app.roles.models import Role
+from app.roles.enums import RolesEventsEnum
 from app.roles.schemas import RoleOut, RoleOutWithScopes, RoleOutWithoutScopesAndUserRoles, StaffRoles
+from app.roles.utils import _get_roles, _get_staff_roles, _get_role
 
 router = APIRouter()
 
 
 @router.get("", response_model=Page[RoleOut], response_model_exclude_none=True)
-async def get_roles(params: Params = Depends()):
-    return await paginate(Role.objects, params)
+async def get_roles(params: Params = Depends()) -> AbstractPage:
+    """
+    Get roles
+    :param params:
+    :return AbstractPage:
+    """
+    dispatch(event_name=RolesEventsEnum.GET_ALL_PRE, payload={"data": params})
+    roles = await _get_roles(params)
+    dispatch(event_name=RolesEventsEnum.GET_ALL_POST, payload={"data": roles})
+    return roles
 
 
 @router.get("/staff", response_model=Page[StaffRoles], response_model_exclude={"password"})
-async def get_staff_roles():
-    roles = await Role.objects.select_related(
-        ["user_display_role"]).filter(
-        is_staff=True
-    ) \
-        .all()
-    # I need fix this
-    return {
-        "items": roles,
-        "total": len(roles),
-        "page": 1,
-        "size": 50
-    }
+async def get_staff_roles() -> dict:
+    """
+    Get staff roles
+    :return:
+    """
+    dispatch(event_name=RolesEventsEnum.STAFF_GET_ALL_PRE, payload={})
+    roles = await _get_staff_roles()
+    dispatch(event_name=RolesEventsEnum.STAFF_GET_ALL_POST, payload={"data": roles})
+    return roles
 
 
 @router.get("/{role_id}", response_model=RoleOutWithScopes)
-async def get_role(role_id: int):
-    try:
-        role = await Role.objects.select_related("scopes").get(id=role_id)
-        return role
-    except NoMatch as e:
-        raise RoleNotFound()
+async def get_role(role_id: int) -> RoleOutWithScopes:
+    """
+    Get role by id
+    :param role_id:
+    :return:
+    """
+    dispatch(event_name=RolesEventsEnum.GET_ONE_PRE, payload={"data": role_id})
+    role = await _get_role(role_id)
+    dispatch(event_name=RolesEventsEnum.GET_ONE_POST, payload={"data": role})
+    return role
