@@ -8,7 +8,7 @@ from ormar import or_, and_, NoMatch
 from app.roles.enums import ProtectedDefaultRolesEnum
 from app.roles.exceptions import role_not_found_exception, role_exists_exception, role_protected_exception
 from app.roles.models import Role
-from app.roles.schemas import RoleOut, CreateRole
+from app.roles.schemas import RoleOut, CreateRoleSchema
 from app.scopes.models import Scope
 
 
@@ -85,7 +85,7 @@ async def _get_role(role_id: int) -> Role:
         raise role_not_found_exception
 
 
-async def _create_role(role_data: CreateRole) -> Role:
+async def _create_role(role_data: CreateRoleSchema) -> Role:
     scopes = None
     if role_data.scopes:
         scopes = await Scope.objects.filter(id__in=role_data.scopes).all()

@@ -1,12 +1,16 @@
 from fastapi import APIRouter, Depends, Security
+from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
+from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.ormar import paginate
 from ormar import NoMatch
 
 from app.auth.utils import get_admin_user
+from app.scopes.enums import ScopesAdminEventsEnum
 from app.scopes.exceptions import ScopeNotFound
 from app.scopes.models import Scope
-from app.scopes.schemas import ScopeOut, CreateScope
+from app.scopes.schemas import ScopeOut, CreateScopeSchema
+from app.scopes.utils import _get_scopes, _get_scope, _create_scope, _delete_scope
 from app.users.models import User
 
 router = APIRouter()
@@ -14,36 +18,52 @@ router = APIRouter()
 
 @router.get("", response_model=Page[ScopeOut])
 async def admin_get_scopes(params: Params = Depends(),
-                           user: User = Security(get_admin_user, scopes=["scopes:get_all"])):
-    scopes = Scope.objects
-    return await paginate(scopes, params)
+                           user: User = Security(get_admin_user, scopes=["scopes:get_all"])) -> AbstractPage[ScopeOut]:
+    """
+    Admin get scopes.
+    :param params:
+    :param user:
+    :return:
+    """
+    dispatch(ScopesAdminEventsEnum.GET_ALL_PRE, payload={"data": params, "user": user})
+    scopes = await _get_scopes(params)
+    dispatch(ScopesAdminEventsEnum.GET_ALL_POST, payload={"data": scopes, "user": user})
+    return scopes
 
 
 @router.get("/{scope_id}", response_model=ScopeOut)
 async def admin_get_scope(scope_id: int, user: User = Security(get_admin_user, scopes=["scopes:retrieve"])):
-    try:
-        scope = await Scope.objects.get(id=scope_id)
-        return scope
-    except NoMatch:
-        raise ScopeNotFound()
+    dispatch(ScopesAdminEventsEnum.GET_ONE_PRE, payload={"data": scope_id, "user": user})
+    scope = await _get_scope(scope_id)
+    dispatch(ScopesAdminEventsEnum.GET_ONE_POST, payload={"data": scope, "user": user})
+    return scope
 
 
 @router.post("", response_model=ScopeOut)
-async def admin_create_scope(scope_data: CreateScope, user: User = Security(get_admin_user, scopes=["scopes:create"])):
-    scope = await Scope.objects.create(
-        app_name=scope_data.app_name,
-        value=scope_data.value,
-        description=scope_data.description,
-        protected=scope_data.protected
-    )
+async def admin_create_scope(scope_data: CreateScopeSchema,
+                             user: User = Security(get_admin_user, scopes=["scopes:create"])) -> ScopeOut:
+    """
+    Admin create scope.
+    :param scope_data:
+    :param user:
+    :return:
+    """
+    dispatch(ScopesAdminEventsEnum.CREATE_PRE, payload={"data": scope_data, "user": user})
+    scope = await _create_scope(scope_data)
+    dispatch(ScopesAdminEventsEnum.CREATE_POST, payload={"data": scope, "user": user})
     return scope
 
 
 @router.delete("/{scope_id}", response_model=ScopeOut)
-async def admin_delete_scope(scope_id: int, user: User = Security(get_admin_user, scopes=["scopes:delete"])):
-    try:
-        scope = await Scope.objects.get(id=scope_id, protected=False)
-        await scope.delete()
-        return scope
-    except NoMatch:
-        raise ScopeNotFound()
+async def admin_delete_scope(scope_id: int,
+                             user: User = Security(get_admin_user, scopes=["scopes:delete"])) -> ScopeOut:
+    """
+    Admin delete scope.
+    :param scope_id:
+    :param user:
+    :return:
+    """
+    dispatch(ScopesAdminEventsEnum.DELETE_PRE, payload={"data": scope_id, "user": user})
+    scope = await _delete_scope(scope_id)
+    dispatch(ScopesAdminEventsEnum.DELETE_POST, payload={"data": scope, "user": user})
+    return scope
