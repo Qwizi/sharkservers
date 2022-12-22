@@ -42,42 +42,6 @@ from app.auth.handlers import (
     create_activate_code_after_register
 )
 
-"""
-from app.users.handlers import (
-    # handle_users_event_get_all_pre,
-    handle_users_event_get_all_post,
-    handle_users_event_get_one_pre,
-    handle_users_event_get_one_post,
-    handle_users_event_me_pre,
-    handle_users_event_me_post,
-    handle_users_event_change_username_pre,
-    handle_users_event_change_username_post,
-    handle_users_event_change_password_pre,
-    handle_users_event_change_password_post,
-    handle_users_event_get_online_pre,
-    handle_users_event_get_online_post,
-    handle_users_event_get_last_logged_pre,
-    handle_users_event_get_last_logged_post,
-
-    handle_users_admin_event_get_all_pre,
-    handle_users_admin_event_get_all_post,
-    handle_users_admin_event_get_one_pre,
-    handle_users_admin_event_get_one_post,
-    handle_users_admin_event_create_pre,
-    handle_users_admin_event_create_post,
-    handle_users_admin_event_delete_pre,
-    handle_users_admin_event_delete_post,
-
-)
-from app.roles.handlers import (
-    handle_roles_event_get_all_pre,
-    handle_roles_event_get_all_post,
-    handle_roles_event_get_one_pre,
-    handle_roles_event_get_one_post,
-    handle_roles_event_staff_get_all_pre,
-    handle_roles_event_staff_get_all_post
-)
-"""
 from .handlers import handle_all_events_and_debug_log
 
 script_dir = os.path.dirname(__file__)
@@ -87,6 +51,7 @@ installed_file_path = os.path.join(script_dir, "installed")
 
 def create_app():
     _app = FastAPI(
+        name="Shark API",
         version=VERSION,
         debug=True
     )
