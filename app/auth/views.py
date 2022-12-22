@@ -7,7 +7,7 @@ from starlette.requests import Request
 
 from app.auth.enums import AuthEventsEnum
 from app.auth.schemas import RegisterUserSchema, TokenSchema, RefreshTokenSchema, ActivateUserCodeSchema
-from app.auth.utils import _activate_user
+from app.auth.utils import _activate_user, get_user_agent, _logout_user
 from app.auth.utils import register_user, get_current_active_user, redirect_to_steam, validate_steam_callback, \
     _login_user, \
     _get_access_token_from_refresh_token
@@ -70,6 +70,16 @@ async def get_access_token_from_refresh_token(token_data: RefreshTokenSchema,
     }
     dispatch(AuthEventsEnum.REFRESH_TOKEN_POST, payload=payload)
     return token
+
+
+@router.post("/logout")
+async def logout_user(user: User = Depends(get_current_active_user)):
+    """
+    Logout user
+    :param user:
+    :return:
+    """
+    return await _logout_user(user)
 
 
 @router.post("/activate")

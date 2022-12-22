@@ -25,6 +25,7 @@ class TokenSchema(BaseModel):
 
 class TokenDataSchema(BaseModel):
     user_id: int | None = None
+    secret: str
     scopes: list[str] = []
 
 
