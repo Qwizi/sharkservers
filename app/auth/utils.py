@@ -18,7 +18,7 @@ from starlette.exceptions import HTTPException
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
-from app.auth.enums import RedisKeyEnum
+from app.auth.enums import RedisAuthKeyEnum
 from app.auth.exceptions import invalid_credentials_exception, incorrect_username_password_exception, \
     no_permissions_exception, inactivate_user_exception, not_admin_user_exception, user_exists_exception, \
     invalid_activation_code_exception, user_activated_exception
@@ -53,6 +53,8 @@ def get_password_hash(plain_password):
 async def authenticate_user(username: str, password: str) -> User | bool:
     try:
         user = await User.objects.select_related(["roles", "roles__scopes"]).get(username=username)
+        secret_salt = generate_secret_salt()
+        await user.update(secret_salt=secret_salt)
         if not verify_password(password, user.password):
             return False
     except NoMatch as e:
@@ -85,14 +87,16 @@ async def get_current_user(security_scopes: SecurityScopes, token: str = Depends
         if user_id is None:
             raise invalid_credentials_exception
         token_scopes = payload.get("scopes", [])
-        token_data = TokenDataSchema(user_id=int(user_id), scopes=token_scopes)
+        token_data = TokenDataSchema(user_id=int(user_id), scopes=token_scopes, secret=payload.get("secret"))
+        try:
+            user = await User.objects.select_related(["roles", "display_role", "roles__scopes", "steamprofile"]).get(
+                id=int(token_data.user_id))
+        except UserNotFound:
+            raise incorrect_username_password_exception
+        if user.secret_salt != token_data.secret:
+            raise invalid_credentials_exception
     except JWTError as e:
         raise invalid_credentials_exception
-    try:
-        user = await User.objects.select_related(["roles", "display_role", "roles__scopes", "steamprofile"]).get(
-            id=int(token_data.user_id))
-    except UserNotFound:
-        raise incorrect_username_password_exception
     for scope in security_scopes.scopes:
         if scope not in token_data.scopes:
             raise no_permissions_exception
@@ -115,12 +119,14 @@ async def register_user(user_data: RegisterUserSchema) -> User:
     password = get_password_hash(user_data.password)
     try:
         user_role = await Role.objects.get(id=2)
+        secret_salt = generate_secret_salt()
         created_user = await User.objects.create(
             username=user_data.username,
             email=user_data.email,
             password=password,
             display_role=user_role,
-            avatar="/static/images/default_avatar.png"
+            avatar="/static/images/default_avatar.png",
+            secret_salt=secret_salt
         )
 
         await created_user.roles.add(user_role)
@@ -135,8 +141,12 @@ async def _login_user(form_data: OAuth2PasswordRequestForm, settings: Settings):
         raise incorrect_username_password_exception
 
     scopes = await get_scopesv3(user.roles)
-    access_token = create_access_token(settings, data={'sub': str(user.id), "scopes": scopes})
-    refresh_token = create_refresh_token(settings, data={'sub': str(user.id)})
+    access_token = create_access_token(settings, data={
+        'sub': str(user.id),
+        "scopes": scopes,
+        "secret": user.secret_salt
+    })
+    refresh_token = create_refresh_token(settings, data={'sub': str(user.id), "secret": user.secret_salt})
     await user.update(last_login=datetime.utcnow())
     return TokenSchema(access_token=access_token, refresh_token=refresh_token, token_type="bearer"), user
 
@@ -146,7 +156,10 @@ async def _get_access_token_from_refresh_token(token_data: RefreshTokenSchema, s
         payload = jwt.decode(token_data.refresh_token, settings.REFRESH_SECRET_KEY, algorithms=[settings.ALGORITHM])
         if datetime.utcfromtimestamp(payload["exp"]) > datetime.utcnow():
             user_id: str = payload.get("sub")
+            secret: str = payload.get("secret")
             user = await User.objects.select_related(["roles", "roles__scopes"]).get(id=int(user_id))
+            if secret != user.secret_salt:
+                raise invalid_credentials_exception
             if user:
                 await user.update(last_login=datetime.utcnow())
                 scopes = await get_scopesv3(user.roles)
@@ -155,6 +168,12 @@ async def _get_access_token_from_refresh_token(token_data: RefreshTokenSchema, s
                                    token_type="bearer"), user
     except JWTError as e:
         raise invalid_credentials_exception
+
+
+async def _logout_user(user: User = Depends(get_current_active_user)):
+    secret = generate_secret_salt()
+    await user.update(secret_salt=secret)
+    return {"message": "Successfully logged out"}
 
 
 async def create_admin_user(user_data: RegisterUserSchema):
@@ -174,8 +193,16 @@ def generate_code(number: int = 8):
     return ''.join(random.choice(string.digits) for _ in range(number))
 
 
+def generate_secret_salt():
+    return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(32))
+
+
 def create_activate_code_redis_key(code: str):
-    return f"{RedisKeyEnum.ACTIVATE_USER.value}:{code}"
+    return f"{RedisAuthKeyEnum.ACTIVATE_USER.value}:{code}"
+
+
+def create_token_blacklist_redis_key(token: str):
+    return f"{RedisAuthKeyEnum.TOKEN_BLACKLIST.value}:{token}"
 
 
 async def create_activate_code(user_id: int, redis):
@@ -265,3 +292,10 @@ async def validate_steam_callback(request: Request, user: User):
 
     # this fucntion should always return false if the payload is not valid
     return steam_player_info
+
+
+async def get_user_agent(request: Request):
+    user_agent = request.headers.get("User-Agent")
+    if not user_agent:
+        return None
+    return user_agent

@@ -10,7 +10,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from httpx import AsyncClient
 
 from app.auth.schemas import RegisterUserSchema
-from app.auth.utils import create_admin_user, _login_user
+from app.auth.utils import create_admin_user, _login_user, register_user
 from app.db import metadata, get_redis, create_redis_pool
 from app.main import app
 from app.roles.models import Role
@@ -83,7 +83,7 @@ def event_loop():
 
 @pytest.fixture(scope='session', autouse=True)
 def faker_session_locale():
-    return ['pl_PL']
+    return ['en_US']
 
 
 async def create_fake_users(faker: Faker, number: int = 50):
@@ -93,16 +93,16 @@ async def create_fake_users(faker: Faker, number: int = 50):
     users_list = []
     await create_scopes()
     await create_default_roles()
-    user_role = await Role.objects.get(id=2)
     for username in username_list:
-        user = await User.objects.create(
+        email = f"{username}@test.pl"
+        print(email)
+        user_data = RegisterUserSchema(
             username=username,
-            email=f"{username}@test.pl",
+            email=email,
             password="test",
-            avatar="asdasd",
-            display_role=user_role
+            password2="test"
         )
-        await user.roles.add(user_role)
+        user = await register_user(user_data=user_data)
         users_list.append(user)
     return users_list
 

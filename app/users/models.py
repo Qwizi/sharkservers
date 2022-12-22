@@ -21,3 +21,4 @@ class User(ormar.Model, DateFieldsMixins):
     roles: Optional[List[Role]] = ormar.ManyToMany(Role, related_name="user_roles")
     display_role: Optional[Role] = ormar.ForeignKey(Role, related_name="user_display_role")
     last_login: Optional[datetime.datetime] = ormar.DateTime(nullable=True)
+    secret_salt: Optional[str] = ormar.String(max_length=255, unique=True)
