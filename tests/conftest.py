@@ -9,15 +9,15 @@ from faker import Faker
 from fastapi.security import OAuth2PasswordRequestForm
 from httpx import AsyncClient
 
-from app.auth.schemas import RegisterUserSchema
-from app.auth.utils import create_admin_user, _login_user, register_user
-from app.db import metadata, get_redis, create_redis_pool
-from app.main import app
-from app.roles.models import Role
-from app.roles.utils import get_user_role_scopes, create_default_roles
-from app.scopes.utils import create_scopes
-from app.settings import get_settings
-from app.users.models import User
+from shark_api.auth.schemas import RegisterUserSchema
+from shark_api.auth.utils import create_admin_user, _login_user, register_user
+from shark_api.db import metadata, get_redis, create_redis_pool
+from shark_api.main import app
+from shark_api.roles.models import Role
+from shark_api.roles.utils import get_user_role_scopes, create_default_roles
+from shark_api.scopes.utils import create_scopes
+from shark_api.settings import get_settings
+from shark_api.users.models import User
 
 DATABASE_URL = "sqlite:///test.db"
 
@@ -64,6 +64,31 @@ async def admin_client():
     token, user = await _login_user(form_data=OAuth2PasswordRequestForm(
         username=admin_user.username,
         password=TEST_ADMIN_USER.get("password"),
+        scope=""
+    ), settings=settings)
+    headers = {
+        "Authorization": f"Bearer {token.access_token}"
+    }
+    async with AsyncClient(app=app, base_url="http://localhost", headers=headers) as c:
+        yield c
+
+
+@pytest_asyncio.fixture(scope="function")
+async def logged_client():
+    await create_scopes()
+    await create_default_roles()
+    app.state.redis = await create_redis_pool()
+    user = await register_user(user_data=RegisterUserSchema(
+        username=TEST_USER.get("username"),
+        email=TEST_USER.get("email"),
+        password=TEST_USER.get("password"),
+        password2=TEST_USER.get("password")
+    ))
+    await user.update(is_activated=True)
+    settings = get_settings()
+    token, user = await _login_user(form_data=OAuth2PasswordRequestForm(
+        username=user.username,
+        password=TEST_USER.get("password"),
         scope=""
     ), settings=settings)
     headers = {

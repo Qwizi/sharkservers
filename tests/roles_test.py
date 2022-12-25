@@ -1,9 +1,9 @@
 import pytest
 
-from app.roles.models import Role
-from app.roles.utils import create_default_roles, get_admin_role_scopes, get_user_role_scopes
-from app.scopes.models import Scope
-from app.scopes.utils import create_scopes
+from shark_api.roles.models import Role
+from shark_api.roles.utils import create_default_roles, get_admin_role_scopes, get_user_role_scopes
+from shark_api.scopes.models import Scope
+from shark_api.scopes.utils import create_scopes
 from tests.conftest import create_fake_roles
 
 
