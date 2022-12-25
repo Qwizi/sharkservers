@@ -1,9 +1,9 @@
 import pytest
 from starlette import status
 
-from app.roles.utils import create_default_roles
-from app.scopes.models import Scope
-from app.scopes.utils import create_scopes
+from shark_api.roles.utils import create_default_roles
+from shark_api.scopes.models import Scope
+from shark_api.scopes.utils import create_scopes
 
 
 @pytest.mark.asyncio

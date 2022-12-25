@@ -1,6 +1,6 @@
 import pytest
 
-from app.users.models import User
+from shark_api.users.models import User
 from tests.conftest import create_fake_users, TEST_USER
 
 

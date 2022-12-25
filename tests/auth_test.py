@@ -1,12 +1,12 @@
 import pytest
 from jose import jwt
 
-from app.auth.schemas import TokenSchema
-from app.roles.utils import create_default_roles
-from app.scopes.utils import create_scopes
-from app.settings import get_settings
-from app.users.models import User
-from tests.conftest import create_fake_users
+from shark_api.auth.schemas import TokenSchema
+from shark_api.roles.utils import create_default_roles
+from shark_api.scopes.utils import create_scopes
+from shark_api.settings import get_settings
+from shark_api.users.models import User
+from tests.conftest import create_fake_users, TEST_USER
 
 TEST_REGISTER_USER = {
     "username": "Test",
@@ -98,3 +98,15 @@ async def test_get_access_token_from_refresh_token(client, faker):
         "refresh_token": token_data["refresh_token"]
     })
     assert r_r.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_logout_user(logged_client):
+    r = await logged_client.get("/users/me")
+    assert r.status_code == 200
+
+    logout_r = await logged_client.post("/auth/logout")
+    assert logout_r.status_code == 200
+
+    r2 = await logged_client.get("/users/me")
+    assert r2.status_code == 401

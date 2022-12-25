@@ -1,6 +1,6 @@
 import pytest
 
-from app.steamprofile.utils import get_steam_user_info, create_steam_profile
+from shark_api.steamprofile.utils import get_steam_user_info, create_steam_profile
 
 
 def test_get_steam_user_info():
