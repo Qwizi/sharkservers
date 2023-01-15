@@ -20,3 +20,7 @@ thread_exists_exception = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail=ThreadsExceptionsEnum.ALREADY_EXISTS,
 )
+thread_is_closed_exception = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail=ThreadsExceptionsEnum.IS_CLOSED
+)

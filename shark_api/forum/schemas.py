@@ -8,7 +8,9 @@ from shark_api.roles.models import Role
 
 category_out = Category.get_pydantic()
 tags_out = Tag.get_pydantic()
-thread_out = Thread.get_pydantic(exclude={"author__password", "author__email"})
+thread_out = Thread.get_pydantic(
+    exclude={"author__password", "author__email", "author__display_role__scopes", "author__secret_salt",
+             "author__roles"})
 
 
 class ThreadTag(BaseModel):
@@ -38,6 +40,7 @@ class ThreadOut(BaseModel):
     id: int
     title: str
     is_closed: bool
+    content: str
     category: ThreadCategory
     author: ThreadAuthor
     tags: Optional[List[ThreadTag]] = None
@@ -50,6 +53,13 @@ class CreateThread(BaseModel):
     # tags: Optional[List[str]] = None
 
 
+class UpdateThreadSchema(BaseModel):
+    title: Optional[str] = Field(max_length=64)
+    content: Optional[str]
+    category: Optional[int]
+    is_closed: Optional[bool]
+
+
 class PostOut(BaseModel):
     id: int
     content: str
@@ -59,3 +69,7 @@ class PostOut(BaseModel):
 class CreatePost(BaseModel):
     thread_id: int
     content: str
+
+
+class CreateCategorySchema(BaseModel):
+    name: str

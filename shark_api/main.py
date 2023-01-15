@@ -26,9 +26,9 @@ from shark_api.auth.views import router as auth_router
 from shark_api.scopes.views import router as scopes_router
 from shark_api.roles.views import router as roles_router
 from shark_api.steamprofile.views import router as steamprofile_router
-from shark_api.forum.views_categories import router as forum_categories_router
+from shark_api.forum.views.categories import router as forum_categories_router
 from shark_api.forum.views_tags import router as forum_tags_router
-from shark_api.forum.views_threads import router as forum_threads_router
+from shark_api.forum.views.threads import router as forum_threads_router
 from shark_api.forum.views_posts import router as forum_posts_router
 
 # Admin Routes
@@ -36,7 +36,8 @@ from shark_api.users.views_admin import router as admin_users_router
 from shark_api.roles.views_admin import router as admin_roles_router
 from shark_api.scopes.views_admin import router as admin_scopes_router
 from shark_api.steamprofile.views_admin import router as admin_steamprofiles_router
-
+from shark_api.forum.views.admin.categories import router as admin_forum_categories_router
+from shark_api.forum.views.admin.threads import router as admin_forum_threads_router
 # Events
 from shark_api.auth.handlers import (
     create_activate_code_after_register
@@ -74,7 +75,9 @@ def create_app():
     _app.include_router(admin_roles_router, prefix="/admin/roles", tags=["admin-roles"])
     _app.include_router(admin_scopes_router, prefix="/admin/scopes", tags=["admin-scopes"])
     _app.include_router(admin_steamprofiles_router, prefix="/admin/players", tags=["admin-players"])
-
+    _app.include_router(admin_forum_categories_router, prefix="/admin/forum/categories",
+                        tags=["admin-forum-categories"])
+    _app.include_router(admin_forum_threads_router, prefix="/admin/forum/threads", tags=["admin-forum-threads"])
     add_pagination(_app)
 
     @_app.on_event("startup")

@@ -30,9 +30,6 @@ async def get_user_role_scopes():
 
 
 async def create_default_roles():
-    admin_role_id = 1
-    user_role_id = 2
-    banned_role_id = 3
     admin_role, created = await Role.objects.get_or_create(
         id=ProtectedDefaultRolesEnum.ADMIN.value,
         name="Admin",

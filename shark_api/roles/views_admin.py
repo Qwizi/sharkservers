@@ -77,3 +77,19 @@ async def admin_delete_role(role_id: int, user: User = Security(get_admin_user, 
     role = await _delete_role(role_id)
     dispatch(RolesAdminEventsEnum.DELETE_POST, payload={"data": role})
     return role
+
+
+@router.post("/{role_id}/scopes/add", response_model=RoleOut)
+async def admin_add_scopes_to_role(role_id: int, scopes: list[int],
+                                   user: User = Security(get_admin_user, scopes=["roles:create"])):
+    role = await Role.objects.select_related(["scopes"]).get(id=role_id)
+    if not role:
+        raise role_not_found_exception
+    for scope in scopes:
+        try:
+            scope = await Scope.objects.get(id=scope)
+            await role.scopes.add(scope)
+        except NoMatch:
+            continue
+    await role.load()
+    return role

@@ -17,6 +17,7 @@ class ThreadsExceptionsEnum(str, Enum):
     """Enum for thread exceptions."""
     NOT_FOUND = "Thread not found"
     ALREADY_EXISTS = "Thread with this title on this category exists"
+    IS_CLOSED = "Thread is closed"
 
 
 class CategoriesEventsEnum(str, Enum):
