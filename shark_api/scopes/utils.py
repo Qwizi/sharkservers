@@ -29,6 +29,16 @@ ADDITIONAL_SCOPES = [
         "app_name": "users",
         "value": "me:display-role",
         "description": "Change display role"
+    },
+    {
+        "app_name": "threads",
+        "value": "close",
+        "description": "Close threads"
+    },
+    {
+        "app_name": "threads",
+        "value": "open",
+        "description": "Open threads"
     }
 ]
 

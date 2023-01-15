@@ -4,7 +4,7 @@ from fastapi_pagination.ext.ormar import paginate
 from ormar import NoMatch
 
 from shark_api.auth.utils import get_current_active_user
-from shark_api.forum.exceptions import thread_not_found_exception
+from shark_api.forum.exceptions import thread_not_found_exception, thread_is_closed_exception
 from shark_api.forum.models import Post, Thread
 from shark_api.forum.schemas import PostOut, CreatePost
 from shark_api.users.models import User
@@ -25,7 +25,8 @@ async def create_post(post_data: CreatePost, user: User = Security(get_current_a
         thread = await Thread.objects.get(id=post_data.thread_id)
     except NoMatch:
         raise thread_not_found_exception
-
+    if thread.is_closed:
+        raise thread_is_closed_exception
     post = await Post.objects.create(
         content=post_data.content,
         author=user

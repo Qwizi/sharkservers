@@ -12,6 +12,7 @@ from httpx import AsyncClient
 from shark_api.auth.schemas import RegisterUserSchema
 from shark_api.auth.utils import create_admin_user, _login_user, register_user
 from shark_api.db import metadata, get_redis, create_redis_pool
+from shark_api.forum.models import Category
 from shark_api.main import app
 from shark_api.roles.models import Role
 from shark_api.roles.utils import get_user_role_scopes, create_default_roles
@@ -147,3 +148,12 @@ async def create_fake_roles(faker: Faker, number: int = 50):
             await role.scopes.add(scope)
         roles_list.append(role)
     return roles_list
+
+
+async def create_fake_categories(number: int = 50):
+    categories_list = []
+    for i in range(number):
+        category_name = "Category " + str(i)
+        category = await Category.objects.create(name=category_name)
+        categories_list.append(category)
+    return categories_list
