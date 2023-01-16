@@ -20,6 +20,12 @@ class ThreadsExceptionsEnum(str, Enum):
     IS_CLOSED = "Thread is closed"
 
 
+class PostsExceptionsEnum(str, Enum):
+    """Enum for post exceptions."""
+    NOT_FOUND = "Post not found"
+    ALREADY_EXISTS = "Post already exists"
+
+
 class CategoriesEventsEnum(str, Enum):
     """Enum for categories events."""
     GET_ALL_PRE = "CATEGORIES_GET_ALL_PRE"

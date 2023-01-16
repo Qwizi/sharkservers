@@ -30,7 +30,7 @@ class ThreadAuthor(BaseModel):
     display_role: Role
 
 
-class ThreadPost(BaseModel):
+class ThreadPostSchema(BaseModel):
     id: int
     content: str
     author: ThreadAuthor
@@ -46,7 +46,7 @@ class ThreadOut(BaseModel):
     tags: Optional[List[ThreadTag]] = None
 
 
-class CreateThread(BaseModel):
+class CreateThreadSchema(BaseModel):
     title: str = Field(max_length=64)
     content: str
     category: int
@@ -56,8 +56,6 @@ class CreateThread(BaseModel):
 class UpdateThreadSchema(BaseModel):
     title: Optional[str] = Field(max_length=64)
     content: Optional[str]
-    category: Optional[int]
-    is_closed: Optional[bool]
 
 
 class PostOut(BaseModel):
@@ -66,8 +64,12 @@ class PostOut(BaseModel):
     author: ThreadAuthor
 
 
-class CreatePost(BaseModel):
+class CreatePostSchema(BaseModel):
     thread_id: int
+    content: str
+
+
+class UpdatePostSchema(BaseModel):
     content: str
 
 

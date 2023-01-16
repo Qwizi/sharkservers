@@ -1,7 +1,8 @@
 from fastapi import HTTPException
 from starlette import status
 
-from shark_api.forum.enums import CategoriesExceptionsEnum, TagsExceptionsEnum, ThreadsExceptionsEnum
+from shark_api.forum.enums import CategoriesExceptionsEnum, TagsExceptionsEnum, ThreadsExceptionsEnum, \
+    PostsExceptionsEnum
 
 category_not_found_exception = HTTPException(
     status_code=status.HTTP_404_NOT_FOUND,
@@ -23,4 +24,9 @@ thread_exists_exception = HTTPException(
 thread_is_closed_exception = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail=ThreadsExceptionsEnum.IS_CLOSED
+)
+
+post_not_found_exception = HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND,
+    detail=PostsExceptionsEnum.NOT_FOUND,
 )

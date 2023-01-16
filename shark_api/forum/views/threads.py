@@ -6,7 +6,7 @@ from ormar import NoMatch
 from shark_api.auth.utils import get_current_active_user
 from shark_api.forum.exceptions import thread_exists_exception, thread_not_found_exception
 from shark_api.forum.models import Thread
-from shark_api.forum.schemas import thread_out, CreateThread, ThreadOut
+from shark_api.forum.schemas import thread_out, CreateThreadSchema, ThreadOut, UpdateThreadSchema
 from shark_api.forum.utils_categories import get_category_by_id
 from shark_api.users.models import User
 
@@ -27,7 +27,7 @@ async def get_threads(category: int, params: Params = Depends()):
 
 
 @router.post("", response_model=thread_out)
-async def create_thread(thread_data: CreateThread,
+async def create_thread(thread_data: CreateThreadSchema,
                         user: User = Security(get_current_active_user, scopes=["threads:create"])):
     category = await get_category_by_id(thread_data.category)
     thread_exists = await Thread.objects.select_related(["category"]).filter(title=thread_data.title,
@@ -48,6 +48,19 @@ async def get_thread(thread_id: int):
     try:
 
         thread = await Thread.objects.select_related(["category", "author", "author__display_role"]).get(id=thread_id)
+        return thread
+    except NoMatch:
+        raise thread_not_found_exception
+
+
+@router.put("/{thread_id}", response_model=ThreadOut)
+async def update_thread(thread_id: int, thread_data: UpdateThreadSchema,
+                        user: User = Security(get_current_active_user, scopes=["threads:update"])):
+    try:
+        thread = await Thread.objects.select_related(["category", "author", "author__display_role"]).get(id=thread_id)
+        if thread.author.id != user.id:
+            raise thread_not_found_exception
+        await thread.update(**thread_data.dict(exclude_unset=True))
         return thread
     except NoMatch:
         raise thread_not_found_exception

@@ -29,7 +29,7 @@ from shark_api.steamprofile.views import router as steamprofile_router
 from shark_api.forum.views.categories import router as forum_categories_router
 from shark_api.forum.views_tags import router as forum_tags_router
 from shark_api.forum.views.threads import router as forum_threads_router
-from shark_api.forum.views_posts import router as forum_posts_router
+from shark_api.forum.views.posts import router as forum_posts_router
 
 # Admin Routes
 from shark_api.users.views_admin import router as admin_users_router
