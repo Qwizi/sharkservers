@@ -2,10 +2,10 @@ import os
 
 import pytest
 
-from shark_api.roles.models import Role
-from shark_api.users.models import User
+from src.roles.models import Role
+from src.users.models import User
 from tests.auth_test import TEST_REGISTER_USER
-from shark_api.main import installed_file_path
+from src.main import installed_file_path
 
 
 @pytest.mark.asyncio

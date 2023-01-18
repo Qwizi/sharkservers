@@ -10,7 +10,7 @@ COPY ./requirements.txt /code/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 #
-COPY ./shark_api /code/shark_api
+COPY ./src /code/src
 
 #
-CMD ["uvicorn", "shark_api.main:app", "--reload", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "src.main:app", "--reload", "--host", "0.0.0.0", "--port", "80"]

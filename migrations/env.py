@@ -7,7 +7,7 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from shark_api.db import BaseMeta
+from src.db import BaseMeta
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -22,11 +22,11 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata\
-from shark_api.users.models import User
-from shark_api.scopes.models import Scope
-from shark_api.roles.models import Role
-from shark_api.steamprofile.models import SteamProfile
-from shark_api.forum.models import Category, Tag, Post, Thread
+from src.users.models import User
+from src.scopes.models import Scope
+from src.roles.models import Role
+from src.steamprofile.models import SteamProfile
+from src.forum.models import Category, Tag, Post, Thread
 
 target_metadata = BaseMeta.metadata
 

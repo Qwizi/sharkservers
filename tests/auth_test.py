@@ -1,11 +1,11 @@
 import pytest
 from jose import jwt
 
-from shark_api.auth.schemas import TokenSchema
-from shark_api.roles.utils import create_default_roles
-from shark_api.scopes.utils import create_scopes
-from shark_api.settings import get_settings
-from shark_api.users.models import User
+from src.auth.schemas import TokenSchema
+from src.roles.utils import create_default_roles
+from src.scopes.utils import create_scopes
+from src.settings import get_settings
+from src.users.models import User
 from tests.conftest import create_fake_users, TEST_USER
 
 TEST_REGISTER_USER = {

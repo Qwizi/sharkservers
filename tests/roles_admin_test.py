@@ -1,6 +1,6 @@
 import pytest
 
-from shark_api.roles.models import Role
+from src.roles.models import Role
 from tests.conftest import create_fake_roles
 
 TEST_ROLE = {

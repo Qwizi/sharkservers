@@ -4,13 +4,13 @@ from ormar import NoMatch
 from starlette import status
 from starlette.exceptions import HTTPException
 
-from shark_api.auth.schemas import TokenSchema
-from shark_api.main import app
-from shark_api.roles.utils import create_default_roles
-from shark_api.scopes.utils import create_scopes
-from shark_api.users.exceptions import UserNotFound
-from shark_api.users.models import User
-from shark_api.users.schemas import UserOut
+from src.auth.schemas import TokenSchema
+from src.main import app
+from src.roles.utils import create_default_roles
+from src.scopes.utils import create_scopes
+from src.users.exceptions import UserNotFound
+from src.users.models import User
+from src.users.schemas import UserOut
 from tests.auth_test import TEST_REGISTER_USER, TEST_LOGIN_USER
 from tests.conftest import TEST_USER, create_fake_users
 

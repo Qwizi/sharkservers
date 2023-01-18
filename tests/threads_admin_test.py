@@ -1,10 +1,10 @@
 import pytest
 from fastapi import Security
 
-from shark_api.auth.utils import get_admin_user
-from shark_api.forum.exceptions import thread_not_found_exception
-from shark_api.forum.models import Thread
-from shark_api.forum.views.admin.threads import admin_delete_thread
+from src.auth.utils import get_admin_user
+from src.forum.exceptions import thread_not_found_exception
+from src.forum.models import Thread
+from src.forum.views.admin.threads import admin_delete_thread
 
 
 @pytest.mark.asyncio

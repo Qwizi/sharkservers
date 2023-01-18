@@ -9,16 +9,16 @@ from faker import Faker
 from fastapi.security import OAuth2PasswordRequestForm
 from httpx import AsyncClient
 
-from shark_api.auth.schemas import RegisterUserSchema
-from shark_api.auth.utils import create_admin_user, _login_user, register_user
-from shark_api.db import metadata, get_redis, create_redis_pool
-from shark_api.forum.models import Category
-from shark_api.main import app
-from shark_api.roles.models import Role
-from shark_api.roles.utils import get_user_role_scopes, create_default_roles
-from shark_api.scopes.utils import create_scopes
-from shark_api.settings import get_settings
-from shark_api.users.models import User
+from src.auth.schemas import RegisterUserSchema
+from src.auth.utils import create_admin_user, _login_user, register_user
+from src.db import metadata, get_redis, create_redis_pool
+from src.forum.models import Category
+from src.main import app
+from src.roles.models import Role
+from src.roles.utils import get_user_role_scopes, create_default_roles
+from src.scopes.utils import create_scopes
+from src.settings import get_settings
+from src.users.models import User
 
 DATABASE_URL = "sqlite:///test.db"
 
