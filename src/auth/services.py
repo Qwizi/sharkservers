@@ -1,0 +1,204 @@
+import random
+import string
+from datetime import timedelta, datetime
+from sqlite3 import IntegrityError as SQLIntegrityError
+
+from asyncpg import UniqueViolationError
+from cryptography.fernet import Fernet
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jose import jwt, JWTError
+from ormar import NoMatch
+from passlib.context import CryptContext
+from sqlalchemy.exc import IntegrityError
+
+from src.auth.exceptions import invalid_credentials_exception, incorrect_username_password_exception, \
+    user_exists_exception
+from src.auth.schemas import TokenDataSchema, TokenSchema, RefreshTokenSchema, RegisterUserSchema
+from src.auth.utils import crypto_key
+from src.roles.enums import ProtectedDefaultRolesEnum
+from src.roles.services import roles_service
+from src.scopes.utils import get_scopesv3
+from src.users.models import User
+from src.users.services import UserService, users_service
+
+
+class JWTService:
+    def __init__(self, secret_key: str, algorithm: str = "HS256", expires_delta: timedelta = timedelta(minutes=15)):
+        self.secret_key = secret_key
+        self.algorithm = algorithm
+        self.expires_delta = expires_delta
+
+    def encode(self, data: dict) -> str:
+        to_encode = data.copy()
+        expire = datetime.utcnow() + self.expires_delta
+        to_encode.update({'exp': expire})
+        encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
+        return encoded_jwt
+
+    def decode(self, token: str) -> dict:
+        return jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
+
+    def decode_token(self, token: str) -> TokenDataSchema:
+        try:
+            payload = self.decode(token)
+            user_id: str = payload.get("sub")
+            if user_id is None:
+                raise invalid_credentials_exception
+            token_scopes = payload.get("scopes", [])
+            secret = payload.get("secret")
+
+            return TokenDataSchema(user_id=int(user_id), scopes=token_scopes, secret=secret)
+        except JWTError as e:
+            raise invalid_credentials_exception
+
+
+class AuthService:
+    def __init__(self, _users_service: UserService):
+        self.users_service = _users_service
+        self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        self.crypto_key = Fernet.generate_key()
+        self.fernet = Fernet(crypto_key)
+        self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
+
+    def verify_password(self, plain_password, hashed_password):
+        """
+
+        :param plain_password:
+        :param hashed_password:
+        :return:
+        """
+        return self.pwd_context.verify(plain_password, hashed_password)
+
+    def get_password_hash(self, password):
+        """
+        Hash password
+        :param password:
+        :return:
+        """
+        return self.pwd_context.hash(password)
+
+    async def authenticate_user(self, username: str, password: str):
+        """
+        Authenticate user
+        :param username:
+        :param password:
+        :return:
+        """
+        try:
+            user = await self.users_service.get_one(username=username, related=["roles", "roles__scopes"])
+            secret_salt = self.generate_secret_salt()
+            await user.update(secret_salt=secret_salt)
+            if not self.verify_password(password, user.password):
+                return False
+        except NoMatch:
+            return False
+        return user
+
+    async def register(self, user_data: RegisterUserSchema, is_activated=False) -> User:
+        """
+        Register new user
+        :param is_activated:
+        :param user_data:
+        :return:
+        """
+        password = self.get_password_hash(user_data.password)
+        try:
+            user_role = await roles_service.get_one(id=ProtectedDefaultRolesEnum.USER.value)
+            secret_salt = self.generate_secret_salt()
+            registered_user = await self.users_service.create(
+                username=user_data.username,
+                email=user_data.email,
+                password=password,
+                display_role=user_role,
+                avatar="/static/images/default_avatar.png",
+                secret_salt=secret_salt,
+                is_activated=is_activated
+            )
+            await registered_user.roles.add(user_role)
+            return registered_user
+        except (IntegrityError, SQLIntegrityError, UniqueViolationError) as e:
+            raise user_exists_exception
+
+    async def login(self, form_data: OAuth2PasswordRequestForm, jwt_access_token_service: JWTService,
+                    jwt_refresh_token_service: JWTService) -> (TokenSchema, User):
+        """
+        Login user
+        :param form_data:
+        :param jwt_access_token_service:
+        :param jwt_refresh_token_service:
+        :return:
+        """
+        user = await self.authenticate_user(form_data.username, form_data.password)
+        if not user:
+            raise incorrect_username_password_exception
+        # TODO must be change
+        scopes = await get_scopesv3(user.roles)
+        access_token = jwt_access_token_service.encode(data={
+            "sub": str(user.id),
+            "scopes": scopes,
+            "secret": user.secret_salt
+        })
+        refresh_token = jwt_refresh_token_service.encode(data={
+            'sub': str(user.id), "secret": user.secret_salt
+        })
+        await user.update(last_login=datetime.utcnow())
+        return TokenSchema(access_token=access_token, token_type="bearer", refresh_token=refresh_token), user
+
+    async def create_access_token_from_refresh_token(self, token_data: RefreshTokenSchema,
+                                                     jwt_access_token_service: JWTService,
+                                                     jwt_refresh_token_service: JWTService):
+        """
+
+        :param token_data:
+        :param jwt_access_token_service:
+        :param jwt_refresh_token_service:
+        :return:
+        """
+        payload = jwt_refresh_token_service.decode(token_data.refresh_token)
+        exp = payload.get("exp", None)
+        if datetime.utcfromtimestamp(exp) < datetime.utcnow():
+            raise invalid_credentials_exception
+        user_id = int(payload.get("sub"))
+        secret: str = payload.get("secret")
+        user = await self.users_service.get_one(id=user_id, related=["roles", "roles__scopes"])
+        if not user or user.secret_salt != secret:
+            raise invalid_credentials_exception
+        scopes = await get_scopesv3(user.roles)
+        access_token = jwt_access_token_service.encode(data={
+            "sub": str(user.id),
+            "scopes": scopes,
+            "secret": user.secret_salt
+        })
+        await user.update(last_login=datetime.utcnow())
+        return TokenSchema(access_token=access_token, refresh_token=token_data.refresh_token,
+                           token_type="bearer"), user
+
+    async def logout(self, user: User):
+        """
+        Logout user
+        :param user:
+        :return:
+        """
+        secret = self.generate_secret_salt()
+        await user.update(secret_salt=secret)
+        return user
+
+    @staticmethod
+    def generate_code(number: int = 8):
+        """
+        Generate code
+        :param number:
+        :return:
+        """
+        return ''.join(random.choice(string.digits) for _ in range(number))
+
+    @staticmethod
+    def generate_secret_salt():
+        """
+        Generate secret salt
+        :return:
+        """
+        return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(32))
+
+
+auth_service = AuthService(_users_service=users_service)

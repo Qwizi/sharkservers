@@ -1,12 +1,15 @@
 import json
+from datetime import timedelta
 
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_events.dispatcher import dispatch
 from starlette.requests import Request
 
+from src.auth.dependencies import get_access_token_service, get_refresh_token_service
 from src.auth.enums import AuthEventsEnum
 from src.auth.schemas import RegisterUserSchema, TokenSchema, RefreshTokenSchema, ActivateUserCodeSchema
+from src.auth.services import JWTService, auth_service
 from src.auth.utils import _activate_user, get_user_agent, _logout_user
 from src.auth.utils import register_user, get_current_active_user, redirect_to_steam, validate_steam_callback, \
     _login_user, \
@@ -18,6 +21,16 @@ from src.users.schemas import UserOut
 
 router = APIRouter()
 
+"""@router.post("/register", response_model=UserOut)
+async def register(user_data: RegisterUserSchema, redis=Depends(get_redis)) -> UserOut:
+    
+    dispatch(AuthEventsEnum.REGISTERED_PRE, payload={"user_data": user_data})
+    registered_user: User = await register_user(user_data=user_data)
+    registered_user_dict: dict = json.loads(registered_user.json())
+    registered_user_dict.update({"redis": redis})
+    dispatch(AuthEventsEnum.REGISTERED_POST, payload=registered_user_dict)
+    return registered_user"""
+
 
 @router.post("/register", response_model=UserOut)
 async def register(user_data: RegisterUserSchema, redis=Depends(get_redis)) -> UserOut:
@@ -28,7 +41,7 @@ async def register(user_data: RegisterUserSchema, redis=Depends(get_redis)) -> U
     :return UserOut:
     """
     dispatch(AuthEventsEnum.REGISTERED_PRE, payload={"user_data": user_data})
-    registered_user: User = await register_user(user_data=user_data)
+    registered_user: User = await auth_service.register(user_data=user_data)
     registered_user_dict: dict = json.loads(registered_user.json())
     registered_user_dict.update({"redis": redis})
     dispatch(AuthEventsEnum.REGISTERED_POST, payload=registered_user_dict)
@@ -37,15 +50,18 @@ async def register(user_data: RegisterUserSchema, redis=Depends(get_redis)) -> U
 
 @router.post("/token", response_model=TokenSchema)
 async def login_user(form_data: OAuth2PasswordRequestForm = Depends(),
-                     settings: Settings = Depends(get_settings)) -> TokenSchema:
+                     access_token_service: JWTService = Depends(get_access_token_service),
+                     refresh_token_service: JWTService = Depends(get_refresh_token_service)) -> TokenSchema:
     """
     Login user
+    :param refresh_token_service:
+    :param access_token_service:
     :param form_data:
-    :param settings:
     :return TokenSchema:
     """
     dispatch(AuthEventsEnum.ACCESS_TOKEN_PRE, payload={"form_data": form_data.__dict__})
-    token, user = await _login_user(form_data, settings)
+    token, user = await auth_service.login(form_data, jwt_access_token_service=access_token_service,
+                                           jwt_refresh_token_service=refresh_token_service)
     payload = {
         "user": json.loads(user.json()),
         "token": json.loads(token.json())

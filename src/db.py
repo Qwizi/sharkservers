@@ -1,5 +1,4 @@
 import datetime
-from sqlite3 import IntegrityError
 from typing import Optional
 
 import aioredis
@@ -12,6 +11,7 @@ from fastapi import HTTPException
 from fastapi_pagination import Params
 from fastapi_pagination.ext.ormar import paginate
 from ormar import Model
+from psycopg2 import IntegrityError
 from starlette.requests import Request
 
 from src.settings import get_settings
@@ -97,7 +97,7 @@ class BaseService:
         try:
             return await self.model.objects.create(**kwargs)
         except (IntegrityError, SQLIntegrityError, UniqueViolationError):
-            raise HTTPException(422, "Key already exists") from None
+            raise HTTPException(422, "Key already exists")
 
     async def update(self, updated_data: dict, **kwargs):  # type: ignore
         try:
@@ -107,4 +107,4 @@ class BaseService:
             )
             return await self.get_one(**kwargs, related=related)
         except (IntegrityError, SQLIntegrityError, UniqueViolationError):
-            raise HTTPException(422, "Key already exists") from None
+            raise HTTPException(422, "Key already exists")
