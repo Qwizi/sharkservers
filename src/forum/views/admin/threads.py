@@ -4,9 +4,11 @@ from fastapi_pagination.ext.ormar import paginate
 from ormar import NoMatch
 
 from src.auth.utils import get_admin_user
+from src.forum.dependencies import get_valid_thread
 from src.forum.exceptions import thread_not_found_exception
 from src.forum.models import Thread
 from src.forum.schemas import ThreadOut, UpdateThreadSchema
+from src.forum.services import threads_service
 from src.users.models import User
 
 router = APIRouter()
@@ -46,20 +48,14 @@ async def admin_update_thread(thread_id: int, update_thread_data: UpdateThreadSc
 
 
 @router.post("/{thread_id}/close")
-async def admin_close_thread(thread_id: int, user: User = Security(get_admin_user, scopes=["threads:close"])):
-    try:
-        thread = await Thread.objects.get(id=thread_id)
-        await thread.update(is_closed=True)
-    except NoMatch:
-        raise thread_not_found_exception
+async def admin_close_thread(thread: Thread = Depends(get_valid_thread),
+                             user: User = Security(get_admin_user, scopes=["threads:close"])):
+    thread = await threads_service.close_thread(thread)
     return thread
 
 
 @router.post("/{thread_id}/open")
-async def admin_open_thread(thread_id: int, user: User = Security(get_admin_user, scopes=["threads:open"])):
-    try:
-        thread = await Thread.objects.get(id=thread_id)
-        await thread.update(is_closed=False)
-    except NoMatch:
-        raise thread_not_found_exception
+async def admin_open_thread(thread: Thread = Depends(get_valid_thread),
+                            user: User = Security(get_admin_user, scopes=["threads:open"])):
+    thread = await threads_service.open_thread(thread)
     return thread

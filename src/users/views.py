@@ -26,7 +26,7 @@ async def get_users(params: Params = Depends()) -> AbstractPage:
     :return Page[UserOut]:
     """
     dispatch(UsersEventsEnum.GET_ALL_PRE, payload={"data": params})
-    users = await users_service.get_all(params=params)
+    users = await users_service.get_all(params=params, related=["display_role"])
     dispatch(UsersEventsEnum.GET_ALL_POST, payload={"data": users})
     return users
 

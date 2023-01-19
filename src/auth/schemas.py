@@ -1,13 +1,12 @@
 from enum import Enum
 from typing import List
 
-from pydantic import BaseModel, validator, constr, Field
+from pydantic import BaseModel, validator, constr, Field, EmailStr
 
 
 class RegisterUserSchema(BaseModel):
     username: str
-    email: str = Field(regex="([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+",
-                       description="Email regex", default="user@website.com")
+    email: EmailStr
     password: str
     password2: str
 

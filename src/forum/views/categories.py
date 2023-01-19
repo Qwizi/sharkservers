@@ -4,10 +4,12 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.ormar import paginate
 from ormar import NoMatch
 
+from src.forum.dependencies import get_valid_category
 from src.forum.enums import CategoriesEventsEnum
 from src.forum.exceptions import category_not_found_exception
 from src.forum.models import Category
 from src.forum.schemas import category_out
+from src.forum.services import categories_service
 from src.forum.utils import _get_categories
 from src.forum.utils_categories import get_category_by_id
 
@@ -22,19 +24,18 @@ async def get_categories(params: Params = Depends()):
     :return:
     """
     dispatch(CategoriesEventsEnum.GET_ALL_PRE, payload={"data": params})
-    categories = await paginate(Category.objects, params)
+    categories = await categories_service.get_all(params=params)
     dispatch(CategoriesEventsEnum.GET_ALL_POST, payload={"data": categories})
     return categories
 
 
 @router.get("/{category_id}", response_model=category_out)
-async def get_category(category_id: int):
+async def get_category(category: Category = Depends(get_valid_category)):
     """
     Get category
-    :param category_id:
+    :param category:
     :return:
     """
-    dispatch(CategoriesEventsEnum.GET_ONE_PRE, payload={"data": category_id})
-    category = await get_category_by_id(category_id)
+    dispatch(CategoriesEventsEnum.GET_ONE_PRE, payload={"data": category.id})
     dispatch(CategoriesEventsEnum.GET_ONE_POST, payload={"data": category})
     return category

@@ -65,14 +65,28 @@ class BaseService:
         except ormar.NoMatch:
             raise self.not_found_exception
 
-    async def get_all(self, params: Params = None, related=None):
+    async def get_all(self, params: Params = None, related=None, **kwargs):
+        """
         if params:
-            return await paginate(self.model.objects, params)
+            if related:
+                return await paginate(self.model.objects.select_related(related), params)
+            else:
+                return await paginate(self.model.objects, params)
         if related:
             return await self.model.objects.select_related(related).all()
-        if related and params:
-            return await paginate(self.model.objects.select_related(related), params)
         return await self.model.objects.all()
+        :param params:
+        :param related:
+        :param kwargs:
+        :return:
+        """
+
+        query = self.model.objects.filter(**kwargs)
+        if related:
+            query = query.select_related(related)
+        if params:
+            query = await paginate(query, params)
+        return query
 
     async def delete(self, _id: int):
         _object = await self.get_one(id=_id)
@@ -80,21 +94,17 @@ class BaseService:
         return _object
 
     async def create(self, *args, **kwargs):
-        async def route(schema: self.create_schema):  # type: ignore
-            schema_dict = schema.dict()
-            try:
-                return await self.model.objects.create(**schema_dict)
-            except (IntegrityError, SQLIntegrityError, UniqueViolationError):
-                raise HTTPException(422, "Key already exists") from None
-
-        return await route(*args, **kwargs)
-
-    """
-        async def update(self, _id: int, model: self.update_schema, **kwargs):  # type: ignore
         try:
-            await self.model.objects.filter(_exclude=False, **kwargs).update(
-                **model.dict(exclude_unset=True)
-            )
+            return await self.model.objects.create(**kwargs)
         except (IntegrityError, SQLIntegrityError, UniqueViolationError):
             raise HTTPException(422, "Key already exists") from None
-    """
+
+    async def update(self, updated_data: dict, **kwargs):  # type: ignore
+        try:
+            related = kwargs.pop("related", None)
+            await self.model.objects.filter(_exclude=False, **kwargs).update(
+                **updated_data
+            )
+            return await self.get_one(**kwargs, related=related)
+        except (IntegrityError, SQLIntegrityError, UniqueViolationError):
+            raise HTTPException(422, "Key already exists") from None
