@@ -26,25 +26,6 @@ async def get_threads(params: Params = Depends()):
                                                                  "tags"])
 
 
-"""
-@router.post("", response_model=thread_out)
-async def create_thread(thread_data: CreateThreadSchema,
-                        user: User = Security(get_current_active_user, scopes=["threads:create"])):
-    category = await get_category_by_id(thread_data.category)
-    thread_exists = await Thread.objects.select_related(["category"]).filter(title=thread_data.title,
-                                                                             category__id=category).exists()
-    if thread_exists:
-        raise thread_exists_exception
-    thread = await Thread.objects.create(
-        title=thread_data.title,
-        content=thread_data.content,
-        category=category,
-        author=user
-    )
-    return thread
-"""
-
-
 @router.post("", response_model=thread_out)
 async def create_thread(thread_data: CreateThreadSchema,
                         user: User = Security(get_current_active_user, scopes=["threads:create"])):
@@ -63,6 +44,5 @@ async def get_thread(thread: Thread = Depends(get_valid_thread)):
 
 @router.put("/{thread_id}", response_model=ThreadOut)
 async def update_thread(thread_data: UpdateThreadSchema, thread: Thread = Depends(get_valid_thread_with_author)):
-    updated_thread = await threads_service.update(id=thread.id, updated_data=thread_data.dict(exclude_unset=True),
-                                                  related=["category", "author", "author__display_role"])
+    updated_thread = await thread.update(**thread_data.dict(exclude_unset=True))
     return updated_thread
