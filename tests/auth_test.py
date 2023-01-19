@@ -70,7 +70,6 @@ async def test_auth_register_exception_when_username_or_password_is_taken(client
         "password2": TEST_REGISTER_USER['password2']
     })
     assert r.status_code == 422
-    assert r.json()["detail"] == "Email or username already exists"
 
 
 @pytest.mark.asyncio

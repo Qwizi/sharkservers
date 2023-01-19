@@ -4,7 +4,7 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 
 from src.auth.schemas import RegisterUserSchema
-from src.auth.utils import get_current_active_user
+from src.auth.dependencies import get_current_active_user
 from src.schemas import HTTPError401Schema
 from src.users.dependencies import valid_user_id
 from src.users.enums import UsersEventsEnum
