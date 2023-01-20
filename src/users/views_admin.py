@@ -6,7 +6,7 @@ from fastapi_pagination.ext.ormar import paginate
 from ormar import NoMatch
 
 from src.auth.schemas import RegisterUserSchema
-from src.auth.utils import register_user, get_current_active_user, get_admin_user
+from src.auth.dependencies import get_admin_user
 from src.roles.models import Role
 from src.users.enums import UsersAdminEventsEnum
 from src.users.exceptions import UserNotFound

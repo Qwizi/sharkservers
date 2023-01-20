@@ -5,7 +5,7 @@ from fastapi_pagination import Params, Page
 from fastapi_pagination.ext.ormar import paginate
 from ormar import NoMatch
 
-from src.auth.utils import get_current_active_user
+from src.auth.dependencies import get_current_active_user
 from src.forum.dependencies import get_valid_category, get_valid_thread, get_valid_thread_with_author, \
     get_valid_open_thread
 from src.forum.exceptions import thread_exists_exception, thread_not_found_exception

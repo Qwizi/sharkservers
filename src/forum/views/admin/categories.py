@@ -3,7 +3,7 @@ from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Params
 from fastapi_pagination.ext.ormar import paginate
 
-from src.auth.utils import get_admin_user
+from src.auth.dependencies import get_admin_user
 from src.forum.enums import CategoriesAdminEventsEnum
 from src.forum.models import Category
 from src.forum.schemas import CreateCategorySchema

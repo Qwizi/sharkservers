@@ -8,7 +8,7 @@ from ormar import NoMatch
 from psycopg2 import IntegrityError
 from sqlite3 import IntegrityError as SQLIntegrityError
 
-from src.auth.utils import get_admin_user
+from src.auth.dependencies import get_admin_user
 from src.roles.enums import RolesAdminEventsEnum
 from src.roles.exceptions import role_exists_exception, role_not_found_exception
 from src.roles.models import Role

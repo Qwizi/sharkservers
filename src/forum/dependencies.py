@@ -1,6 +1,6 @@
 from fastapi import Depends, Security
 
-from src.auth.utils import get_current_active_user
+from src.auth.dependencies import get_current_active_user
 from src.forum.exceptions import thread_is_closed_exception, thread_not_found_exception, post_not_found_exception
 from src.forum.models import Category, Thread, Post
 from src.forum.services import categories_service, threads_service, posts_service

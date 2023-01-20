@@ -5,7 +5,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.ormar import paginate
 from ormar import NoMatch
 
-from src.auth.utils import get_admin_user
+from src.auth.dependencies import get_admin_user
 from src.scopes.enums import ScopesAdminEventsEnum
 from src.scopes.exceptions import ScopeNotFound
 from src.scopes.models import Scope

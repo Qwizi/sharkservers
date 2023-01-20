@@ -6,12 +6,12 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_events.dispatcher import dispatch
 from starlette.requests import Request
 
-from src.auth.dependencies import get_access_token_service, get_refresh_token_service
+from src.auth.dependencies import get_access_token_service, get_refresh_token_service, get_current_active_user
 from src.auth.enums import AuthEventsEnum
 from src.auth.schemas import RegisterUserSchema, TokenSchema, RefreshTokenSchema, ActivateUserCodeSchema
 from src.auth.services import JWTService, auth_service
 from src.auth.utils import _activate_user, get_user_agent, _logout_user
-from src.auth.utils import register_user, get_current_active_user, redirect_to_steam, validate_steam_callback, \
+from src.auth.utils import register_user, redirect_to_steam, validate_steam_callback, \
     _login_user, \
     _get_access_token_from_refresh_token
 from src.db import get_redis

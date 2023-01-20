@@ -3,7 +3,7 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.ormar import paginate
 from ormar import NoMatch
 
-from src.auth.utils import get_admin_user
+from src.auth.dependencies import get_admin_user
 from src.steamprofile.exceptions import SteamProfileNotFound, SteamProfileExists, InvalidSteamid
 from src.steamprofile.models import SteamProfile
 from src.steamprofile.schemas import steam_profile_out, CreateSteamProfile
