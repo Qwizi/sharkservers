@@ -1,7 +1,7 @@
 import pytest
 from fastapi import Security
 
-from src.auth.utils import get_admin_user
+from src.auth.dependencies import get_admin_user
 from src.forum.exceptions import thread_not_found_exception
 from src.forum.models import Thread
 from src.forum.views.admin.threads import admin_delete_thread

@@ -3,7 +3,7 @@ from fastapi_pagination import Params, Page
 from fastapi_pagination.ext.ormar import paginate
 from ormar import NoMatch
 
-from src.auth.utils import get_current_active_user
+from src.auth.dependencies import get_current_active_user
 from src.forum.dependencies import get_valid_thread, get_valid_post, get_valid_post_author
 from src.forum.exceptions import thread_not_found_exception, thread_is_closed_exception, post_not_found_exception
 from src.forum.models import Post, Thread
