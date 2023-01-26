@@ -15,7 +15,7 @@ router = APIRouter()
 
 @router.get("", response_model=Page[steam_profile_out])
 async def admin_get_steam_profiles(params: Params = Depends(),
-                                   user: User = Security(get_admin_user, scopes=["steamprofile:get_all"])):
+                                   user: User = Security(get_admin_user, scopes=["steamprofile:all"])):
     steam_profiles = SteamProfile.objects
     return await paginate(steam_profiles, params)
 

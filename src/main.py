@@ -2,6 +2,7 @@ import os
 
 import httpx
 from fastapi import FastAPI, Header, Depends, HTTPException
+from fastapi.routing import APIRoute
 from fastapi_events.handlers.local import local_handler
 from fastapi_events.middleware import EventHandlerASGIMiddleware
 from starlette.requests import Request
@@ -44,17 +45,23 @@ from src.auth.handlers import (
 )
 
 from .handlers import handle_all_events_and_debug_log
+from .scopes.services import scopes_service
 
 script_dir = os.path.dirname(__file__)
-st_abs_file_path = os.path.join(script_dir, "static/")
+st_abs_file_path = os.path.join(script_dir, "../static/")
 installed_file_path = os.path.join(script_dir, "installed")
+
+
+def custom_generate_unique_id(route: APIRoute):
+    return f"{route.tags[0]}-{route.name}"
 
 
 def create_app():
     _app = FastAPI(
         name="Shark API",
         version=VERSION,
-        debug=True
+        debug=True,
+        generate_unique_id_function=custom_generate_unique_id
     )
     _app.add_middleware(EventHandlerASGIMiddleware, handlers=[local_handler])
 
@@ -98,12 +105,11 @@ def create_app():
             await database_.disconnect()
         await app.state.redis.close()
 
-    @_app.get("/")
+    @_app.get("/", tags=["root"])
     async def home(settings=Depends(get_settings)):
-        print(settings.STEAM_API_KEY)
         return {}
 
-    @_app.get("/images")
+    @_app.get("/images", tags=["root"])
     async def get_images():
         images_list = []
         for filename in os.listdir(st_abs_file_path + "images"):
@@ -113,12 +119,28 @@ def create_app():
             })
         return images_list
 
-    @_app.post("/install")
+    @_app.post("/install", tags=["root"])
     async def install(user_data: RegisterUserSchema):
         logger.info("#0 - Install started")
         if os.path.exists(installed_file_path):
             raise HTTPException(detail="Its already installed", status_code=400)
-        await create_scopes()
+        await scopes_service.create_default_scopes(applications=[
+            "users",
+            "roles",
+            "scopes",
+            "steamprofile",
+            "categories",
+            "tags",
+            "threads",
+            "posts"
+        ], additional=[
+            ("users", "me", "Get my profile"),
+            ("users", "me:username", "Update my username"),
+            ("users", "me:password", "Update my password"),
+            ("users", "me:display-role", "Update my display role"),
+            ("threads", "open", "Open a thread"),
+            ("threads", "close", "Close a thread"),
+        ])
         logger.info("#1 - Created scopes")
         await create_default_roles()
         logger.info("#2 - Created roles")

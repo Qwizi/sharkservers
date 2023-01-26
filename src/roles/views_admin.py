@@ -22,7 +22,7 @@ router = APIRouter()
 
 @router.get("", response_model=Page[RoleOut])
 async def admin_get_roles(params: Params = Depends(),
-                          user: User = Security(get_admin_user, scopes=["roles:get_all"])) -> AbstractPage[RoleOut]:
+                          user: User = Security(get_admin_user, scopes=["roles:all"])) -> AbstractPage[RoleOut]:
     """
     Admin get all roles.
     :param params:

@@ -63,4 +63,4 @@ class UserService(BaseService):
             last_login__gt=filter_after), params)
 
 
-users_service = UserService(User, not_found_exception=user_not_found_exception, create_schema=CreateUserSchema)
+users_service = UserService(User, not_found_exception=user_not_found_exception)

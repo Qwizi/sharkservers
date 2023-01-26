@@ -18,7 +18,7 @@ router = APIRouter()
 
 @router.get("", response_model=Page[ScopeOut])
 async def admin_get_scopes(params: Params = Depends(),
-                           user: User = Security(get_admin_user, scopes=["scopes:get_all"])) -> AbstractPage[ScopeOut]:
+                           user: User = Security(get_admin_user, scopes=["scopes:all"])) -> AbstractPage[ScopeOut]:
     """
     Admin get scopes.
     :param params:

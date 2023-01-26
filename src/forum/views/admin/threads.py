@@ -16,7 +16,7 @@ router = APIRouter()
 
 @router.get("", response_model=Page[ThreadOut], response_model_exclude_none=True)
 async def admin_get_threads(params: Params = Depends(),
-                            user: User = Security(get_admin_user, scopes=["threads:get_all"])):
+                            user: User = Security(get_admin_user, scopes=["threads:all"])):
     threads = Thread.objects.select_related([
         "category",
         "author",

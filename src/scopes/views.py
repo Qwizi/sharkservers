@@ -7,6 +7,7 @@ from fastapi_pagination.ext.ormar import paginate
 from src.scopes.enums import ScopesEventsEnum
 from src.scopes.models import Scope
 from src.scopes.schemas import ScopeOut
+from src.scopes.services import scopes_service
 from src.scopes.utils import _get_scopes
 
 router = APIRouter()
@@ -22,6 +23,10 @@ async def get_all_scopes(params: Params = Depends(), role_id: int = None) -> Abs
     :return:
     """
     dispatch(ScopesEventsEnum.GET_ALL_PRE, payload={"data": {"params": params, "role_id": role_id}})
-    scopes = await _get_scopes(params, role_id)
+    scopes = []
+    if role_id:
+        scopes = await scopes_service.get_all(params=params, related=["roles"], roles__id=role_id)
+    else:
+        scopes = await scopes_service.get_all(params=params)
     dispatch(ScopesEventsEnum.GET_ALL_POST, payload={"data": scopes})
     return scopes
