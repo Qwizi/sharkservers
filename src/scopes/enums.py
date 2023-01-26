@@ -6,8 +6,7 @@ class ScopeEnum(Enum):
     UPDATE = "update"
     DELETE = "delete"
     RETRIEVE = "retrieve"
-    GET = "get"
-    GET_ALL = "get_all"
+    ALL = "all"
 
 
 class ScopesExceptionsDetailEnum(str, Enum):

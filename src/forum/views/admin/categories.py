@@ -14,7 +14,7 @@ router = APIRouter()
 
 @router.get("")
 async def admin_get_categories(params: Params = Depends(),
-                               user: User = Security(get_admin_user, scopes=["categories:get_all"])):
+                               user: User = Security(get_admin_user, scopes=["categories:all"])):
     """
     Get all categories.
     :return:

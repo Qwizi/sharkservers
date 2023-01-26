@@ -19,7 +19,7 @@ router = APIRouter()
 
 @router.get("", response_model=Page[UserOutWithEmail], response_model_exclude_none=True)
 async def admin_get_users(params: Params = Depends(),
-                          user: User = Security(get_admin_user, scopes=["users:get_all"])) -> AbstractPage:
+                          user: User = Security(get_admin_user, scopes=["users:all"])) -> AbstractPage:
     """
     Admin get all users
     :param params:

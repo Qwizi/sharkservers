@@ -44,11 +44,9 @@ class DateFieldsMixins:
 
 
 class BaseService:
-    def __init__(self, model, not_found_exception, create_schema=None, update_schema=None):
+    def __init__(self, model, not_found_exception):
         self.model = model
         self.not_found_exception = not_found_exception
-        self.create_schema = Optional[Model]
-        self.update_schema = None
 
     async def get_one(self, **kwargs) -> ormar.Model:
         try:
