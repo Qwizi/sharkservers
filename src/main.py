@@ -5,6 +5,8 @@ from fastapi import FastAPI, Header, Depends, HTTPException
 from fastapi.routing import APIRoute
 from fastapi_events.handlers.local import local_handler
 from fastapi_events.middleware import EventHandlerASGIMiddleware
+from fastapi_mail import MessageSchema, MessageType
+from pydantic import EmailStr
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
@@ -46,6 +48,7 @@ from src.auth.handlers import (
 
 from .handlers import handle_all_events_and_debug_log
 from .scopes.services import scopes_service
+from .services import email_service
 
 script_dir = os.path.dirname(__file__)
 st_abs_file_path = os.path.join(script_dir, "../static/")
@@ -107,6 +110,7 @@ def create_app():
 
     @_app.get("/", tags=["root"])
     async def home(settings=Depends(get_settings)):
+        
         return {}
 
     @_app.get("/images", tags=["root"])

@@ -1,4 +1,5 @@
 aioredis==2.0.1
+aiosmtplib==2.0.1
 aiosqlite==0.17.0
 alembic==1.8.1
 anyio==3.6.2
@@ -7,6 +8,8 @@ async-timeout==4.0.2
 asyncpg==0.26.0
 attrs==22.1.0
 bcrypt==4.0.1
+black==22.12.0
+blinker==1.5
 cachetools==5.2.0
 certifi==2022.9.24
 cffi==1.15.1
@@ -23,6 +26,7 @@ exceptiongroup==1.0.4
 Faker==15.3.3
 fastapi==0.89.1
 fastapi-events==0.8.0
+fastapi-mail==1.2.4
 fastapi-pagination==0.10.0
 fastjsonschema==2.16.2
 gevent==22.10.2
@@ -40,12 +44,14 @@ jsonschema==4.17.1
 jupyter_core==5.0.0
 Mako==1.2.4
 MarkupSafe==2.1.1
+mypy-extensions==0.4.3
 nbformat==5.7.0
 orjson==3.8.1
 ormar==0.12.0
 outcome==1.2.0
 packaging==21.3
 passlib==1.7.4
+pathspec==0.11.0
 platformdirs==2.5.4
 pluggy==1.0.0
 protobuf==3.20.3
