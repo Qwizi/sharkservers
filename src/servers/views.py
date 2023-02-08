@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Params, Page
+from fastapi_pagination.ext.ormar import paginate
 
 from src.servers.schemas import ServerOut
 from src.servers.services import servers_service
@@ -16,6 +17,16 @@ async def get_servers(params: Params = Depends(), ip: str = None, port: int = No
     if ip and port:
         return await servers_service.get_one(ip=ip, port=port)
     return await servers_service.get_all(params=params)
+
+
+@router.get("/status")
+async def get_servers_status():
+    """
+    Get all servers' status
+    :return:
+    """
+    servers_status = await servers_service.get_status()
+    return servers_status
 
 
 @router.get("/{server_id}", response_model=ServerOut)

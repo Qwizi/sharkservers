@@ -28,7 +28,7 @@ from src.users.views import router as users_router
 from src.auth.views import router as auth_router
 from src.scopes.views import router as scopes_router
 from src.roles.views import router as roles_router
-from src.steamprofile.views import router as steamprofile_router
+from src.players.views import router as steamprofile_router
 from src.forum.views.categories import router as forum_categories_router
 from src.forum.views_tags import router as forum_tags_router
 from src.forum.views.threads import router as forum_threads_router
@@ -38,7 +38,7 @@ from src.servers.views import router as servers_router
 from src.users.views_admin import router as admin_users_router
 from src.roles.views_admin import router as admin_roles_router
 from src.scopes.views_admin import router as admin_scopes_router
-from src.steamprofile.views_admin import router as admin_steamprofiles_router
+from src.players.views_admin import router as admin_steamprofiles_router
 from src.forum.views.admin.categories import router as admin_forum_categories_router
 from src.forum.views.admin.threads import router as admin_forum_threads_router
 from src.servers.views_admin import router as admin_servers_router
@@ -135,7 +135,7 @@ def create_app():
             "users",
             "roles",
             "scopes",
-            "steamprofile",
+            "players",
             "categories",
             "tags",
             "threads",

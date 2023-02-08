@@ -2,8 +2,8 @@ from steam.steamid import SteamID
 from steam.webapi import WebAPI
 
 from src.settings import get_settings
-from src.steamprofile.models import SteamProfile
-from src.steamprofile.schemas import SteamPlayer
+from src.players.models import SteamProfile
+from src.players.schemas import SteamPlayer
 
 settings = get_settings()
 

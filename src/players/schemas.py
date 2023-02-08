@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from src.steamprofile.models import SteamProfile
+from src.players.models import SteamProfile
 
 steam_profile_out = SteamProfile.get_pydantic(exclude={"user"})
 

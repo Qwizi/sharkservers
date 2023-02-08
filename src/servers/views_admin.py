@@ -15,3 +15,13 @@ async def admin_create_server(server_data: CreateServerSchema):
     :return:
     """
     return await servers_service.create(**server_data.dict())
+
+
+@router.delete("/{server_id}")
+async def admin_delete_server(server_id: int):
+    """
+    Delete a server
+    :param server_id:
+    :return:
+    """
+    return await servers_service.delete(server_id)

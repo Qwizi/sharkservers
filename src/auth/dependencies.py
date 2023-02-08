@@ -45,7 +45,7 @@ async def get_current_user(security_scopes: SecurityScopes, token: str = Depends
         if scope not in token_data.scopes:
             raise no_permissions_exception
     user = await users_service.get_one(id=token_data.user_id,
-                                       related=["roles", "display_role", "roles__scopes", "steamprofile"])
+                                       related=["roles", "display_role", "roles__scopes", "players"])
     if user.secret_salt != token_data.secret:
         raise invalid_credentials_exception
     return user

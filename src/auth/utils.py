@@ -28,9 +28,9 @@ from src.auth.schemas import TokenDataSchema, RegisterUserSchema, ActivateUserCo
 from src.roles.models import Role
 from src.scopes.utils import get_scopesv3
 from src.settings import Settings, get_settings
-from src.steamprofile.models import SteamProfile
-from src.steamprofile.schemas import SteamPlayer
-from src.steamprofile.utils import get_steam_user_info
+from src.players.models import SteamProfile
+from src.players.schemas import SteamPlayer
+from src.players.utils import get_steam_user_info
 from src.users.exceptions import UserNotFound
 from src.users.models import User
 
@@ -90,7 +90,7 @@ async def get_current_user(security_scopes: SecurityScopes, token: str = Depends
         token_scopes = payload.get("scopes", [])
         token_data = TokenDataSchema(user_id=int(user_id), scopes=token_scopes, secret=payload.get("secret"))
         try:
-            user = await User.objects.select_related(["roles", "display_role", "roles__scopes", "steamprofile"]).get(
+            user = await User.objects.select_related(["roles", "display_role", "roles__scopes", "players"]).get(
                 id=int(token_data.user_id))
         except UserNotFound:
             raise incorrect_username_password_exception

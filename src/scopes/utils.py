@@ -69,7 +69,7 @@ async def create_scopes():
         "users",
         "roles",
         "scopes",
-        "steamprofile",
+        "players",
         "categories",
         "tags",
         "threads",

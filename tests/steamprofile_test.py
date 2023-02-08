@@ -1,6 +1,6 @@
 import pytest
 
-from src.steamprofile.utils import get_steam_user_info, create_steam_profile
+from src.players.utils import get_steam_user_info, create_steam_profile
 
 
 def test_get_steam_user_info():
