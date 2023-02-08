@@ -86,7 +86,7 @@ async def _admin_get_users(params: Params) -> AbstractPage:
 
 async def _admin_get_user(user_id: int) -> User:
     try:
-        return await User.objects.select_related(["display_role", "roles", "steamprofile"]).get(id=user_id)
+        return await User.objects.select_related(["display_role", "roles", "players"]).get(id=user_id)
     except NoMatch:
         raise user_not_found_exception
 
