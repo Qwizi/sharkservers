@@ -33,7 +33,7 @@ from src.forum.views.categories import router as forum_categories_router
 from src.forum.views_tags import router as forum_tags_router
 from src.forum.views.threads import router as forum_threads_router
 from src.forum.views.posts import router as forum_posts_router
-
+from src.servers.views import router as servers_router
 # Admin Routes
 from src.users.views_admin import router as admin_users_router
 from src.roles.views_admin import router as admin_roles_router
@@ -41,6 +41,7 @@ from src.scopes.views_admin import router as admin_scopes_router
 from src.steamprofile.views_admin import router as admin_steamprofiles_router
 from src.forum.views.admin.categories import router as admin_forum_categories_router
 from src.forum.views.admin.threads import router as admin_forum_threads_router
+from src.servers.views_admin import router as admin_servers_router
 # Events
 from src.auth.handlers import (
     create_activate_code_after_register
@@ -79,6 +80,7 @@ def create_app():
     _app.include_router(forum_tags_router, prefix="/forum/tags", tags=["forum-tags"])
     _app.include_router(forum_threads_router, prefix="/forum/threads", tags=["forum-threads"])
     _app.include_router(forum_posts_router, prefix="/forum/posts", tags=["forum-posts"])
+    _app.include_router(servers_router, prefix="/servers", tags=["servers"])
 
     # Admin routes
     _app.include_router(admin_users_router, prefix="/admin/users", tags=["admin-users"])
@@ -88,6 +90,7 @@ def create_app():
     _app.include_router(admin_forum_categories_router, prefix="/admin/forum/categories",
                         tags=["admin-forum-categories"])
     _app.include_router(admin_forum_threads_router, prefix="/admin/forum/threads", tags=["admin-forum-threads"])
+    _app.include_router(admin_servers_router, prefix="/admin/servers", tags=["admin-servers"])
     add_pagination(_app)
 
     @_app.on_event("startup")
@@ -110,7 +113,7 @@ def create_app():
 
     @_app.get("/", tags=["root"])
     async def home(settings=Depends(get_settings)):
-        
+
         return {}
 
     @_app.get("/images", tags=["root"])

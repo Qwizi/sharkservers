@@ -27,6 +27,7 @@ from src.scopes.models import Scope
 from src.roles.models import Role
 from src.steamprofile.models import SteamProfile
 from src.forum.models import Category, Tag, Post, Thread
+from src.servers.models import Server
 
 target_metadata = BaseMeta.metadata
 
