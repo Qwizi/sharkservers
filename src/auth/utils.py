@@ -28,7 +28,7 @@ from src.auth.schemas import TokenDataSchema, RegisterUserSchema, ActivateUserCo
 from src.roles.models import Role
 from src.scopes.utils import get_scopesv3
 from src.settings import Settings, get_settings
-from src.players.models import SteamProfile
+from src.players.models import Player
 from src.players.schemas import SteamPlayer
 from src.players.utils import get_steam_user_info
 from src.users.exceptions import UserNotFound
@@ -279,7 +279,7 @@ async def validate_steam_callback(request: Request, user: User):
     steamid64 = params_dict["openid.claimed_id"].split("/")[-1]
     steam_player_info: SteamPlayer = get_steam_user_info(steamid64)
 
-    player, _created = await SteamProfile.objects.get_or_create(
+    player, _created = await Player.objects.get_or_create(
         steamid64=steam_player_info.steamid64,
         _defaults={
             "user": user,

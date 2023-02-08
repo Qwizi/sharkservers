@@ -2,9 +2,9 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from src.players.models import SteamProfile
+from src.players.models import Player
 
-steam_profile_out = SteamProfile.get_pydantic(exclude={"user"})
+steam_profile_out = Player.get_pydantic(exclude={"user"})
 
 
 class SteamPlayer(BaseModel):

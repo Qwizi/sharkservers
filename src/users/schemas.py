@@ -6,7 +6,7 @@ from fastapi_events.registry.payload_schema import registry as payload_schema
 from pydantic import BaseModel, validator
 
 from src.auth.enums import AuthEventsEnum
-from src.players.models import SteamProfile
+from src.players.models import Player
 from src.players.schemas import SteamPlayer
 from src.users.models import User
 

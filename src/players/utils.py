@@ -2,7 +2,7 @@ from steam.steamid import SteamID
 from steam.webapi import WebAPI
 
 from src.settings import get_settings
-from src.players.models import SteamProfile
+from src.players.models import Player
 from src.players.schemas import SteamPlayer
 
 settings = get_settings()
@@ -34,7 +34,7 @@ def get_steam_user_info(steamid64: str) -> SteamPlayer:
     )
 
 
-async def create_steam_profile(steamid64: str) -> SteamProfile:
+async def create_steam_profile(steamid64: str) -> Player:
     player = get_steam_user_info(steamid64)
-    steam_profile = await SteamProfile.objects.create(**player.dict())
+    steam_profile = await Player.objects.create(**player.dict())
     return steam_profile
