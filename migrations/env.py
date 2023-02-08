@@ -25,7 +25,7 @@ if config.config_file_name is not None:
 from src.users.models import User
 from src.scopes.models import Scope
 from src.roles.models import Role
-from src.players.models import SteamProfile
+from src.players.models import SteamRepProfile, Player, PlayerStats
 from src.forum.models import Category, Tag, Post, Thread
 from src.servers.models import Server
 
