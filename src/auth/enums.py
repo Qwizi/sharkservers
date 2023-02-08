@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class RedisAuthKeyEnum(Enum):
+class RedisAuthKeyEnum(str, Enum):
     ACTIVATE_USER = "activate-user-code"
     RESET_PASSWORD = "reset-password-code"
     CHANGE_EMAIL = "change-email-code"

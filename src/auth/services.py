@@ -1,23 +1,30 @@
+import json
 import random
 import string
 from datetime import timedelta, datetime
 from sqlite3 import IntegrityError as SQLIntegrityError
 
+from aioredis import Redis
 from asyncpg import UniqueViolationError
 from cryptography.fernet import Fernet
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import jwt, JWTError
 from ormar import NoMatch
 from passlib.context import CryptContext
+from pydantic import EmailStr
 from sqlalchemy.exc import IntegrityError
 
+from src.auth.enums import RedisAuthKeyEnum
 from src.auth.exceptions import invalid_credentials_exception, incorrect_username_password_exception, \
-    user_exists_exception
+    user_exists_exception, user_activated_exception
 from src.auth.schemas import TokenDataSchema, TokenSchema, RefreshTokenSchema, RegisterUserSchema
 from src.auth.utils import crypto_key
+from src.logger import logger
 from src.roles.enums import ProtectedDefaultRolesEnum
 from src.roles.services import roles_service
 from src.scopes.utils import get_scopesv3
+from src.services import EmailService
+from src.users.exceptions import user_not_found_exception
 from src.users.models import User
 from src.users.services import UserService, users_service
 
@@ -50,6 +57,49 @@ class JWTService:
             return TokenDataSchema(user_id=int(user_id), scopes=token_scopes, secret=secret)
         except JWTError as e:
             raise invalid_credentials_exception
+
+
+class CodeService:
+    redis: Redis
+    key: str
+
+    def __init__(self, redis: Redis, key: str):
+        self.redis = redis
+        self.key = key
+
+    @staticmethod
+    def generate(number: int = 8):
+        """
+        Generate code
+        :param number:
+        :return:
+        """
+        return ''.join(random.choice(string.digits) for _ in range(number))
+
+    def get_redis_key(self, code: str):
+        return f"{self.key}:{code}"
+
+    async def create(self, data: any, code_len: int = 8, expire: int = 60 * 60):
+        """
+        Create code
+        :param code_len:
+        :param data:
+        :param expire:
+        :return:
+        """
+        code = self.generate(number=code_len)
+        redis_key = self.get_redis_key(code)
+        if await self.redis.exists(redis_key):
+            await self.redis.delete(redis_key)
+        await self.redis.set(redis_key, data)
+        await self.redis.expire(redis_key, expire)
+        return redis_key.split(":")[1], await self.redis.get(redis_key)
+
+    async def get(self, code: str):
+        return await self.redis.get(self.get_redis_key(code))
+
+    async def delete(self, code: str):
+        return await self.redis.delete(self.get_redis_key(code))
 
 
 class AuthService:
@@ -199,6 +249,35 @@ class AuthService:
         :return:
         """
         return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(32))
+
+    async def resend_activation_code(self, email: EmailStr, code_service: CodeService, email_service: EmailService):
+        """
+        Activate user
+        :param email_service:
+        :param code_service:
+        :param email:
+        :return:
+        """
+        msg = {"msg": "If email is correct, you will receive an email with activation code"}
+        try:
+            user = await self.users_service.get_one(email=email, is_activated=False)
+            code, code_data = await code_service.create(data=int(user.id), code_len=5, expire=900)
+            await email_service.send_activation_email(email=email, code=code)
+            logger.info(f"Activation code: {code}")
+            return msg
+        except Exception as e:
+            return msg
+
+    async def activate_user(self, code: str, code_service: CodeService):
+        user_id = await code_service.get(code)
+        if not user_id:
+            return False, False
+        user = await users_service.get_one(id=int(user_id))
+        if user.is_activated:
+            await code_service.delete(code)
+            raise user_activated_exception
+        await user.update(is_activated=True)
+        return True, user
 
 
 auth_service = AuthService(_users_service=users_service)

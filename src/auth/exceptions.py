@@ -1,5 +1,5 @@
 from starlette import status
-from starlette.exceptions import HTTPException
+from fastapi import HTTPException
 from .enums import AuthExceptionsDetailEnum
 
 username_taken_exception = HTTPException(

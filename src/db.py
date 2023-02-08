@@ -61,7 +61,7 @@ class BaseService:
                 ).first()
             return model
         except ormar.NoMatch:
-            raise self.not_found_exception
+            raise self.not_found_exception from None
 
     async def get_all(self, params: Params = None, related=None, **kwargs):
         """

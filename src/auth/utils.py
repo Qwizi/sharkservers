@@ -1,3 +1,4 @@
+import json
 import random
 import string
 from datetime import timedelta, datetime
@@ -219,7 +220,7 @@ async def get_user_id_by_code(code: str, redis):
     redis_key = create_activate_code_redis_key(code)
     code = await redis.get(redis_key)
     if code:
-        return int(code)
+        return code
     return None
 
 
@@ -229,7 +230,10 @@ async def delete_activate_code(code, redis):
 
 async def _activate_user(activate_code: ActivateUserCodeSchema, redis):
     code = activate_code.code
-    user_id = await get_user_id_by_code(code, redis)
+    payload = await get_user_id_by_code(code, redis)
+    payload_dict = json.loads(payload)
+    user_id = payload_dict.get("id")
+    print(user_id)
     if not user_id:
         raise invalid_activation_code_exception
     try:
