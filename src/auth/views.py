@@ -1,23 +1,29 @@
 import json
 from datetime import timedelta
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_events.dispatcher import dispatch
+from ormar import NoMatch
 from starlette.requests import Request
 
 from src.auth.dependencies import get_access_token_service, get_refresh_token_service, get_current_active_user
-from src.auth.enums import AuthEventsEnum
-from src.auth.schemas import RegisterUserSchema, TokenSchema, RefreshTokenSchema, ActivateUserCodeSchema
-from src.auth.services import JWTService, auth_service
+from src.auth.enums import AuthEventsEnum, RedisAuthKeyEnum
+from src.auth.schemas import RegisterUserSchema, TokenSchema, RefreshTokenSchema, ActivateUserCodeSchema, \
+    ResendActivationCodeSchema
+from src.auth.services import JWTService, auth_service, CodeService
 from src.auth.utils import _activate_user, get_user_agent, _logout_user
 from src.auth.utils import register_user, redirect_to_steam, validate_steam_callback, \
     _login_user, \
     _get_access_token_from_refresh_token
 from src.db import get_redis
+from src.logger import logger
+from src.services import email_service
 from src.settings import Settings, get_settings
+from src.users.exceptions import user_not_found_exception
 from src.users.models import User
 from src.users.schemas import UserOut
+from src.users.services import users_service
 
 router = APIRouter()
 
@@ -107,9 +113,23 @@ async def activate_user(activate_code_data: ActivateUserCodeSchema, redis=Depend
     :return bool:
     """
     dispatch(AuthEventsEnum.ACTIVATED_PRE, payload={"activate_code": activate_code_data})
-    user_activated, user = await _activate_user(activate_code=activate_code_data, redis=redis)
+    code_service = CodeService(redis=redis, key=RedisAuthKeyEnum.ACTIVATE_USER)
+    user_activated, user = await auth_service.activate_user(code=activate_code_data.code, code_service=code_service)
     dispatch(AuthEventsEnum.ACTIVATED_POST, payload={"activated": user_activated, "user": user})
     return user_activated
+
+
+@router.post("/activate/resend")
+async def resend_activate_code(data: ResendActivationCodeSchema, redis=Depends(get_redis)):
+    """
+    Resend activate code
+    :param data:
+    :param redis:
+    :return bool:
+    """
+    code_service = CodeService(redis=redis, key=RedisAuthKeyEnum.ACTIVATE_USER)
+    await auth_service.resend_activation_code(data.email, code_service=code_service, email_service=email_service)
+    return {"msg": "If email is correct, you will receive an email with activation code"}
 
 
 @router.get("/connect/steam")

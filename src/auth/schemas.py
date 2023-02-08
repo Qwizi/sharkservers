@@ -34,3 +34,7 @@ class RefreshTokenSchema(BaseModel):
 
 class ActivateUserCodeSchema(BaseModel):
     code: str = Field(max_length=5)
+
+
+class ResendActivationCodeSchema(BaseModel):
+    email: EmailStr
