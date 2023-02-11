@@ -3,16 +3,21 @@ import random
 import string
 from datetime import timedelta, datetime
 from sqlite3 import IntegrityError as SQLIntegrityError
+from urllib import parse
 
+import httpx
 from aioredis import Redis
 from asyncpg import UniqueViolationError
 from cryptography.fernet import Fernet
+from fastapi import HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import jwt, JWTError
 from ormar import NoMatch
 from passlib.context import CryptContext
 from pydantic import EmailStr
 from sqlalchemy.exc import IntegrityError
+from starlette.requests import Request
+from starlette.responses import RedirectResponse
 
 from src.auth.enums import RedisAuthKeyEnum
 from src.auth.exceptions import invalid_credentials_exception, incorrect_username_password_exception, \
@@ -20,6 +25,8 @@ from src.auth.exceptions import invalid_credentials_exception, incorrect_usernam
 from src.auth.schemas import TokenDataSchema, TokenSchema, RefreshTokenSchema, RegisterUserSchema
 from src.auth.utils import crypto_key
 from src.logger import logger
+from src.players.models import Player
+from src.players.services import PlayerService
 from src.roles.enums import ProtectedDefaultRolesEnum
 from src.roles.services import roles_service
 from src.scopes.utils import get_scopesv3
@@ -278,6 +285,38 @@ class AuthService:
             raise user_activated_exception
         await user.update(is_activated=True)
         return True, user
+
+    @staticmethod
+    def redirect_to_steam():
+        steam_openid_url = "https://steamcommunity.com/openid/login"
+        u = {
+            'openid.ns': "http://specs.openid.net/auth/2.0",
+            'openid.identity': "http://specs.openid.net/auth/2.0/identifier_select",
+            'openid.claimed_id': "http://specs.openid.net/auth/2.0/identifier_select",
+            'openid.mode': 'checkid_setup',
+            'openid.return_to': 'http://localhost:80/auth/callback/steam/',
+            'openid.realm': 'http://localhost:80'
+        }
+        query_string = parse.urlencode(u)
+        auth_url = steam_openid_url + "?" + query_string
+        return RedirectResponse(auth_url)
+
+    async def authenticate_steam_user(self, request: Request, user: User, player_service: PlayerService):
+        steam_login_url_base = "https://steamcommunity.com/openid/login"
+
+        signed_params = request.query_params
+        params_dict = {}
+        for key, value in signed_params.items():
+            params_dict[key] = value
+
+        params_dict["openid.mode"] = "check_authentication"
+        async with httpx.AsyncClient() as client:
+            r = await client.post(url=steam_login_url_base, data=params_dict)
+        if "is_valid:true" not in r.text:
+            raise HTTPException(detail="Cannot validate steam profile", status_code=400)
+        steamid64 = params_dict["openid.claimed_id"].split("/")[-1]
+        player = await player_service.create_player(steamid64=steamid64)
+        return player
 
 
 auth_service = AuthService(_users_service=users_service)
