@@ -46,6 +46,7 @@ from src.servers.views_admin import router as admin_servers_router
 from src.auth.handlers import (
     create_activate_code_after_register
 )
+from src.players.handlers import create_player
 
 from .handlers import handle_all_events_and_debug_log
 from .scopes.services import scopes_service

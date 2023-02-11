@@ -134,9 +134,9 @@ async def resend_activate_code(data: ResendActivationCodeSchema, redis=Depends(g
 
 @router.get("/connect/steam")
 async def connect_steam_profile():
-    return await redirect_to_steam()
+    return auth_service.redirect_to_steam()
 
 
 @router.get("/callback/steam")
 async def steam_profile_callback(request: Request, user: User = Depends(get_current_active_user)):
-    return await validate_steam_callback(request, user)
+    return await auth_service.authenticate_steam_user(request, user)

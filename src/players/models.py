@@ -13,7 +13,7 @@ class SteamRepProfile(ormar.Model, DateFieldsMixins):
         tablename = "steamrep_profiles"
 
     id: int = ormar.Integer(primary_key=True)
-    profile_url: str = ormar.String(max_length=255)
+    profile_url: str = ormar.String(max_length=255, unique=True)
     is_scammer: bool = ormar.Boolean(default=False)
 
 
@@ -28,7 +28,7 @@ class Player(ormar.Model, DateFieldsMixins):
     steamid3: str = ormar.String(max_length=255, unique=True)
     steamid32: str = ormar.String(max_length=255, unique=True)
     steamid64: str = ormar.String(max_length=255, unique=True)
-    profile_url: str = ormar.String(max_length=255, nullable=True)
+    profile_url: str = ormar.String(max_length=255, nullable=True, unique=True)
     avatar: str = ormar.String(max_length=255, nullable=True)
     country_code: str = ormar.String(max_length=15)
     reputation: int = ormar.Integer(default=1000)

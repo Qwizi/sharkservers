@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     MAIL_SSL_TLS: bool = False
     USE_CREDENTIALS: bool = True
     VALIDATE_CERTS: bool = True
+    CELERY_BROKER_URL: str = "redis://redis:6379/0"
+    CELERY_RESULT_BACKEND: str = "redis://redis:6379/0"
 
     class Config:
         env_file = '.env'
@@ -36,6 +38,11 @@ class Settings(BaseSettings):
         if self.TESTING:
             return "sqlite:///test.db"
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}/{self.POSTGRES_DB}"
+
+    def get_database_url_sync(self):
+        if self.TESTING:
+            return "sqlite:///test.db"
+        return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}/{self.POSTGRES_DB}"
 
     def get_redis_url(self):
         return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"

@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, Security
+from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.ormar import paginate
 from ormar import NoMatch
 
 from src.auth.dependencies import get_admin_user
+from src.players.enums import PlayerEventEnum
 from src.players.exceptions import SteamProfileNotFound, SteamProfileExists, InvalidSteamid
 from src.players.models import Player
 from src.players.schemas import steam_profile_out, CreateSteamProfile
@@ -14,11 +16,10 @@ from src.users.models import User
 router = APIRouter()
 
 
-@router.get("", response_model=Page[steam_profile_out])
+@router.get("")
 async def admin_get_steam_profiles(params: Params = Depends(),
                                    user: User = Security(get_admin_user, scopes=["players:all"])):
-    steam_profiles = Player.objects
-    return await paginate(steam_profiles, params)
+    return await player_service.get_all(params, related=["steamrep_profile"])
 
 
 @router.get("/{profile_id}", response_model=steam_profile_out)
@@ -31,11 +32,11 @@ async def admin_get_steam_profile(profile_id: int,
         raise SteamProfileNotFound()
 
 
-@router.post("", response_model=steam_profile_out)
+@router.post("")
 async def admin_create_player(profile_data: CreateSteamProfile,
                               user: User = Security(get_admin_user, scopes=["players:create"])):
-    player = await player_service.create_player(steamid64=profile_data.steamid64)
-    return player
+    dispatch(event_name=PlayerEventEnum.CREATE, payload={"steamid64": profile_data.steamid64})
+    return True
 
 
 @router.delete("/{profile_id}", response_model=steam_profile_out)

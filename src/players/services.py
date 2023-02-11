@@ -16,7 +16,7 @@ class SteamRepService(BaseService):
 
     async def get_data(self, steamid64: str):
         async with httpx.AsyncClient() as client:
-            response = await client.get(self.api_url + steamid64 + "?json=1")
+            response = await client.get(self.api_url + steamid64 + "?json=1", timeout=20)
             data = response.json()
             profile = data['steamrep']['steamrepurl']
             is_scammer = True if data['steamrep']['reputation']['summary'] == 'SCAMMER' else False
@@ -51,7 +51,7 @@ class PlayerService(BaseService):
 
         profile_url = player['profileurl']
         avatar = player['avatar']
-        loccountrycode = player.get('loccountrycode', None)
+        loccountrycode = player.get('loccountrycode', "N/A")
 
         steamid64_from_player = player['steamid']
         steamid32 = SteamID(steamid64_from_player).as_steam2
