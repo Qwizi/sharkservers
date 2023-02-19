@@ -5,10 +5,13 @@ from tests.conftest import create_fake_users, TEST_USER
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("route", [
-    "/admin/users",
-    "/admin/users/1",
-])
+@pytest.mark.parametrize(
+    "route",
+    [
+        "/admin/users",
+        "/admin/users/1",
+    ],
+)
 async def test_unauthorized_get_admin_users(route, client):
     r = await client.get(route)
     assert r.status_code == 401
@@ -62,13 +65,16 @@ async def test_admin_get_invalid_user(admin_client):
 
 @pytest.mark.asyncio
 async def test_admin_create_user(admin_client):
-    r = await admin_client.post("/admin/users", json={
-        "username": TEST_USER.get("username"),
-        "email": TEST_USER.get("email"),
-        "password": TEST_USER.get("password"),
-        "is_activated": True,
-        "display_role": 2
-    })
+    r = await admin_client.post(
+        "/admin/users",
+        json={
+            "username": TEST_USER.get("username"),
+            "email": TEST_USER.get("email"),
+            "password": TEST_USER.get("password"),
+            "is_activated": True,
+            "display_role": 2,
+        },
+    )
     assert r.status_code == 200
     assert r.json()["username"] == TEST_USER.get("username")
 

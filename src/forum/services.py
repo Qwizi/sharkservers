@@ -1,7 +1,10 @@
 from src.db import BaseService
-from src.forum.exceptions import category_not_found_exception, thread_not_found_exception, post_not_found_exception
+from src.forum.exceptions import (
+    category_not_found_exception,
+    thread_not_found_exception,
+    post_not_found_exception,
+)
 from src.forum.models import Category, Thread, Post
-from src.forum.schemas import CreateThreadSchema
 
 
 class CategoryService(BaseService):
@@ -9,7 +12,6 @@ class CategoryService(BaseService):
 
 
 class ThreadService(BaseService):
-
     @staticmethod
     async def close_thread(thread: Thread):
         await thread.update(is_closed=True)
@@ -25,6 +27,17 @@ class PostService(BaseService):
     pass
 
 
-categories_service = CategoryService(model=Category, not_found_exception=category_not_found_exception)
-threads_service = ThreadService(model=Thread, not_found_exception=thread_not_found_exception)
+class SpecialThreadQuestionService(BaseService):
+    pass
+
+
+categories_service = CategoryService(
+    model=Category, not_found_exception=category_not_found_exception
+)
+threads_service = ThreadService(
+    model=Thread, not_found_exception=thread_not_found_exception
+)
 posts_service = PostService(model=Post, not_found_exception=post_not_found_exception)
+special_thread_questions_service = SpecialThreadQuestionService(
+    model=SpecialThreadQuestionService, not_found_exception=post_not_found_exception
+)

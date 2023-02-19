@@ -3,11 +3,7 @@ import pytest
 from src.roles.models import Role
 from tests.conftest import create_fake_roles
 
-TEST_ROLE = {
-    "name": "Test role",
-    "color": "color",
-    "scopes": [1, 2]
-}
+TEST_ROLE = {"name": "Test role", "color": "color", "scopes": [1, 2]}
 
 
 @pytest.mark.asyncio

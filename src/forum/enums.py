@@ -1,41 +1,47 @@
 from enum import Enum
 
 
-class CategoriesExceptionsEnum(str, Enum):
+class CategoryExceptionEnum(str, Enum):
     """Enum for categories exceptions."""
+
     NOT_FOUND = "Category not found"
     ALREADY_EXISTS = "Category already exists"
     NOT_ALLOWED = "You are not allowed to create a category"
 
 
-class TagsExceptionsEnum(str, Enum):
+class TagExceptionEnum(str, Enum):
     """Enum for tags exceptions."""
+
     NOT_FOUND = "Tag not found"
 
 
-class ThreadsExceptionsEnum(str, Enum):
+class ThreadExceptionEnum(str, Enum):
     """Enum for thread exceptions."""
+
     NOT_FOUND = "Thread not found"
     ALREADY_EXISTS = "Thread with this title on this category exists"
     IS_CLOSED = "Thread is closed"
 
 
-class PostsExceptionsEnum(str, Enum):
+class PostExceptionsEnum(str, Enum):
     """Enum for post exceptions."""
+
     NOT_FOUND = "Post not found"
     ALREADY_EXISTS = "Post already exists"
 
 
-class CategoriesEventsEnum(str, Enum):
+class CategoryEventEnum(str, Enum):
     """Enum for categories events."""
+
     GET_ALL_PRE = "CATEGORIES_GET_ALL_PRE"
     GET_ALL_POST = "CATEGORIES_GET_ALL_POST"
     GET_ONE_PRE = "CATEGORIES_GET_ONE_PRE"
     GET_ONE_POST = "CATEGORIES_GET_ONE_POST"
 
 
-class CategoriesAdminEventsEnum(str, Enum):
+class CategoryAdminEventEnum(str, Enum):
     """Enum for categories admin events."""
+
     GET_ALL_PRE = "CATEGORIES_ADMIN_GET_ALL_PRE"
     GET_ALL_POST = "CATEGORIES_ADMIN_GET_ALL_POST"
     GET_ONE_PRE = "CATEGORIES_ADMIN_GET_ONE_PRE"
@@ -48,16 +54,18 @@ class CategoriesAdminEventsEnum(str, Enum):
     DELETE_POST = "CATEGORIES_ADMIN_DELETE_POST"
 
 
-class TagsEventsEnum(str, Enum):
+class TagEventsEnum(str, Enum):
     """Enum for tags events."""
+
     GET_ALL_PRE = "TAGS_GET_ALL_PRE"
     GET_ALL_POST = "TAGS_GET_ALL_POST"
     GET_ONE_PRE = "TAGS_GET_ONE_PRE"
     GET_ONE_POST = "TAGS_GET_ONE_POST"
 
 
-class TagsAdminEventsEnum(str, Enum):
+class TagAdminEventsEnum(str, Enum):
     """Enum for tags admin events."""
+
     GET_ALL_PRE = "TAGS_ADMIN_GET_ALL_PRE"
     GET_ALL_POST = "TAGS_ADMIN_GET_ALL_POST"
     GET_ONE_PRE = "TAGS_ADMIN_GET_ONE_PRE"
@@ -70,16 +78,28 @@ class TagsAdminEventsEnum(str, Enum):
     DELETE_POST = "TAGS_ADMIN_DELETE_POST"
 
 
-class ThreadsEventsEnum(str, Enum):
+class ThreadEventEnum(str, Enum):
     """Enum for threads events."""
+
     GET_ALL_PRE = "THREADS_GET_ALL_PRE"
     GET_ALL_POST = "THREADS_GET_ALL_POST"
     GET_ONE_PRE = "THREADS_GET_ONE_PRE"
     GET_ONE_POST = "THREADS_GET_ONE_POST"
+    CREATE_PRE = "THREADS_CREATE_PRE"
+    CREATE_POST = "THREADS_CREATE_POST"
+    UPDATE_PRE = "THREADS_UPDATE_PRE"
+    UPDATE_POST = "THREADS_UPDATE_POST"
+    DELETE_PRE = "THREADS_DELETE_PRE"
+    DELETE_POST = "THREADS_DELETE_POST"
+    CLOSE_PRE = "THREADS_CLOSE_PRE"
+    CLOSE_POST = "THREADS_CLOSE_POST"
+    OPEN_PRE = "THREADS_OPEN_PRE"
+    OPEN_POST = "THREADS_OPEN_POST"
 
 
-class ThreadsAdminEventsEnum(str, Enum):
+class ThreadAdminEventEnum(str, Enum):
     """Enum for threads admin events."""
+
     GET_ALL_PRE = "THREADS_ADMIN_GET_ALL_PRE"
     GET_ALL_POST = "THREADS_ADMIN_GET_ALL_POST"
     GET_ONE_PRE = "THREADS_ADMIN_GET_ONE_PRE"
@@ -90,3 +110,58 @@ class ThreadsAdminEventsEnum(str, Enum):
     UPDATE_POST = "THREADS_ADMIN_UPDATE_POST"
     DELETE_PRE = "THREADS_ADMIN_DELETE_PRE"
     DELETE_POST = "THREADS_ADMIN_DELETE_POST"
+
+
+class PostEventEnum(str, Enum):
+    """Enum for posts events."""
+
+    GET_ALL_PRE = "POSTS_GET_ALL_PRE"
+    GET_ALL_POST = "POSTS_GET_ALL_POST"
+    GET_ONE_PRE = "POSTS_GET_ONE_PRE"
+    GET_ONE_POST = "POSTS_GET_ONE_POST"
+    CREATE_PRE = "POSTS_CREATE_PRE"
+    CREATE_POST = "POSTS_CREATE_POST"
+    UPDATE_PRE = "POSTS_UPDATE_PRE"
+    UPDATE_POST = "POSTS_UPDATE_POST"
+    DELETE_PRE = "POSTS_DELETE_PRE"
+    DELETE_POST = "POSTS_DELETE_POST"
+
+
+# create PostAdminEventEnum
+class PostAdminEventEnum(str, Enum):
+    """Enum for posts admin events."""
+
+    GET_ALL_PRE = "POSTS_ADMIN_GET_ALL_PRE"
+    GET_ALL_POST = "POSTS_ADMIN_GET_ALL_POST"
+    GET_ONE_PRE = "POSTS_ADMIN_GET_ONE_PRE"
+    GET_ONE_POST = "POSTS_ADMIN_GET_ONE_POST"
+    CREATE_PRE = "POSTS_ADMIN_CREATE_PRE"
+    CREATE_POST = "POSTS_ADMIN_CREATE_POST"
+    UPDATE_PRE = "POSTS_ADMIN_UPDATE_PRE"
+    UPDATE_POST = "POSTS_ADMIN_UPDATE_POST"
+    DELETE_PRE = "POSTS_ADMIN_DELETE_PRE"
+    DELETE_POST = "POSTS_ADMIN_DELETE_POST"
+
+
+class CategoryTypeEnum(str, Enum):
+    """Enum for category types."""
+
+    PUBLIC = "public"
+    PRIVATE = "private"
+    APPLICATION = "application"
+    APPEAL = "appeal"
+
+
+class ThreadTypeEnum(str, Enum):
+    """Enum for thread types."""
+
+    APPLICATION = "application"
+    APPEAL = "appeal"
+
+
+class ThreadStatusEnum(str, Enum):
+    """Enum for thread statuses."""
+
+    APPROVED = "approved"
+    PENDING = "pending"
+    REJECTED = "rejected"

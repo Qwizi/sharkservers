@@ -3,14 +3,21 @@ from typing import Optional, List
 import pydantic
 from pydantic import BaseModel, Field
 
+from src.forum.enums import CategoryTypeEnum
 from src.forum.models import Category, Tag, Thread
 from src.roles.models import Role
 
 category_out = Category.get_pydantic()
 tags_out = Tag.get_pydantic()
 thread_out = Thread.get_pydantic(
-    exclude={"author__password", "author__email", "author__display_role__scopes", "author__secret_salt",
-             "author__roles"})
+    exclude={
+        "author__password",
+        "author__email",
+        "author__display_role__scopes",
+        "author__secret_salt",
+        "author__roles",
+    }
+)
 
 
 class ThreadTag(BaseModel):
@@ -53,9 +60,20 @@ class CreateThreadSchema(BaseModel):
     # tags: Optional[List[str]] = None
 
 
+# generate AdminCreateThreadSchema
+class AdminCreateThreadSchema(CreateThreadSchema):
+    author_id: int
+
+
 class UpdateThreadSchema(BaseModel):
     title: Optional[str] = Field(max_length=64)
     content: Optional[str]
+
+
+# generate AdminUpdateThreadSchema
+class AdminUpdateThreadSchema(UpdateThreadSchema):
+    author_id: Optional[int]
+    category_id: Optional[int]
 
 
 class PostOut(BaseModel):
@@ -75,3 +93,14 @@ class UpdatePostSchema(BaseModel):
 
 class CreateCategorySchema(BaseModel):
     name: str
+    description: Optional[str]
+    type: CategoryTypeEnum = CategoryTypeEnum.PUBLIC
+
+
+class AdminCreatePostSchema(CreatePostSchema):
+    user_id: int
+
+
+class AdminUpdatePostSchema(UpdatePostSchema):
+    user_id: Optional[int]
+    thread_id: Optional[int]

@@ -10,11 +10,19 @@ from src.auth.schemas import RegisterUserSchema
 from src.auth.utils import verify_password, get_password_hash, register_user
 from src.roles.exceptions import role_not_found_exception
 from src.roles.models import Role
-from src.users.exceptions import username_not_available_exception, invalid_current_password_exception, \
-    cannot_change_display_role_exception, user_not_found_exception
+from src.users.exceptions import (
+    username_not_available_exception,
+    invalid_current_password_exception,
+    cannot_change_display_role_exception,
+    user_not_found_exception,
+)
 from src.users.models import User
-from src.users.schemas import ChangeUsernameSchema, ChangePasswordSchema, ChangeDisplayRoleSchema, \
-    CreateUserSchema
+from src.users.schemas import (
+    ChangeUsernameSchema,
+    ChangePasswordSchema,
+    ChangeDisplayRoleSchema,
+    CreateUserSchema,
+)
 
 
 async def _get_users(params: Params) -> AbstractPage:
@@ -26,7 +34,9 @@ async def _get_users(params: Params) -> AbstractPage:
     return await paginate(User.objects.select_related(["display_role"]), params)
 
 
-async def _change_user_username(change_username_data: ChangeUsernameSchema, user: User) -> User:
+async def _change_user_username(
+    change_username_data: ChangeUsernameSchema, user: User
+) -> User:
     """
     Change user username
     :param change_username_data:
@@ -34,13 +44,17 @@ async def _change_user_username(change_username_data: ChangeUsernameSchema, user
     :return:
     """
     try:
-        await user.update(username=change_username_data.username, updated_date=datetime.utcnow())
+        await user.update(
+            username=change_username_data.username, updated_date=datetime.utcnow()
+        )
         return user
     except UniqueViolationError:
         raise username_not_available_exception
 
 
-async def _change_user_password(change_password_data: ChangePasswordSchema, user: User) -> User:
+async def _change_user_password(
+    change_password_data: ChangePasswordSchema, user: User
+) -> User:
     if not verify_password(change_password_data.current_password, user.password):
         raise invalid_current_password_exception
     new_password = get_password_hash(change_password_data.new_password)
@@ -48,7 +62,9 @@ async def _change_user_password(change_password_data: ChangePasswordSchema, user
     return user
 
 
-async def _change_user_display_role(change_display_role_data: ChangeDisplayRoleSchema, user: User) -> (User, int):
+async def _change_user_display_role(
+    change_display_role_data: ChangeDisplayRoleSchema, user: User
+) -> (User, int):
     """
     Change user display role
     :param change_display_role_data:
@@ -63,19 +79,25 @@ async def _change_user_display_role(change_display_role_data: ChangeDisplayRoleS
             break
     if not display_role_exists_in_user_roles:
         raise cannot_change_display_role_exception
-    await user.update(display_role=change_display_role_data.role_id, updated_date=datetime.utcnow())
+    await user.update(
+        display_role=change_display_role_data.role_id, updated_date=datetime.utcnow()
+    )
     return user, old_user_display_role
 
 
 async def _get_last_logged_users(params: Params) -> AbstractPage:
     filter_after = datetime.utcnow() - timedelta(minutes=15)
-    return await paginate(User.objects.select_related("display_role").filter(
-        last_login__gt=filter_after), params)
+    return await paginate(
+        User.objects.select_related("display_role").filter(last_login__gt=filter_after),
+        params,
+    )
 
 
 async def _get_user(user_id: int) -> User:
     try:
-        return await User.objects.select_related(["roles", "display_role"]).get(id=user_id)
+        return await User.objects.select_related(["roles", "display_role"]).get(
+            id=user_id
+        )
     except NoMatch:
         raise user_not_found_exception
 
@@ -86,7 +108,9 @@ async def _admin_get_users(params: Params) -> AbstractPage:
 
 async def _admin_get_user(user_id: int) -> User:
     try:
-        return await User.objects.select_related(["display_role", "roles", "players"]).get(id=user_id)
+        return await User.objects.select_related(
+            ["display_role", "roles", "players"]
+        ).get(id=user_id)
     except NoMatch:
         raise user_not_found_exception
 
@@ -101,7 +125,7 @@ async def _admin_create_user(user_data: CreateUserSchema) -> User:
         username=user_data.username,
         email=user_data.email,
         password=user_data.password,
-        password2=user_data.password
+        password2=user_data.password,
     )
     created_user = await register_user(register_user_schema)
     if user_data.is_activated:

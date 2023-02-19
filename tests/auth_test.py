@@ -12,12 +12,12 @@ TEST_REGISTER_USER = {
     "username": "Test",
     "email": "test@test.pl",
     "password": "testpassword123",
-    "password2": "testpassword123"
+    "password2": "testpassword123",
 }
 
 TEST_LOGIN_USER = {
-    "username": TEST_REGISTER_USER['username'],
-    "password": TEST_REGISTER_USER['password']
+    "username": TEST_REGISTER_USER["username"],
+    "password": TEST_REGISTER_USER["password"],
 }
 
 
@@ -28,7 +28,7 @@ async def test_auth_register(client):
     r = await client.post("/auth/register", json=TEST_REGISTER_USER)
     assert r.status_code == 200
     assert len(await User.objects.all()) == 1
-    assert r.json()['username'] == "Test"
+    assert r.json()["username"] == "Test"
     assert "password" not in r.json()
     assert r.json()["is_activated"] is False
     assert r.json()["is_superuser"] is False
@@ -41,16 +41,21 @@ async def test_auth_register(client):
 async def test_auth_register_exception_when_password_not_match(client):
     await create_scopes()
     await create_default_roles()
-    r = await client.post("/auth/register", json={
-        "username": TEST_REGISTER_USER['username'],
-        "email": TEST_REGISTER_USER['email'],
-        "password": TEST_REGISTER_USER['password'],
-        "password2": "diffrentpassword"
-    })
+    r = await client.post(
+        "/auth/register",
+        json={
+            "username": TEST_REGISTER_USER["username"],
+            "email": TEST_REGISTER_USER["email"],
+            "password": TEST_REGISTER_USER["password"],
+            "password2": "diffrentpassword",
+        },
+    )
     response_data = {
         "detail": [
             {
-                'loc': ['body', 'password2'], 'msg': 'Passwords do not match', 'type': 'value_error'
+                "loc": ["body", "password2"],
+                "msg": "Passwords do not match",
+                "type": "value_error",
             }
         ]
     }
@@ -60,15 +65,20 @@ async def test_auth_register_exception_when_password_not_match(client):
 
 
 @pytest.mark.asyncio
-async def test_auth_register_exception_when_username_or_password_is_taken(client, faker):
+async def test_auth_register_exception_when_username_or_password_is_taken(
+    client, faker
+):
     users = await create_fake_users(faker, 1)
     user = users[0]
-    r = await client.post("/auth/register", json={
-        "username": user.username,
-        "email": user.email,
-        "password": TEST_REGISTER_USER['password'],
-        "password2": TEST_REGISTER_USER['password2']
-    })
+    r = await client.post(
+        "/auth/register",
+        json={
+            "username": user.username,
+            "email": user.email,
+            "password": TEST_REGISTER_USER["password"],
+            "password2": TEST_REGISTER_USER["password2"],
+        },
+    )
     assert r.status_code == 422
 
 
@@ -93,9 +103,9 @@ async def test_get_access_token_from_refresh_token(client, faker):
     r = await client.post("/auth/token", data=TEST_LOGIN_USER)
     token_data = r.json()
 
-    r_r = await client.post("/auth/token/refresh", json={
-        "refresh_token": token_data["refresh_token"]
-    })
+    r_r = await client.post(
+        "/auth/token/refresh", json={"refresh_token": token_data["refresh_token"]}
+    )
     assert r_r.status_code == 200
 
 

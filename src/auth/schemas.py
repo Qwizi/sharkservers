@@ -1,7 +1,4 @@
-from enum import Enum
-from typing import List
-
-from pydantic import BaseModel, validator, constr, Field, EmailStr
+from pydantic import BaseModel, validator, Field, EmailStr
 
 
 class RegisterUserSchema(BaseModel):
@@ -10,7 +7,7 @@ class RegisterUserSchema(BaseModel):
     password: str
     password2: str
 
-    @validator('password2')
+    @validator("password2")
     def passwords_match(cls, value, values, **kwargs):
         if "password" in values and value != values["password"]:
             raise ValueError("Passwords do not match")

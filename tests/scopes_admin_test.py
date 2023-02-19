@@ -40,11 +40,10 @@ async def test_admin_get_invalid_scope(admin_client):
 
 @pytest.mark.asyncio
 async def test_admin_create_scope(admin_client):
-    r = await admin_client.post("/admin/scopes", json={
-        "app_name": "test",
-        "value": "test",
-        "description": "test"
-    })
+    r = await admin_client.post(
+        "/admin/scopes",
+        json={"app_name": "test", "value": "test", "description": "test"},
+    )
     assert r.status_code == 200
 
 
@@ -56,12 +55,15 @@ async def test_admin_delete_protected_scope(admin_client):
 
 @pytest.mark.asyncio
 async def test_admin_delete_scope(admin_client):
-    r = await admin_client.post("/admin/scopes", json={
-        "app_name": "test",
-        "value": "test",
-        "description": "test",
-        "protected": False
-    })
+    r = await admin_client.post(
+        "/admin/scopes",
+        json={
+            "app_name": "test",
+            "value": "test",
+            "description": "test",
+            "protected": False,
+        },
+    )
     assert r.status_code == 200
 
     r2 = await admin_client.delete(f"/admin/scopes/{r.json()['id']}")

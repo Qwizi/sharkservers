@@ -41,7 +41,11 @@ class ScopeService(BaseService):
             app_name = scope_value[0]
             value = scope_value[1]
             description = scope_value[2]
-            self.extra_scopes.append(CreateScopeSchema(app_name=app_name, value=value, description=description))
+            self.extra_scopes.append(
+                CreateScopeSchema(
+                    app_name=app_name, value=value, description=description
+                )
+            )
         return self
 
     def get_extra_scopes(self) -> list[CreateScopeSchema]:
@@ -51,7 +55,9 @@ class ScopeService(BaseService):
         """
         return self.extra_scopes or []
 
-    async def create_scopes_for_app(self, app_name: str, additional_scopes: list[tuple[str, str, str]]):
+    async def create_scopes_for_app(
+        self, app_name: str, additional_scopes: list[tuple[str, str, str]]
+    ):
         """
         Create scopes for app
         :param additional_scopes:
@@ -63,11 +69,14 @@ class ScopeService(BaseService):
                 app_name=app_name,
                 value=scope_enum.value,
                 description=f"{scope_enum.value} {app_name}s".capitalize(),
-                protected=True
+                protected=True,
             )
         for scope in additional_scopes:
             _app_name, value, description = scope
-            additional_scope, additional_scope_created = await self.model.objects.get_or_create(
+            (
+                additional_scope,
+                additional_scope_created,
+            ) = await self.model.objects.get_or_create(
                 app_name=_app_name,
                 value=value,
                 description=description,

@@ -10,36 +10,16 @@ from src.scopes.models import Scope
 from src.scopes.schemas import CreateScopeSchema
 
 ADDITIONAL_SCOPES = [
-    {
-        "app_name": "users",
-        "value": "me",
-        "description": "Get logged users data"
-    },
-    {
-        "app_name": "users",
-        "value": "me:username",
-        "description": "Update username"
-    },
-    {
-        "app_name": "users",
-        "value": "me:password",
-        "description": "Update password"
-    },
+    {"app_name": "users", "value": "me", "description": "Get logged users data"},
+    {"app_name": "users", "value": "me:username", "description": "Update username"},
+    {"app_name": "users", "value": "me:password", "description": "Update password"},
     {
         "app_name": "users",
         "value": "me:display-role",
-        "description": "Change display role"
+        "description": "Change display role",
     },
-    {
-        "app_name": "threads",
-        "value": "close",
-        "description": "Close threads"
-    },
-    {
-        "app_name": "threads",
-        "value": "open",
-        "description": "Open threads"
-    }
+    {"app_name": "threads", "value": "close", "description": "Close threads"},
+    {"app_name": "threads", "value": "open", "description": "Open threads"},
 ]
 
 
@@ -48,14 +28,17 @@ async def create_scopes_for_app(app_name: str, additional=None):
         scope, created = await Scope.objects.get_or_create(
             app_name=app_name,
             value=scope_enum.value,
-            description=f"{scope_enum.value} {app_name}s".capitalize()
+            description=f"{scope_enum.value} {app_name}s".capitalize(),
         )
     if additional:
         for item in additional:
-            additional_scope, additional_scope_created = await Scope.objects.get_or_create(
+            (
+                additional_scope,
+                additional_scope_created,
+            ) = await Scope.objects.get_or_create(
                 app_name=item["app_name"],
                 value=item["value"],
-                description=item["description"]
+                description=item["description"],
             )
 
 
@@ -65,16 +48,19 @@ async def _create_scopes(applications, additional=None):
 
 
 async def create_scopes():
-    return await _create_scopes([
-        "users",
-        "roles",
-        "scopes",
-        "players",
-        "categories",
-        "tags",
-        "threads",
-        "posts"
-    ], additional=ADDITIONAL_SCOPES)
+    return await _create_scopes(
+        [
+            "users",
+            "roles",
+            "scopes",
+            "players",
+            "categories",
+            "tags",
+            "threads",
+            "posts",
+        ],
+        additional=ADDITIONAL_SCOPES,
+    )
 
 
 async def get_scopesv3(roles: list[Role]):
@@ -89,7 +75,9 @@ async def get_scopesv3(roles: list[Role]):
 
 async def _get_scopes(params: Params, role_id: int = None) -> AbstractPage:
     if role_id:
-        return await paginate(Scope.objects.select_related("roles").filter(roles__id=role_id), params)
+        return await paginate(
+            Scope.objects.select_related("roles").filter(roles__id=role_id), params
+        )
     return await paginate(Scope.objects, params)
 
 

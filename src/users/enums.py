@@ -5,7 +5,9 @@ class UsersExceptionsDetailEnum(str, Enum):
     USER_NOT_FOUND = "User not found"
     USERNAME_NOT_AVAILABLE = "Username not available"
     INVALID_CURRENT_PASSWORD = "Invalid current password"
-    CANNOT_CHANGE_DISPLAY_ROLE = "U cannot change your display role if u don't have this role"
+    CANNOT_CHANGE_DISPLAY_ROLE = (
+        "U cannot change your display role if u don't have this role"
+    )
 
 
 class UsersEventsEnum(str, Enum):

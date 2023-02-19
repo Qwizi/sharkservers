@@ -12,7 +12,9 @@ router = APIRouter()
 
 @router.get("", response_model=Page[steam_profile_out])
 async def get_steam_profiles(params: Params = Depends()):
-    return await paginate(Player.objects.select_related(["user", "user__display_role"]), params)
+    return await paginate(
+        Player.objects.select_related(["user", "user__display_role"]), params
+    )
 
 
 @router.get("/info")

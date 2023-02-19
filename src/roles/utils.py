@@ -6,7 +6,11 @@ from fastapi_pagination.ext.ormar import paginate
 from ormar import or_, and_, NoMatch
 
 from src.roles.enums import ProtectedDefaultRolesEnum
-from src.roles.exceptions import role_not_found_exception, role_exists_exception, role_protected_exception
+from src.roles.exceptions import (
+    role_not_found_exception,
+    role_exists_exception,
+    role_protected_exception,
+)
 from src.roles.models import Role
 from src.roles.schemas import RoleOut, CreateRoleSchema
 from src.scopes.models import Scope
@@ -34,24 +38,20 @@ async def create_default_roles():
         id=ProtectedDefaultRolesEnum.ADMIN.value,
         name="Admin",
         color="#C53030",
-        is_staff=True
+        is_staff=True,
     )
     admin_scopes = await get_admin_role_scopes()
     for scope in admin_scopes:
         await admin_role.scopes.add(scope)
     user_role, _ = await Role.objects.get_or_create(
-        id=ProtectedDefaultRolesEnum.USER.value,
-        name="user",
-        color="#99999"
+        id=ProtectedDefaultRolesEnum.USER.value, name="user", color="#99999"
     )
     user_scopes = await get_user_role_scopes()
     for scope in user_scopes:
         await user_role.scopes.add(scope)
 
     banned_role, _ = await Role.objects.get_or_create(
-        id=ProtectedDefaultRolesEnum.BANNED.value,
-        name="banned",
-        color="#000000"
+        id=ProtectedDefaultRolesEnum.BANNED.value, name="banned", color="#000000"
     )
 
 
@@ -60,18 +60,13 @@ async def _get_roles(params: Params) -> AbstractPage:
 
 
 async def _get_staff_roles() -> dict:
-    roles = await Role.objects.select_related(
-        ["user_display_role"]).filter(
-        is_staff=True
-    ) \
+    roles = (
+        await Role.objects.select_related(["user_display_role"])
+        .filter(is_staff=True)
         .all()
+    )
     # I need fix this
-    return {
-        "items": roles,
-        "total": len(roles),
-        "page": 1,
-        "size": 50
-    }
+    return {"items": roles, "total": len(roles), "page": 1, "size": 50}
 
 
 async def _get_role(role_id: int) -> Role:
@@ -88,9 +83,7 @@ async def _create_role(role_data: CreateRoleSchema) -> Role:
         scopes = await Scope.objects.filter(id__in=role_data.scopes).all()
     try:
         role = await Role.objects.create(
-            name=role_data.name,
-            color=role_data.color,
-            is_staff=role_data.is_staff
+            name=role_data.name, color=role_data.color, is_staff=role_data.is_staff
         )
         if scopes:
             for scope in scopes:

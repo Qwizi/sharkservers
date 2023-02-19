@@ -55,21 +55,24 @@ async def admin_client():
     await create_scopes()
     await create_default_roles()
     app.state.redis = await create_redis_pool()
-    admin_user = await create_admin_user(user_data=RegisterUserSchema(
-        username=TEST_ADMIN_USER.get("username"),
-        email=TEST_ADMIN_USER.get("email"),
-        password=TEST_ADMIN_USER.get("password"),
-        password2=TEST_ADMIN_USER.get("password")
-    ))
+    admin_user = await create_admin_user(
+        user_data=RegisterUserSchema(
+            username=TEST_ADMIN_USER.get("username"),
+            email=TEST_ADMIN_USER.get("email"),
+            password=TEST_ADMIN_USER.get("password"),
+            password2=TEST_ADMIN_USER.get("password"),
+        )
+    )
     settings = get_settings()
-    token, user = await _login_user(form_data=OAuth2PasswordRequestForm(
-        username=admin_user.username,
-        password=TEST_ADMIN_USER.get("password"),
-        scope=""
-    ), settings=settings)
-    headers = {
-        "Authorization": f"Bearer {token.access_token}"
-    }
+    token, user = await _login_user(
+        form_data=OAuth2PasswordRequestForm(
+            username=admin_user.username,
+            password=TEST_ADMIN_USER.get("password"),
+            scope="",
+        ),
+        settings=settings,
+    )
+    headers = {"Authorization": f"Bearer {token.access_token}"}
     async with AsyncClient(app=app, base_url="http://localhost", headers=headers) as c:
         yield c
 
@@ -79,22 +82,23 @@ async def logged_client():
     await create_scopes()
     await create_default_roles()
     app.state.redis = await create_redis_pool()
-    user = await register_user(user_data=RegisterUserSchema(
-        username=TEST_USER.get("username"),
-        email=TEST_USER.get("email"),
-        password=TEST_USER.get("password"),
-        password2=TEST_USER.get("password")
-    ))
+    user = await register_user(
+        user_data=RegisterUserSchema(
+            username=TEST_USER.get("username"),
+            email=TEST_USER.get("email"),
+            password=TEST_USER.get("password"),
+            password2=TEST_USER.get("password"),
+        )
+    )
     await user.update(is_activated=True)
     settings = get_settings()
-    token, user = await _login_user(form_data=OAuth2PasswordRequestForm(
-        username=user.username,
-        password=TEST_USER.get("password"),
-        scope=""
-    ), settings=settings)
-    headers = {
-        "Authorization": f"Bearer {token.access_token}"
-    }
+    token, user = await _login_user(
+        form_data=OAuth2PasswordRequestForm(
+            username=user.username, password=TEST_USER.get("password"), scope=""
+        ),
+        settings=settings,
+    )
+    headers = {"Authorization": f"Bearer {token.access_token}"}
     async with AsyncClient(app=app, base_url="http://localhost", headers=headers) as c:
         yield c
 
@@ -107,9 +111,9 @@ def event_loop():
     yield loop
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def faker_session_locale():
-    return ['en_US']
+    return ["en_US"]
 
 
 async def create_fake_users(faker: Faker, number: int = 50):
@@ -123,10 +127,7 @@ async def create_fake_users(faker: Faker, number: int = 50):
         email = f"{username}@test.pl"
         print(email)
         user_data = RegisterUserSchema(
-            username=username,
-            email=email,
-            password="test",
-            password2="test"
+            username=username, email=email, password="test", password2="test"
         )
         user = await register_user(user_data=user_data)
         users_list.append(user)
@@ -139,10 +140,7 @@ async def create_fake_roles(faker: Faker, number: int = 50):
     while len(role_name_list) < number:
         role_name_list.add(faker.job())
     for role_name in role_name_list:
-        role = await Role.objects.create(
-            name=role_name,
-            color="test_color"
-        )
+        role = await Role.objects.create(name=role_name, color="test_color")
         user_scopes = await get_user_role_scopes()
         for scope in user_scopes:
             await role.scopes.add(scope)

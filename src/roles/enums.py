@@ -32,6 +32,7 @@ class RolesEventsEnum(str, Enum):
 
 class RolesAdminEventsEnum(str, Enum):
     """Roles admin events enum."""
+
     GET_ALL_PRE = "ROLES_ADMIN_GET_ALL_PRE"
     GET_ALL_POST = "ROLES_ADMIN_GET_ALL_POST"
     GET_ONE_PRE = "ROLES_ADMIN_GET_ONE_PRE"

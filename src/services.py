@@ -17,12 +17,14 @@ class EmailService:
         """
 
     async def send_activation_email(self, email: EmailStr, code: str):
-        await self.mailer.send_message(message=MessageSchema(
-            subject="Aktywacja konta",
-            recipients=[email],
-            body=self.activation_email_template(code),
-            subtype=MessageType.html
-        ))
+        await self.mailer.send_message(
+            message=MessageSchema(
+                subject="Aktywacja konta",
+                recipients=[email],
+                body=self.activation_email_template(code),
+                subtype=MessageType.html,
+            )
+        )
 
 
 settings = get_settings()
@@ -37,7 +39,7 @@ conf = ConnectionConfig(
     MAIL_STARTTLS=settings.MAIL_STARTTLS,
     MAIL_SSL_TLS=settings.MAIL_SSL_TLS,
     USE_CREDENTIALS=settings.USE_CREDENTIALS,
-    VALIDATE_CERTS=settings.VALIDATE_CERTS
+    VALIDATE_CERTS=settings.VALIDATE_CERTS,
 )
 
 mailer = FastMail(conf)
