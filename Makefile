@@ -11,6 +11,7 @@ uninstall:
 install:
 	@echo "Staring database container"
 	docker-compose up -d
+	sleep 2
 	alembic upgrade head
 	sleep 2
 	curl -X POST http://localhost/install \

@@ -19,7 +19,9 @@ class RoleService(BaseService):
                 id=role[0],
                 name=role[1],
                 color=role[2],
-                is_staff=True if not ProtectedDefaultRolesEnum.BANNED.value else False,
+                is_staff=True
+                if role[0] == ProtectedDefaultRolesEnum.ADMIN.value
+                else False,
             )
             scopes = await scopes_service.get_default_scopes_for_role(
                 role_id=default_role.id
