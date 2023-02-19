@@ -23,11 +23,4 @@ async def handle_all_events_and_debug_log(event: Event):
 
 @local_handler.register(event_name=MainEventEnum.INSTALL)
 async def handle_install_event(event: Event):
-    news_category = await categories_service.model.get_or_create(
-        id=1,
-        _defaults=dict(
-            name="Ogłoszenia",
-            description="W dziale tym znajdziesz najnowsze informacje dotyczące naszej sieci",
-            type=CategoryTypeEnum.PUBLIC.value,
-        ),
-    )
+    pass

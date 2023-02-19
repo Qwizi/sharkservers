@@ -52,11 +52,13 @@ from src.forum.views.admin.posts import router as admin_forum_posts_router
 # Events
 from src.auth.handlers import create_activate_code_after_register
 from src.players.handlers import create_player
+from .auth.services import auth_service
 from .enums import MainEventEnum
 
 from .handlers import handle_all_events_and_debug_log, handle_install_event
-from .scopes.services import scopes_service
-from .services import email_service
+from src.roles.services import roles_service
+from src.scopes.services import scopes_service
+from src.services import email_service, MainService
 
 script_dir = os.path.dirname(__file__)
 st_abs_file_path = os.path.join(script_dir, "../static/")
@@ -138,74 +140,25 @@ def create_app():
         await app.state.redis.close()
 
     @_app.get("/", tags=["root"])
-    async def home(settings=Depends(get_settings)):
+    async def home():
 
         return {}
 
-    @_app.get("/images", tags=["root"])
-    async def get_images():
-        images_list = []
-        for filename in os.listdir(st_abs_file_path + "images"):
-            images_list.append(
-                {"name": filename.split(".")[0], "path": f"/static/images/{filename}"}
-            )
-        return images_list
-
     @_app.post("/install", tags=["root"])
     async def install(user_data: RegisterUserSchema):
-        logger.info("#0 - Install started")
-        if os.path.exists(installed_file_path):
-            raise HTTPException(detail="Its already installed", status_code=400)
-        await scopes_service.create_default_scopes(
-            applications=[
-                "users",
-                "roles",
-                "scopes",
-                "players",
-                "categories",
-                "tags",
-                "threads",
-                "posts",
-            ],
-            additional=[
-                ("users", "me", "Get my profile"),
-                ("users", "me:username", "Update my username"),
-                ("users", "me:password", "Update my password"),
-                ("users", "me:display-role", "Update my display role"),
-                ("threads", "open", "Open a thread"),
-                ("threads", "close", "Close a thread"),
-            ],
+        await MainService.install(
+            file_path=installed_file_path,
+            admin_user_data=user_data,
+            scopes_service=scopes_service,
+            roles_service=roles_service,
+            auth_service=auth_service,
         )
-        logger.info("#1 - Created scopes")
-        await create_default_roles()
-        logger.info("#2 - Created roles")
-        await create_admin_user(user_data)
-        logger.info("#3 - Created admin user")
-        install_finish_file = open(installed_file_path, "w+")
-        logger.info("#4 - Created installed file")
         dispatch(event_name=MainEventEnum.INSTALL)
         return {"msg": "Successfully installed"}
 
     @_app.get("/generate-openapi", tags=["root"])
     async def generate_openapi():
-        url = "http://localhost/openapi.json"
-        async with httpx.AsyncClient() as client:
-            r = await client.get(url)
-            with open("openapi.json", "wb") as f:
-                f.write(r.content)
-            file_path = Path("./openapi.json")
-            openapi_content = json.loads(file_path.read_text())
-
-            for path_data in openapi_content["paths"].values():
-                for operation in path_data.values():
-                    tag = operation["tags"][0]
-                    operation_id = operation["operationId"]
-                    to_remove = f"{tag}-"
-                    new_operation_id = operation_id[len(to_remove) :]
-                    print(operation_id)
-                    operation["operationId"] = new_operation_id
-                    print(new_operation_id)
-            file_path.write_text(json.dumps(openapi_content))
+        await MainService.generate_openapi_file()
         return {"msg": "Done"}
 
     return _app
