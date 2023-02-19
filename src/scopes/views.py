@@ -14,7 +14,9 @@ router = APIRouter()
 
 
 @router.get("", response_model=Page[ScopeOut], response_model_exclude_none=True)
-async def get_all_scopes(params: Params = Depends(), role_id: int = None) -> AbstractPage[ScopeOut]:
+async def get_all_scopes(
+    params: Params = Depends(), role_id: int = None
+) -> AbstractPage[ScopeOut]:
     """
     Get all scopes
 
@@ -22,10 +24,15 @@ async def get_all_scopes(params: Params = Depends(), role_id: int = None) -> Abs
     :param role_id:
     :return:
     """
-    dispatch(ScopesEventsEnum.GET_ALL_PRE, payload={"data": {"params": params, "role_id": role_id}})
+    dispatch(
+        ScopesEventsEnum.GET_ALL_PRE,
+        payload={"data": {"params": params, "role_id": role_id}},
+    )
     scopes = []
     if role_id:
-        scopes = await scopes_service.get_all(params=params, related=["roles"], roles__id=role_id)
+        scopes = await scopes_service.get_all(
+            params=params, related=["roles"], roles__id=role_id
+        )
     else:
         scopes = await scopes_service.get_all(params=params)
     dispatch(ScopesEventsEnum.GET_ALL_POST, payload={"data": scopes})

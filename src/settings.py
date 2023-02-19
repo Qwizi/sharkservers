@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     CELERY_RESULT_BACKEND: str = "redis://redis:6379/0"
 
     class Config:
-        env_file = '.env'
+        env_file = ".env"
 
     def get_database_url(self):
         if self.TESTING:

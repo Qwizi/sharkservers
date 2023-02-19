@@ -4,64 +4,43 @@ from fastapi_pagination import Params
 from fastapi_pagination.ext.ormar import paginate
 
 from src.auth.dependencies import get_admin_user
-from src.forum.enums import CategoriesAdminEventsEnum
+from src.forum.dependencies import get_valid_category
+from src.forum.enums import CategoryAdminEventEnum
 from src.forum.models import Category
 from src.forum.schemas import CreateCategorySchema
+from src.forum.services import categories_service
 from src.users.models import User
 
 router = APIRouter()
 
 
-@router.get("")
-async def admin_get_categories(params: Params = Depends(),
-                               user: User = Security(get_admin_user, scopes=["categories:all"])):
-    """
-    Get all categories.
-    :return:
-    """
-    dispatch(CategoriesAdminEventsEnum.GET_ALL_PRE, payload={"data": params})
-    categories = await paginate(Category.objects, params)
-    dispatch(CategoriesAdminEventsEnum.GET_ALL_POST, payload={"data": categories})
-    return categories
-
-
-@router.get("/{category_id}")
-async def admin_get_category(category_id: int,
-                             user: User = Security(get_admin_user, scopes=["categories:get"])):
-    """
-    Get category
-    :param category_id:
-    :return:
-    """
-    dispatch(CategoriesAdminEventsEnum.GET_ONE_PRE, payload={"data": category_id})
-    category = await Category.objects.get(id=category_id)
-    dispatch(CategoriesAdminEventsEnum.GET_ONE_POST, payload={"data": category})
-    return category
-
-
 @router.post("")
-async def admin_create_category(category_data: CreateCategorySchema,
-                                user: User = Security(get_admin_user, scopes=["categories:create"])):
+async def admin_create_category(
+    category_data: CreateCategorySchema,
+    user: User = Security(get_admin_user, scopes=["categories:create"]),
+):
     """
     Create category
     :param category_data:
     :return:
     """
-    dispatch(CategoriesAdminEventsEnum.CREATE_PRE, payload={"data": category_data})
-    category = await Category.objects.create(name=category_data.name)
-    dispatch(CategoriesAdminEventsEnum.CREATE_POST, payload={"data": category})
+    dispatch(CategoryAdminEventEnum.CREATE_PRE, payload={"data": category_data})
+    category = await categories_service.create(**category_data.dict())
+    dispatch(CategoryAdminEventEnum.CREATE_POST, payload={"data": category})
     return category
 
 
 @router.delete("/{category_id}")
-async def admin_delete_category(category_id: int, user: User = Security(get_admin_user, scopes=["categories:delete"])):
+async def admin_delete_category(
+    category: Category = Depends(get_valid_category),
+    user: User = Security(get_admin_user, scopes=["categories:delete"]),
+):
     """
     Delete category
-    :param category_id:
+    :param user:
+    :param category:
     :return:
     """
-    dispatch(CategoriesAdminEventsEnum.DELETE_PRE, payload={"data": category_id})
-    category = await Category.objects.get(id=category_id)
-    await category.delete()
-    dispatch(CategoriesAdminEventsEnum.DELETE_POST, payload={"data": category_id})
+    category = await categories_service.delete(category.id)
+    dispatch(CategoryAdminEventEnum.DELETE_POST, payload={"data": category})
     return {"message": "Category deleted successfully."}

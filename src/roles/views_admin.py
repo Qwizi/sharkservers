@@ -21,8 +21,10 @@ router = APIRouter()
 
 
 @router.get("", response_model=Page[RoleOut])
-async def admin_get_roles(params: Params = Depends(),
-                          user: User = Security(get_admin_user, scopes=["roles:all"])) -> AbstractPage[RoleOut]:
+async def admin_get_roles(
+    params: Params = Depends(),
+    user: User = Security(get_admin_user, scopes=["roles:all"]),
+) -> AbstractPage[RoleOut]:
     """
     Admin get all roles.
     :param params:
@@ -36,8 +38,9 @@ async def admin_get_roles(params: Params = Depends(),
 
 
 @router.get("/{role_id}", response_model=RoleOutWithScopes)
-async def admin_get_role(role_id: int,
-                         user: User = Security(get_admin_user, scopes=["roles:retrieve"])) -> RoleOutWithScopes:
+async def admin_get_role(
+    role_id: int, user: User = Security(get_admin_user, scopes=["roles:retrieve"])
+) -> RoleOutWithScopes:
     """
     Admin get role by id.
     :param role_id:
@@ -51,17 +54,17 @@ async def admin_get_role(role_id: int,
 
 
 @router.post("", response_model=RoleOutWithScopes)
-async def admin_create_role(role_data: CreateRoleSchema,
-                            user: User = Security(get_admin_user, scopes=["roles:create"])):
+async def admin_create_role(
+    role_data: CreateRoleSchema,
+    user: User = Security(get_admin_user, scopes=["roles:create"]),
+):
     scopes = None
     if role_data.scopes:
         scopes = await Scope.objects.filter(id__in=role_data.scopes).all()
         print(scopes)
     try:
         role = await Role.objects.create(
-            name=role_data.name,
-            color=role_data.color,
-            is_staff=role_data.is_staff
+            name=role_data.name, color=role_data.color, is_staff=role_data.is_staff
         )
         if scopes:
             for scope in scopes:
@@ -72,7 +75,9 @@ async def admin_create_role(role_data: CreateRoleSchema,
 
 
 @router.delete("/{role_id}")
-async def admin_delete_role(role_id: int, user: User = Security(get_admin_user, scopes=["roles:delete"])):
+async def admin_delete_role(
+    role_id: int, user: User = Security(get_admin_user, scopes=["roles:delete"])
+):
     dispatch(RolesAdminEventsEnum.DELETE_PRE, payload={"data": role_id})
     role = await _delete_role(role_id)
     dispatch(RolesAdminEventsEnum.DELETE_POST, payload={"data": role})
@@ -80,8 +85,11 @@ async def admin_delete_role(role_id: int, user: User = Security(get_admin_user, 
 
 
 @router.post("/{role_id}/scopes/add", response_model=RoleOut)
-async def admin_add_scopes_to_role(role_id: int, scopes: list[int],
-                                   user: User = Security(get_admin_user, scopes=["roles:create"])):
+async def admin_add_scopes_to_role(
+    role_id: int,
+    scopes: list[int],
+    user: User = Security(get_admin_user, scopes=["roles:create"]),
+):
     role = await Role.objects.select_related(["scopes"]).get(id=role_id)
     if not role:
         raise role_not_found_exception

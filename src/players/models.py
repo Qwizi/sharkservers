@@ -23,7 +23,9 @@ class Player(ormar.Model, DateFieldsMixins):
 
     id: int = ormar.Integer(primary_key=True)
     user: Optional[User] = ormar.ForeignKey(User, related_name="players")
-    steamrep_profile: Optional[SteamRepProfile] = ormar.ForeignKey(SteamRepProfile, related_name="players")
+    steamrep_profile: Optional[SteamRepProfile] = ormar.ForeignKey(
+        SteamRepProfile, related_name="players"
+    )
     username: str = ormar.String(max_length=32)
     steamid3: str = ormar.String(max_length=255, unique=True)
     steamid32: str = ormar.String(max_length=255, unique=True)

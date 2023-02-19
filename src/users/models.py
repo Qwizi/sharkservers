@@ -17,8 +17,12 @@ class User(ormar.Model, DateFieldsMixins):
     password: Optional[str] = ormar.String(max_length=255)
     is_activated: Optional[str] = ormar.Boolean(default=False)
     is_superuser: Optional[str] = ormar.Boolean(default=False)
-    avatar: Optional[str] = ormar.String(max_length=255, default="/static/images/avatars/default_avatar.png")
+    avatar: Optional[str] = ormar.String(
+        max_length=255, default="/static/images/avatars/default_avatar.png"
+    )
     roles: Optional[List[Role]] = ormar.ManyToMany(Role, related_name="user_roles")
-    display_role: Optional[Role] = ormar.ForeignKey(Role, related_name="user_display_role")
+    display_role: Optional[Role] = ormar.ForeignKey(
+        Role, related_name="user_display_role"
+    )
     last_login: Optional[datetime.datetime] = ormar.DateTime(nullable=True)
     secret_salt: Optional[str] = ormar.String(max_length=255, unique=True)

@@ -9,7 +9,6 @@ from src.servers.schemas import ServerStatusSchema
 
 
 class ServerService(BaseService):
-
     async def get_status(self):
         servers_with_status = []
         servers_from_db = await self.model.objects.all()
@@ -28,22 +27,26 @@ class ServerService(BaseService):
                     players=players,
                     max_players=max_players,
                     map=map,
-                    game="tf2"
+                    game="tf2",
                 )
                 servers_with_status.append(server_status_schema)
             except ConnectionRefusedError as e:
-                servers_with_status.append(ServerStatusSchema(
-                    id=server.id,
-                    name=server.name,
-                    ip=server.ip,
-                    port=server.port,
-                    players=0,
-                    max_players=0,
-                    map="invalid_map",
-                    game="tf2"
-                ))
+                servers_with_status.append(
+                    ServerStatusSchema(
+                        id=server.id,
+                        name=server.name,
+                        ip=server.ip,
+                        port=server.port,
+                        players=0,
+                        max_players=0,
+                        map="invalid_map",
+                        game="tf2",
+                    )
+                )
 
         return servers_with_status
 
 
-servers_service = ServerService(model=Server, not_found_exception=server_not_found_exception)
+servers_service = ServerService(
+    model=Server, not_found_exception=server_not_found_exception
+)

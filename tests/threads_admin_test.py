@@ -10,7 +10,9 @@ from src.forum.views.admin.threads import admin_delete_thread
 @pytest.mark.asyncio
 @pytest.mark.skip
 async def test_admin_delete_thread():
-    thread = await Thread.objects.get_or_create(id=1, title="test", category=1, author=1, content="test")
+    thread = await Thread.objects.get_or_create(
+        id=1, title="test", category=1, author=1, content="test"
+    )
     user = Security(get_admin_user, scopes=["threads:delete"])
     response = await admin_delete_thread(1, user)
     assert response == {"message": "Thread deleted successfully"}

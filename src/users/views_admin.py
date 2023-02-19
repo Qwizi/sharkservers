@@ -12,14 +12,21 @@ from src.users.enums import UsersAdminEventsEnum
 from src.users.exceptions import UserNotFound
 from src.users.models import User
 from src.users.schemas import UserOutWithEmail, CreateUserSchema
-from src.users.utils import _admin_get_users, _admin_get_user, _admin_create_user, _admin_delete_user
+from src.users.utils import (
+    _admin_get_users,
+    _admin_get_user,
+    _admin_create_user,
+    _admin_delete_user,
+)
 
 router = APIRouter()
 
 
 @router.get("", response_model=Page[UserOutWithEmail], response_model_exclude_none=True)
-async def admin_get_users(params: Params = Depends(),
-                          user: User = Security(get_admin_user, scopes=["users:all"])) -> AbstractPage:
+async def admin_get_users(
+    params: Params = Depends(),
+    user: User = Security(get_admin_user, scopes=["users:all"]),
+) -> AbstractPage:
     """
     Admin get all users
     :param params:
@@ -33,8 +40,9 @@ async def admin_get_users(params: Params = Depends(),
 
 
 @router.get("/{user_id}", response_model=UserOutWithEmail)
-async def admin_get_user(user_id: int,
-                         user: User = Security(get_admin_user, scopes=["users:retrieve"])) -> UserOutWithEmail:
+async def admin_get_user(
+    user_id: int, user: User = Security(get_admin_user, scopes=["users:retrieve"])
+) -> UserOutWithEmail:
     """
     Admin get user
     :param user_id:
@@ -48,8 +56,10 @@ async def admin_get_user(user_id: int,
 
 
 @router.post("", response_model=UserOutWithEmail)
-async def admin_create_user(user_data: CreateUserSchema,
-                            user: User = Security(get_admin_user, scopes=["users:create"])) -> UserOutWithEmail:
+async def admin_create_user(
+    user_data: CreateUserSchema,
+    user: User = Security(get_admin_user, scopes=["users:create"]),
+) -> UserOutWithEmail:
     """
     Admin create user
     :param user_data:
@@ -63,7 +73,9 @@ async def admin_create_user(user_data: CreateUserSchema,
 
 
 @router.delete("/{user_id}")
-async def admin_delete_user(user_id: int, user: User = Security(get_admin_user, scopes=["users:delete"])) -> dict:
+async def admin_delete_user(
+    user_id: int, user: User = Security(get_admin_user, scopes=["users:delete"])
+) -> dict:
     """
     Admin delete user
     :param user_id:

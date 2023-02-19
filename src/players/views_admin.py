@@ -6,7 +6,11 @@ from ormar import NoMatch
 
 from src.auth.dependencies import get_admin_user
 from src.players.enums import PlayerEventEnum
-from src.players.exceptions import SteamProfileNotFound, SteamProfileExists, InvalidSteamid
+from src.players.exceptions import (
+    SteamProfileNotFound,
+    SteamProfileExists,
+    InvalidSteamid,
+)
 from src.players.models import Player
 from src.players.schemas import steam_profile_out, CreateSteamProfile
 from src.players.services import player_service
@@ -17,14 +21,17 @@ router = APIRouter()
 
 
 @router.get("")
-async def admin_get_steam_profiles(params: Params = Depends(),
-                                   user: User = Security(get_admin_user, scopes=["players:all"])):
+async def admin_get_steam_profiles(
+    params: Params = Depends(),
+    user: User = Security(get_admin_user, scopes=["players:all"]),
+):
     return await player_service.get_all(params, related=["steamrep_profile"])
 
 
 @router.get("/{profile_id}", response_model=steam_profile_out)
-async def admin_get_steam_profile(profile_id: int,
-                                  user: User = Security(get_admin_user, scopes=["players:retrieve"])):
+async def admin_get_steam_profile(
+    profile_id: int, user: User = Security(get_admin_user, scopes=["players:retrieve"])
+):
     try:
         steam_profile = await Player.objects.get(id=profile_id)
         return steam_profile
@@ -33,15 +40,20 @@ async def admin_get_steam_profile(profile_id: int,
 
 
 @router.post("")
-async def admin_create_player(profile_data: CreateSteamProfile,
-                              user: User = Security(get_admin_user, scopes=["players:create"])):
-    dispatch(event_name=PlayerEventEnum.CREATE, payload={"steamid64": profile_data.steamid64})
+async def admin_create_player(
+    profile_data: CreateSteamProfile,
+    user: User = Security(get_admin_user, scopes=["players:create"]),
+):
+    dispatch(
+        event_name=PlayerEventEnum.CREATE, payload={"steamid64": profile_data.steamid64}
+    )
     return True
 
 
 @router.delete("/{profile_id}", response_model=steam_profile_out)
-async def admin_delete_steam_profile(profile_id: int,
-                                     user: User = Security(get_admin_user, scopes=["players:delete"])):
+async def admin_delete_steam_profile(
+    profile_id: int, user: User = Security(get_admin_user, scopes=["players:delete"])
+):
     try:
         profile = await Player.objects.get(id=profile_id)
         await profile.delete()

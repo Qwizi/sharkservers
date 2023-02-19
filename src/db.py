@@ -52,9 +52,11 @@ class BaseService:
         try:
             related = kwargs.pop("related", None)
             if related:
-                model = await self.model.objects.select_related(related).filter(
-                    _exclude=False, **kwargs
-                ).first()
+                model = (
+                    await self.model.objects.select_related(related)
+                    .filter(_exclude=False, **kwargs)
+                    .first()
+                )
             else:
                 model = await self.model.objects.filter(
                     _exclude=False, **kwargs

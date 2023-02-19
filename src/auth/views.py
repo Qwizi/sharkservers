@@ -7,15 +7,28 @@ from fastapi_events.dispatcher import dispatch
 from ormar import NoMatch
 from starlette.requests import Request
 
-from src.auth.dependencies import get_access_token_service, get_refresh_token_service, get_current_active_user
+from src.auth.dependencies import (
+    get_access_token_service,
+    get_refresh_token_service,
+    get_current_active_user,
+)
 from src.auth.enums import AuthEventsEnum, RedisAuthKeyEnum
-from src.auth.schemas import RegisterUserSchema, TokenSchema, RefreshTokenSchema, ActivateUserCodeSchema, \
-    ResendActivationCodeSchema
+from src.auth.schemas import (
+    RegisterUserSchema,
+    TokenSchema,
+    RefreshTokenSchema,
+    ActivateUserCodeSchema,
+    ResendActivationCodeSchema,
+)
 from src.auth.services import JWTService, auth_service, CodeService
 from src.auth.utils import _activate_user, get_user_agent, _logout_user
-from src.auth.utils import register_user, redirect_to_steam, validate_steam_callback, \
-    _login_user, \
-    _get_access_token_from_refresh_token
+from src.auth.utils import (
+    register_user,
+    redirect_to_steam,
+    validate_steam_callback,
+    _login_user,
+    _get_access_token_from_refresh_token,
+)
 from src.db import get_redis
 from src.logger import logger
 from src.services import email_service
@@ -55,9 +68,11 @@ async def register(user_data: RegisterUserSchema, redis=Depends(get_redis)) -> U
 
 
 @router.post("/token", response_model=TokenSchema)
-async def login_user(form_data: OAuth2PasswordRequestForm = Depends(),
-                     access_token_service: JWTService = Depends(get_access_token_service),
-                     refresh_token_service: JWTService = Depends(get_refresh_token_service)) -> TokenSchema:
+async def login_user(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    access_token_service: JWTService = Depends(get_access_token_service),
+    refresh_token_service: JWTService = Depends(get_refresh_token_service),
+) -> TokenSchema:
     """
     Login user
     :param refresh_token_service:
@@ -66,19 +81,20 @@ async def login_user(form_data: OAuth2PasswordRequestForm = Depends(),
     :return TokenSchema:
     """
     dispatch(AuthEventsEnum.ACCESS_TOKEN_PRE, payload={"form_data": form_data.__dict__})
-    token, user = await auth_service.login(form_data, jwt_access_token_service=access_token_service,
-                                           jwt_refresh_token_service=refresh_token_service)
-    payload = {
-        "user": json.loads(user.json()),
-        "token": json.loads(token.json())
-    }
+    token, user = await auth_service.login(
+        form_data,
+        jwt_access_token_service=access_token_service,
+        jwt_refresh_token_service=refresh_token_service,
+    )
+    payload = {"user": json.loads(user.json()), "token": json.loads(token.json())}
     dispatch(AuthEventsEnum.ACCESS_TOKEN_POST, payload=payload)
     return token
 
 
 @router.post("/token/refresh", response_model=TokenSchema)
-async def get_access_token_from_refresh_token(token_data: RefreshTokenSchema,
-                                              settings: Settings = Depends(get_settings)) -> TokenSchema:
+async def get_access_token_from_refresh_token(
+    token_data: RefreshTokenSchema, settings: Settings = Depends(get_settings)
+) -> TokenSchema:
     """
     Get access token from refresh token
     :param token_data:
@@ -86,10 +102,7 @@ async def get_access_token_from_refresh_token(token_data: RefreshTokenSchema,
     :return TokenSchema:
     """
     token, user = await _get_access_token_from_refresh_token(token_data, settings)
-    payload = {
-        "user": json.loads(user.json()),
-        "token": json.loads(token.json())
-    }
+    payload = {"user": json.loads(user.json()), "token": json.loads(token.json())}
     dispatch(AuthEventsEnum.REFRESH_TOKEN_POST, payload=payload)
     return token
 
@@ -105,22 +118,33 @@ async def logout_user(user: User = Depends(get_current_active_user)):
 
 
 @router.post("/activate")
-async def activate_user(activate_code_data: ActivateUserCodeSchema, redis=Depends(get_redis)) -> bool:
+async def activate_user(
+    activate_code_data: ActivateUserCodeSchema, redis=Depends(get_redis)
+) -> bool:
     """
     Activate user
     :param activate_code_data:
     :param redis:
     :return bool:
     """
-    dispatch(AuthEventsEnum.ACTIVATED_PRE, payload={"activate_code": activate_code_data})
+    dispatch(
+        AuthEventsEnum.ACTIVATED_PRE, payload={"activate_code": activate_code_data}
+    )
     code_service = CodeService(redis=redis, key=RedisAuthKeyEnum.ACTIVATE_USER)
-    user_activated, user = await auth_service.activate_user(code=activate_code_data.code, code_service=code_service)
-    dispatch(AuthEventsEnum.ACTIVATED_POST, payload={"activated": user_activated, "user": user})
+    user_activated, user = await auth_service.activate_user(
+        code=activate_code_data.code, code_service=code_service
+    )
+    dispatch(
+        AuthEventsEnum.ACTIVATED_POST,
+        payload={"activated": user_activated, "user": user},
+    )
     return user_activated
 
 
 @router.post("/activate/resend")
-async def resend_activate_code(data: ResendActivationCodeSchema, redis=Depends(get_redis)):
+async def resend_activate_code(
+    data: ResendActivationCodeSchema, redis=Depends(get_redis)
+):
     """
     Resend activate code
     :param data:
@@ -128,8 +152,12 @@ async def resend_activate_code(data: ResendActivationCodeSchema, redis=Depends(g
     :return bool:
     """
     code_service = CodeService(redis=redis, key=RedisAuthKeyEnum.ACTIVATE_USER)
-    await auth_service.resend_activation_code(data.email, code_service=code_service, email_service=email_service)
-    return {"msg": "If email is correct, you will receive an email with activation code"}
+    await auth_service.resend_activation_code(
+        data.email, code_service=code_service, email_service=email_service
+    )
+    return {
+        "msg": "If email is correct, you will receive an email with activation code"
+    }
 
 
 @router.get("/connect/steam")
@@ -138,5 +166,7 @@ async def connect_steam_profile():
 
 
 @router.get("/callback/steam")
-async def steam_profile_callback(request: Request, user: User = Depends(get_current_active_user)):
+async def steam_profile_callback(
+    request: Request, user: User = Depends(get_current_active_user)
+):
     return await auth_service.authenticate_steam_user(request, user)
