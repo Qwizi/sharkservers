@@ -169,29 +169,46 @@ class AuthService:
             return False
         return user
 
-    async def register(self, user_data: RegisterUserSchema, is_activated=False) -> User:
+    async def register(
+        self,
+        user_data: RegisterUserSchema,
+        is_activated: bool = False,
+        is_superuser: bool = False,
+    ) -> User:
         """
         Register new user
+        :param is_superuser:
         :param is_activated:
         :param user_data:
         :return:
         """
         password = self.get_password_hash(user_data.password)
         try:
+            secret_salt = self.generate_secret_salt()
+
             user_role = await roles_service.get_one(
                 id=ProtectedDefaultRolesEnum.USER.value
             )
-            secret_salt = self.generate_secret_salt()
+            role = user_role
+            if is_superuser:
+                role = await roles_service.get_one(
+                    id=ProtectedDefaultRolesEnum.ADMIN.value
+                )
             registered_user = await self.users_service.create(
                 username=user_data.username,
                 email=user_data.email,
                 password=password,
-                display_role=user_role,
+                display_role=role,
                 avatar="/static/images/default_avatar.png",
                 secret_salt=secret_salt,
                 is_activated=is_activated,
+                is_superuser=is_superuser,
             )
-            await registered_user.roles.add(user_role)
+            if not is_superuser:
+                await registered_user.roles.add(role)
+            else:
+                await registered_user.roles.add(user_role)
+                await registered_user.roles.add(role)
             return registered_user
         except (IntegrityError, SQLIntegrityError, UniqueViolationError) as e:
             raise user_exists_exception

@@ -8,6 +8,8 @@ from fastapi_pagination.ext.ormar import paginate
 from src.auth.schemas import RegisterUserSchema
 from src.auth.utils import verify_password, get_password_hash
 from src.db import BaseService
+from src.roles.enums import ProtectedDefaultRolesEnum
+from src.roles.services import RoleService
 from src.users.exceptions import (
     username_not_available_exception,
     invalid_current_password_exception,

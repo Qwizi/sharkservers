@@ -35,3 +35,7 @@ class LogConfig(BaseModel):
 
 dictConfig(LogConfig().dict())
 logger = logging.getLogger("mycoolapp")
+
+
+def logger_with_filename(filename, data):
+    logger.debug(f"{filename} | {str(data)}")

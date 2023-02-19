@@ -62,3 +62,7 @@ class CreateUserSchema(BaseModel):
     display_role: Optional[int] = None
     roles: Optional[List[int]] = None
     is_activated: bool = True
+
+
+class CreateAdminUserSchema(CreateUserSchema):
+    is_admin: bool = True

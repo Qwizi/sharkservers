@@ -1,7 +1,10 @@
 import os
 from typing import List
 
+from ormar import or_, and_
+
 from src.db import BaseService
+from src.roles.enums import ProtectedDefaultRolesEnum
 from src.roles.models import Role
 from src.scopes.enums import ScopeEnum
 from src.scopes.exceptions import scope_not_found_exception
@@ -103,6 +106,29 @@ class ScopeService(BaseService):
                 scope_str = scope.get_string()
                 if scope_str not in scopes:
                     scopes.append(scope.get_string())
+        return scopes
+
+    async def get_default_scopes_for_role(self, role_id: int):
+        """
+        Get default scopes for role
+        :param role_id:
+        :return:
+        """
+        scopes = None
+        if role_id == ProtectedDefaultRolesEnum.ADMIN.value:
+            scopes = await self.model.objects.all()
+        elif role_id == ProtectedDefaultRolesEnum.USER.value:
+            scopes = await self.model.objects.filter(
+                or_(
+                    and_(app_name="users", value="me"),
+                    and_(app_name="users", value="me:username"),
+                    and_(app_name="users", value="me:password"),
+                    and_(app_name="users", value="me:display-role"),
+                    and_(app_name="threads", value="create"),
+                    and_(app_name="posts", value="create"),
+                )
+            ).all()
+        print(scopes)
         return scopes
 
 
