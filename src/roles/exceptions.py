@@ -1,5 +1,5 @@
-from starlette import status
-from starlette.exceptions import HTTPException
+from fastapi import status
+from fastapi.exceptions import HTTPException
 
 from src.roles.enums import RolesExceptionsDetailEnum
 
