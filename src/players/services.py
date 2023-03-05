@@ -1,5 +1,6 @@
 import httpx
 from bs4 import BeautifulSoup
+from requests import ReadTimeout
 from steam.steamid import SteamID
 from steam.webapi import WebAPI
 
@@ -41,7 +42,7 @@ class PlayerService(BaseService):
     def __init__(self, model, not_found_exception, steam_api_key, steamrep_service):
         self.super = super().__init__(model, not_found_exception)
         self.steam_api_key = steam_api_key
-        self.steam_api = WebAPI(self.steam_api_key)
+        self.steam_api = WebAPI(self.steam_api_key, http_timeout=300)
         self.steam_rep_service = steamrep_service
 
     def get_steam_player_info(self, steamid64: str) -> SteamPlayer:

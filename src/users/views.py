@@ -5,6 +5,7 @@ from fastapi_pagination.bases import AbstractPage
 
 from src.auth.schemas import RegisterUserSchema
 from src.auth.dependencies import get_current_active_user
+from src.auth.services import auth_service
 from src.schemas import HTTPError401Schema
 from src.users.dependencies import get_valid_user
 from src.users.enums import UsersEventsEnum
@@ -76,7 +77,7 @@ async def change_user_username(
     dispatch(
         UsersEventsEnum.CHANGE_USERNAME_PRE, payload={"data": change_username_data}
     )
-    user = await users_service.change_username(user, change_username_data)
+    user = await auth_service.change_username(user, change_username_data)
     dispatch(UsersEventsEnum.CHANGE_USERNAME_POST, payload={"data": user})
     return user
 
@@ -95,7 +96,7 @@ async def change_user_password(
     dispatch(
         UsersEventsEnum.CHANGE_PASSWORD_PRE, payload={"data": change_password_data}
     )
-    user = await users_service.change_password(user, change_password_data)
+    user = await auth_service.change_password(user, change_password_data)
     dispatch(UsersEventsEnum.CHANGE_PASSWORD_POST, payload={"data": user})
     return {"msg": "Successfully changed password"}
 
@@ -115,7 +116,7 @@ async def change_user_display_role(
         UsersEventsEnum.CHANGE_DISPLAY_ROLE_PRE,
         payload={"data": change_display_role_data},
     )
-    user, old_user_display_role = await users_service.change_display_role(
+    user, old_user_display_role = await auth_service.change_display_role(
         user, change_display_role_data
     )
     dispatch(

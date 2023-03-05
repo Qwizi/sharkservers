@@ -1,3 +1,21 @@
+up:
+	@echo "Starting containers"
+	docker-compose up -d
+	@echo "Containers started"
+
+stop:
+	@echo "Starting stopping containers"
+	docker-compose stop
+	@echo "Containers stopped"
+
+down:
+	@echo "Starting removing containers"
+	docker-compose down
+	@echo "Containers removed"
+
+logs:
+	@echo "Starting logs"
+	docker-compose logs -f
 
 uninstall:
 	@echo "Starting removing containers"

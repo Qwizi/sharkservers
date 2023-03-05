@@ -40,8 +40,18 @@ from src.roles.enums import ProtectedDefaultRolesEnum
 from src.roles.services import roles_service
 from src.scopes.utils import get_scopesv3
 from src.services import EmailService
-from src.users.exceptions import user_not_found_exception
+from src.users.exceptions import (
+    user_not_found_exception,
+    cannot_change_display_role_exception,
+    invalid_current_password_exception,
+    username_not_available_exception,
+)
 from src.users.models import User
+from src.users.schemas import (
+    ChangeDisplayRoleSchema,
+    ChangePasswordSchema,
+    ChangeUsernameSchema,
+)
 from src.users.services import UserService, users_service
 
 
@@ -382,6 +392,59 @@ class AuthService:
         steamid64 = params_dict["openid.claimed_id"].split("/")[-1]
         player = await player_service.create_player(steamid64=steamid64)
         return player
+
+    @staticmethod
+    async def change_username(
+        user: User, change_username_data: ChangeUsernameSchema
+    ) -> User:
+        """
+        Change user username
+        :param change_username_data:
+        :param user:
+        :return:
+        """
+        try:
+            await user.update(
+                username=change_username_data.username, updated_date=datetime.utcnow()
+            )
+            return user
+        except UniqueViolationError:
+            raise username_not_available_exception
+
+    async def change_password(
+        self, user: User, change_password_data: ChangePasswordSchema
+    ) -> User:
+        """
+        Change user password
+        :param user:
+        :param change_password_data:
+        :return:
+        """
+        if not self.verify_password(
+            change_password_data.current_password, user.password
+        ):
+            raise invalid_current_password_exception
+        new_password = self.get_password_hash(change_password_data.new_password)
+        await user.update(password=new_password, updated_date=datetime.utcnow())
+        return user
+
+    @staticmethod
+    async def change_display_role(
+        user: User, change_display_role_data: ChangeDisplayRoleSchema
+    ) -> (User, int):
+        display_role_exists_in_user_roles = False
+        old_user_display_role = user.display_role.id
+        for role in user.roles:
+            if role.id == change_display_role_data.role_id:
+                display_role_exists_in_user_roles = True
+                break
+        if not display_role_exists_in_user_roles:
+            raise cannot_change_display_role_exception
+        await user.update(
+            display_role=change_display_role_data.role_id,
+            updated_date=datetime.utcnow(),
+        )
+        return user, old_user_display_role
 
 
 auth_service = AuthService(_users_service=users_service)

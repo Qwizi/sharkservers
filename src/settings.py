@@ -45,7 +45,9 @@ class Settings(BaseSettings):
         return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}/{self.POSTGRES_DB}"
 
     def get_redis_url(self):
-        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"
+        if self.TESTING:
+            return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/1"
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/0"
 
 
 @lru_cache()
