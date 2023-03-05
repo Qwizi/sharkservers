@@ -1,10 +1,8 @@
 import json
-from datetime import timedelta
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_events.dispatcher import dispatch
-from ormar import NoMatch
 from starlette.requests import Request
 
 from src.auth.dependencies import (
@@ -21,37 +19,19 @@ from src.auth.schemas import (
     ResendActivationCodeSchema,
 )
 from src.auth.services import JWTService, auth_service, CodeService
-from src.auth.utils import _activate_user, get_user_agent, _logout_user
 from src.auth.utils import (
-    register_user,
-    redirect_to_steam,
-    validate_steam_callback,
-    _login_user,
     _get_access_token_from_refresh_token,
 )
 from src.db import get_redis
-from src.logger import logger
 from src.services import email_service
 from src.settings import Settings, get_settings
-from src.users.exceptions import user_not_found_exception
 from src.users.models import User
 from src.users.schemas import UserOut
-from src.users.services import users_service
 
 router = APIRouter()
 
-"""@router.post("/register", response_model=UserOut)
-async def register(user_data: RegisterUserSchema, redis=Depends(get_redis)) -> UserOut:
-    
-    dispatch(AuthEventsEnum.REGISTERED_PRE, payload={"user_data": user_data})
-    registered_user: User = await register_user(user_data=user_data)
-    registered_user_dict: dict = json.loads(registered_user.json())
-    registered_user_dict.update({"redis": redis})
-    dispatch(AuthEventsEnum.REGISTERED_POST, payload=registered_user_dict)
-    return registered_user"""
 
-
-@router.post("/register", response_model=UserOut)
+@router.post("/register", response_model=UserOut, name="register_user")
 async def register(user_data: RegisterUserSchema, redis=Depends(get_redis)) -> UserOut:
     """
     Register a new user

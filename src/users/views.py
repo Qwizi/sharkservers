@@ -3,7 +3,6 @@ from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 
-from src.auth.schemas import RegisterUserSchema
 from src.auth.dependencies import get_current_active_user
 from src.auth.services import auth_service
 from src.schemas import HTTPError401Schema
@@ -17,17 +16,8 @@ from src.users.schemas import (
     ChangePasswordSchema,
     ChangeDisplayRoleSchema,
     UserOut2Schema,
-    CreateUserSchema,
 )
 from src.users.services import users_service
-from src.users.utils import (
-    _get_users,
-    _change_user_username,
-    _change_user_password,
-    _change_user_display_role,
-    _get_last_logged_users,
-    _get_user,
-)
 
 router = APIRouter()
 

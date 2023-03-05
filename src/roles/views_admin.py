@@ -1,12 +1,9 @@
 from asyncpg import UniqueViolationError
-from fastapi import APIRouter, Security, Depends, HTTPException
+from fastapi import APIRouter, Security, Depends
 from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
-from fastapi_pagination.ext.ormar import paginate
 from ormar import NoMatch
-from psycopg2 import IntegrityError
-from sqlite3 import IntegrityError as SQLIntegrityError
 
 from src.auth.dependencies import get_admin_user
 from src.roles.enums import RolesAdminEventsEnum

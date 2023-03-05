@@ -1,4 +1,3 @@
-import json
 import random
 import string
 from datetime import timedelta, datetime
@@ -19,7 +18,6 @@ from sqlalchemy.exc import IntegrityError
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
-from src.auth.enums import RedisAuthKeyEnum
 from src.auth.exceptions import (
     invalid_credentials_exception,
     incorrect_username_password_exception,
@@ -34,14 +32,12 @@ from src.auth.schemas import (
 )
 from src.auth.utils import crypto_key
 from src.logger import logger
-from src.players.models import Player
 from src.players.services import PlayerService
 from src.roles.enums import ProtectedDefaultRolesEnum
 from src.roles.services import roles_service
 from src.scopes.utils import get_scopesv3
 from src.services import EmailService
 from src.users.exceptions import (
-    user_not_found_exception,
     cannot_change_display_role_exception,
     invalid_current_password_exception,
     username_not_available_exception,

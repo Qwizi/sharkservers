@@ -1,10 +1,8 @@
-from fastapi_pagination import Params
+from steam import game_servers as gs
 
 from src.db import BaseService
 from src.servers.exceptions import server_not_found_exception
 from src.servers.models import Server
-from steam import game_servers as gs
-
 from src.servers.schemas import ServerStatusSchema
 
 

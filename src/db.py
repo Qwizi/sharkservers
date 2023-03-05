@@ -1,16 +1,14 @@
 import datetime
-from typing import Optional
+from sqlite3 import IntegrityError as SQLIntegrityError
 
 import aioredis
 import databases
 import ormar
 import sqlalchemy
 from asyncpg import UniqueViolationError
-from sqlite3 import IntegrityError as SQLIntegrityError
 from fastapi import HTTPException
 from fastapi_pagination import Params
 from fastapi_pagination.ext.ormar import paginate
-from ormar import Model
 from psycopg2 import IntegrityError
 from starlette.requests import Request
 

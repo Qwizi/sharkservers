@@ -2,13 +2,10 @@ from fastapi import APIRouter, Depends
 from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
-from fastapi_pagination.ext.ormar import paginate
 
 from src.scopes.enums import ScopesEventsEnum
-from src.scopes.models import Scope
 from src.scopes.schemas import ScopeOut
 from src.scopes.services import scopes_service
-from src.scopes.utils import _get_scopes
 
 router = APIRouter()
 

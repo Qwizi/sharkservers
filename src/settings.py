@@ -28,8 +28,6 @@ class Settings(BaseSettings):
     MAIL_SSL_TLS: bool = False
     USE_CREDENTIALS: bool = True
     VALIDATE_CERTS: bool = True
-    CELERY_BROKER_URL: str = "redis://redis:6379/0"
-    CELERY_RESULT_BACKEND: str = "redis://redis:6379/0"
 
     class Config:
         env_file = ".env"
