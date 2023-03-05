@@ -1,7 +1,5 @@
-from typing import Optional, List
-
 import ormar
-
+from typing import Optional, List
 from src.db import BaseMeta
 from src.scopes.models import Scope
 
