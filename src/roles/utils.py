@@ -1,7 +1,6 @@
 from asyncpg import UniqueViolationError
 from fastapi_pagination import Params
 from fastapi_pagination.bases import AbstractPage
-from fastapi_pagination.ext import ormar
 from fastapi_pagination.ext.ormar import paginate
 from ormar import or_, and_, NoMatch
 
@@ -12,7 +11,7 @@ from src.roles.exceptions import (
     role_protected_exception,
 )
 from src.roles.models import Role
-from src.roles.schemas import RoleOut, CreateRoleSchema
+from src.roles.schemas import CreateRoleSchema
 from src.scopes.models import Scope
 
 

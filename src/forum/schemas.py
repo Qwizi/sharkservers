@@ -1,6 +1,5 @@
 from typing import Optional, List
 
-import pydantic
 from pydantic import BaseModel, Field
 
 from src.forum.enums import CategoryTypeEnum

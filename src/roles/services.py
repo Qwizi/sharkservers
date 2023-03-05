@@ -1,5 +1,5 @@
-from src.logger import logger, logger_with_filename
 from src.db import BaseService
+from src.logger import logger_with_filename
 from src.roles.enums import ProtectedDefaultRolesEnum
 from src.roles.exceptions import role_not_found_exception
 from src.roles.models import Role

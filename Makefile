@@ -1,3 +1,8 @@
+build:
+	@echo "Starting building containers"
+	docker-compose build
+	@echo "Containers built"
+
 up:
 	@echo "Starting containers"
 	docker-compose up -d

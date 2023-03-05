@@ -1,20 +1,16 @@
 from fastapi import APIRouter, Depends, Security
 from fastapi_events.dispatcher import dispatch
-from fastapi_pagination import Page, Params
-from fastapi_pagination.ext.ormar import paginate
+from fastapi_pagination import Params
 from ormar import NoMatch
 
 from src.auth.dependencies import get_admin_user
 from src.players.enums import PlayerEventEnum
 from src.players.exceptions import (
     SteamProfileNotFound,
-    SteamProfileExists,
-    InvalidSteamid,
 )
 from src.players.models import Player
 from src.players.schemas import steam_profile_out, CreateSteamProfile
 from src.players.services import player_service
-from src.players.utils import create_steam_profile
 from src.users.models import User
 
 router = APIRouter()

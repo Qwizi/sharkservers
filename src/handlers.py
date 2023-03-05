@@ -2,8 +2,6 @@ from fastapi_events.handlers.local import local_handler
 from fastapi_events.typing import Event
 
 from src.enums import MainEventEnum
-from src.forum.enums import CategoryTypeEnum
-from src.forum.services import categories_service
 from src.logger import logger
 from src.settings import get_settings
 

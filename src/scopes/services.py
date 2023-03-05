@@ -1,6 +1,3 @@
-import os
-from typing import List
-
 from ormar import or_, and_
 
 from src.db import BaseService

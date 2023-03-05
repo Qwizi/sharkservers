@@ -7,8 +7,8 @@ from fastapi import HTTPException
 from fastapi_mail import FastMail, ConnectionConfig, MessageSchema, MessageType
 from pydantic import EmailStr
 
-from src.logger import logger
 from src.auth.schemas import RegisterUserSchema
+from src.logger import logger
 from src.settings import get_settings
 
 

@@ -1,6 +1,4 @@
 import httpx
-from bs4 import BeautifulSoup
-from requests import ReadTimeout
 from steam.steamid import SteamID
 from steam.webapi import WebAPI
 

@@ -9,11 +9,8 @@ from src.roles.models import Role
 from src.roles.schemas import (
     RoleOut,
     RoleOutWithScopes,
-    RoleOutWithoutScopesAndUserRoles,
-    StaffRolesSchema,
 )
 from src.roles.services import roles_service
-from src.roles.utils import _get_roles, _get_staff_roles, _get_role
 
 router = APIRouter()
 

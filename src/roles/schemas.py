@@ -3,7 +3,6 @@ from typing import Optional, List
 from pydantic import BaseModel
 
 from src.roles.models import Role
-from src.users.schemas import UserOut
 
 RoleOut = Role.get_pydantic(exclude={"roles"})
 RoleOutWithScopes = Role.get_pydantic()

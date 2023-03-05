@@ -1,15 +1,10 @@
 from fastapi import APIRouter, Depends, Security
 from fastapi_events.dispatcher import dispatch
-from fastapi_pagination import Page, Params, paginate
+from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
-from fastapi_pagination.ext.ormar import paginate
-from ormar import NoMatch
 
-from src.auth.schemas import RegisterUserSchema
 from src.auth.dependencies import get_admin_user
-from src.roles.models import Role
 from src.users.enums import UsersAdminEventsEnum
-from src.users.exceptions import UserNotFound
 from src.users.models import User
 from src.users.schemas import UserOutWithEmail, CreateUserSchema
 from src.users.utils import (

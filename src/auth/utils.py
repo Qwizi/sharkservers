@@ -2,7 +2,6 @@ import json
 import random
 import string
 from datetime import timedelta, datetime
-from enum import Enum
 from sqlite3 import IntegrityError as SQLIntegrityError
 from urllib import parse
 
@@ -41,12 +40,12 @@ from src.auth.schemas import (
     TokenSchema,
     RefreshTokenSchema,
 )
-from src.roles.models import Role
-from src.scopes.utils import get_scopesv3
-from src.settings import Settings, get_settings
 from src.players.models import Player
 from src.players.schemas import SteamPlayer
 from src.players.utils import get_steam_user_info
+from src.roles.models import Role
+from src.scopes.utils import get_scopesv3
+from src.settings import Settings, get_settings
 from src.users.exceptions import UserNotFound
 from src.users.models import User
 

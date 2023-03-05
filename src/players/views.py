@@ -3,8 +3,7 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.ormar import paginate
 
 from src.players.models import Player
-from src.players.schemas import SteamPlayer, steam_profile_out
-from src.players.services import steamrep_profile_service
+from src.players.schemas import steam_profile_out
 from src.players.utils import get_steam_user_info
 
 router = APIRouter()
