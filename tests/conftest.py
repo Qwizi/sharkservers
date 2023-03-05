@@ -9,14 +9,20 @@ from faker import Faker
 from fastapi.security import OAuth2PasswordRequestForm
 from httpx import AsyncClient
 
+from src.logger import logger
+from src.auth.dependencies import get_access_token_service, get_refresh_token_service
 from src.auth.schemas import RegisterUserSchema
+from src.auth.services import auth_service
 from src.auth.utils import create_admin_user, _login_user, register_user
 from src.db import metadata, get_redis, create_redis_pool
 from src.forum.models import Category
 from src.main import app
 from src.roles.models import Role
+from src.roles.services import roles_service
 from src.roles.utils import get_user_role_scopes, create_default_roles
+from src.scopes.services import scopes_service
 from src.scopes.utils import create_scopes
+from src.services import MainService
 from src.settings import get_settings
 from src.users.models import User
 
@@ -34,15 +40,31 @@ TEST_ADMIN_USER = {
     "password": "admin",
 }
 
+settings = get_settings()
 
-@pytest.fixture(autouse=True, scope="function")
-def create_test_database():
+
+@pytest_asyncio.fixture(autouse=True, scope="function")
+async def create_test_database():
     engine = sqlalchemy.create_engine(DATABASE_URL)
     metadata.create_all(engine)
+    await MainService.install(
+        file_path=None,
+        auth_service=auth_service,
+        scopes_service=scopes_service,
+        roles_service=roles_service,
+        admin_user_data=RegisterUserSchema(
+            username=TEST_ADMIN_USER.get("username"),
+            email=TEST_ADMIN_USER.get("email"),
+            password=TEST_ADMIN_USER.get("password"),
+            password2=TEST_ADMIN_USER.get("password"),
+        ),
+        create_file=False,
+    )
     yield
     metadata.drop_all(engine)
 
 
+"""
 @pytest_asyncio.fixture(scope="module")
 async def client():
     app.state.redis = await create_redis_pool()
@@ -75,7 +97,59 @@ async def admin_client():
     headers = {"Authorization": f"Bearer {token.access_token}"}
     async with AsyncClient(app=app, base_url="http://localhost", headers=headers) as c:
         yield c
+"""
 
+
+@pytest_asyncio.fixture(scope="module")
+async def client():
+    app.state.redis = await create_redis_pool()
+    async with AsyncClient(app=app, base_url="http://localhost") as c:
+        yield c
+
+
+async def auth_user_headers(username, password):
+    token, user = await auth_service.login(
+        form_data=OAuth2PasswordRequestForm(
+            username=username,
+            password=password,
+            scope="",
+        ),
+        jwt_access_token_service=await get_access_token_service(settings),
+        jwt_refresh_token_service=await get_refresh_token_service(settings),
+    )
+    print(token)
+    return {"Authorization": f"Bearer {token.access_token}"}
+
+
+@pytest_asyncio.fixture(scope="function")
+async def admin_client():
+    headers = await auth_user_headers(
+        TEST_ADMIN_USER.get("username"), TEST_ADMIN_USER.get("password")
+    )
+    app.state.redis = await create_redis_pool()
+    async with AsyncClient(app=app, base_url="http://localhost", headers=headers) as c:
+        yield c
+
+
+@pytest_asyncio.fixture(scope="function")
+async def logged_client():
+    user = await auth_service.register(
+        user_data=RegisterUserSchema(
+            username=TEST_USER.get("username"),
+            email=TEST_USER.get("email"),
+            password=TEST_USER.get("password"),
+            password2=TEST_USER.get("password"),
+        ),
+        is_activated=True,
+    )
+    headers = await auth_user_headers(user.username, TEST_USER.get("password"))
+    logger.info(headers)
+    app.state.redis = await create_redis_pool()
+    async with AsyncClient(app=app, base_url="http://localhost", headers=headers) as c:
+        yield c
+
+
+"""
 
 @pytest_asyncio.fixture(scope="function")
 async def logged_client():
@@ -101,6 +175,7 @@ async def logged_client():
     headers = {"Authorization": f"Bearer {token.access_token}"}
     async with AsyncClient(app=app, base_url="http://localhost", headers=headers) as c:
         yield c
+"""
 
 
 @pytest.fixture(scope="module")

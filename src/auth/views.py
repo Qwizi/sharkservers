@@ -114,7 +114,7 @@ async def logout_user(user: User = Depends(get_current_active_user)):
     :param user:
     :return:
     """
-    return await _logout_user(user)
+    return await auth_service.logout(user)
 
 
 @router.post("/activate")

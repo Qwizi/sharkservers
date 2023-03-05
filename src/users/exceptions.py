@@ -1,5 +1,5 @@
+from fastapi import HTTPException
 from starlette import status
-from starlette.exceptions import HTTPException
 
 from src.users.enums import UsersExceptionsDetailEnum
 

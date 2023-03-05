@@ -1,7 +1,8 @@
 import pytest
 from jose import jwt
 
-from src.auth.schemas import TokenSchema
+from src.auth.schemas import TokenSchema, RegisterUserSchema
+from src.auth.services import auth_service
 from src.roles.utils import create_default_roles
 from src.scopes.utils import create_scopes
 from src.settings import get_settings
@@ -23,11 +24,9 @@ TEST_LOGIN_USER = {
 
 @pytest.mark.asyncio
 async def test_auth_register(client):
-    await create_scopes()
-    await create_default_roles()
     r = await client.post("/auth/register", json=TEST_REGISTER_USER)
     assert r.status_code == 200
-    assert len(await User.objects.all()) == 1
+    assert len(await User.objects.all()) == 2
     assert r.json()["username"] == "Test"
     assert "password" not in r.json()
     assert r.json()["is_activated"] is False
@@ -39,8 +38,6 @@ async def test_auth_register(client):
 
 @pytest.mark.asyncio
 async def test_auth_register_exception_when_password_not_match(client):
-    await create_scopes()
-    await create_default_roles()
     r = await client.post(
         "/auth/register",
         json={
@@ -66,10 +63,11 @@ async def test_auth_register_exception_when_password_not_match(client):
 
 @pytest.mark.asyncio
 async def test_auth_register_exception_when_username_or_password_is_taken(
-    client, faker
+    client,
 ):
-    users = await create_fake_users(faker, 1)
-    user = users[0]
+    user = await auth_service.register(
+        user_data=RegisterUserSchema(**TEST_REGISTER_USER)
+    )
     r = await client.post(
         "/auth/register",
         json={
@@ -84,8 +82,6 @@ async def test_auth_register_exception_when_username_or_password_is_taken(
 
 @pytest.mark.asyncio
 async def test_auth_create_access_token(client):
-    await create_scopes()
-    await create_default_roles()
     r = await client.post("/auth/register", json=TEST_REGISTER_USER)
     data = r.json()
     r = await client.post("/auth/token", data=TEST_LOGIN_USER)
@@ -97,8 +93,6 @@ async def test_auth_create_access_token(client):
 
 @pytest.mark.asyncio
 async def test_get_access_token_from_refresh_token(client, faker):
-    await create_scopes()
-    await create_default_roles()
     await client.post("/auth/register", json=TEST_REGISTER_USER)
     r = await client.post("/auth/token", data=TEST_LOGIN_USER)
     token_data = r.json()

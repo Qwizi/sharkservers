@@ -37,17 +37,7 @@ class EmailService:
 
 class MainService:
     @staticmethod
-    async def install(
-        file_path,
-        admin_user_data: RegisterUserSchema,
-        scopes_service,
-        roles_service,
-        auth_service,
-    ):
-        logger.info("Step 0 - Install started")
-        if os.path.exists(file_path):
-            raise HTTPException(detail="Its already installed", status_code=400)
-        logger.info("Step 1 - Create default scopes")
+    async def create_default_scopes(scopes_service):
         await scopes_service.create_default_scopes(
             applications=[
                 "users",
@@ -68,13 +58,30 @@ class MainService:
                 ("threads", "close", "Close a thread"),
             ],
         )
+
+    @staticmethod
+    async def install(
+        file_path,
+        admin_user_data: RegisterUserSchema,
+        scopes_service,
+        roles_service,
+        auth_service,
+        create_file: bool = True,
+    ):
+        logger.info("Step 0 - Install started")
+        if create_file:
+            if os.path.exists(file_path):
+                raise HTTPException(detail="Its already installed", status_code=400)
+        logger.info("Step 1 - Create default scopes")
+        await MainService.create_default_scopes(scopes_service=scopes_service)
         logger.info("Step 2 - Create default roles")
         await roles_service.create_default_roles(scopes_service=scopes_service)
         logger.info("Step 3 - Create admin user")
         await auth_service.register(
             admin_user_data, is_activated=True, is_superuser=True
         )
-        open(file_path, "w+")
+        if create_file:
+            open(file_path, "w+")
 
     @staticmethod
     async def generate_openapi_file():
