@@ -9,6 +9,7 @@ from src.auth.dependencies import (
     get_access_token_service,
     get_refresh_token_service,
     get_current_active_user,
+    get_auth_service,
 )
 from src.auth.enums import AuthEventsEnum, RedisAuthKeyEnum
 from src.auth.schemas import (
@@ -18,11 +19,13 @@ from src.auth.schemas import (
     ActivateUserCodeSchema,
     ResendActivationCodeSchema,
 )
-from src.auth.services import JWTService, auth_service, CodeService
+from src.auth.services import JWTService, AuthService, CodeService
 from src.auth.utils import (
     _get_access_token_from_refresh_token,
 )
 from src.db import get_redis
+from src.players.dependencies import get_players_service
+from src.players.services import PlayerService
 from src.services import email_service
 from src.settings import Settings, get_settings
 from src.users.models import User
@@ -32,9 +35,14 @@ router = APIRouter()
 
 
 @router.post("/register", response_model=UserOut, name="register_user")
-async def register(user_data: RegisterUserSchema, redis=Depends(get_redis)) -> UserOut:
+async def register(
+    user_data: RegisterUserSchema,
+    redis=Depends(get_redis),
+    auth_service: AuthService = Depends(get_auth_service),
+) -> UserOut:
     """
     Register a new user
+    :param auth_service:
     :param user_data:
     :param redis:
     :return UserOut:
@@ -52,9 +60,11 @@ async def login_user(
     form_data: OAuth2PasswordRequestForm = Depends(),
     access_token_service: JWTService = Depends(get_access_token_service),
     refresh_token_service: JWTService = Depends(get_refresh_token_service),
+    auth_service: AuthService = Depends(get_auth_service),
 ) -> TokenSchema:
     """
     Login user
+    :param auth_service:
     :param refresh_token_service:
     :param access_token_service:
     :param form_data:
@@ -88,9 +98,13 @@ async def get_access_token_from_refresh_token(
 
 
 @router.post("/logout")
-async def logout_user(user: User = Depends(get_current_active_user)):
+async def logout_user(
+    user: User = Depends(get_current_active_user),
+    auth_service: AuthService = Depends(get_auth_service),
+):
     """
     Logout user
+    :param auth_service:
     :param user:
     :return:
     """
@@ -99,10 +113,13 @@ async def logout_user(user: User = Depends(get_current_active_user)):
 
 @router.post("/activate")
 async def activate_user(
-    activate_code_data: ActivateUserCodeSchema, redis=Depends(get_redis)
+    activate_code_data: ActivateUserCodeSchema,
+    redis=Depends(get_redis),
+    auth_service: AuthService = Depends(get_auth_service),
 ) -> bool:
     """
     Activate user
+    :param auth_service:
     :param activate_code_data:
     :param redis:
     :return bool:
@@ -123,10 +140,13 @@ async def activate_user(
 
 @router.post("/activate/resend")
 async def resend_activate_code(
-    data: ResendActivationCodeSchema, redis=Depends(get_redis)
+    data: ResendActivationCodeSchema,
+    redis=Depends(get_redis),
+    auth_service: AuthService = Depends(get_auth_service),
 ):
     """
     Resend activate code
+    :param auth_service:
     :param data:
     :param redis:
     :return bool:
@@ -141,12 +161,19 @@ async def resend_activate_code(
 
 
 @router.get("/connect/steam")
-async def connect_steam_profile():
+async def connect_steam_profile(
+    auth_service: AuthService = Depends(get_auth_service),
+):
     return auth_service.redirect_to_steam()
 
 
 @router.get("/callback/steam")
 async def steam_profile_callback(
-    request: Request, user: User = Depends(get_current_active_user)
+    request: Request,
+    user: User = Depends(get_current_active_user),
+    auth_service: AuthService = Depends(get_auth_service),
+    players_service: PlayerService = Depends(get_players_service),
 ):
-    return await auth_service.authenticate_steam_user(request, user)
+    return await auth_service.authenticate_steam_user(
+        request, user, player_service=players_service
+    )

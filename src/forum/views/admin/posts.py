@@ -4,11 +4,11 @@ from fastapi.params import Security
 from fastapi_events.dispatcher import dispatch
 
 from src.auth.dependencies import get_admin_user
-from src.forum.dependencies import get_valid_thread, get_valid_post
+from src.forum.dependencies import get_valid_thread, get_valid_post, get_posts_service
 from src.forum.enums import PostAdminEventEnum
-from src.forum.models import Thread, Post
+from src.forum.models import Post
 from src.forum.schemas import AdminCreatePostSchema, AdminUpdatePostSchema
-from src.forum.services import posts_service
+from src.forum.services import PostService
 from src.users.dependencies import get_valid_user
 from src.users.models import User
 
@@ -21,9 +21,11 @@ router = APIRouter()
 async def admin_create_post(
     post_data: AdminCreatePostSchema,
     user: User = Security(get_admin_user, scopes=["posts:create"]),
+    posts_service: PostService = Depends(get_posts_service),
 ):
     """
     Create post
+    :param posts_service:
     :param post_data:
     :param thread:
     :param user:
@@ -44,12 +46,13 @@ async def admin_create_post(
 async def admin_delete_post(
     post: Post = Depends(get_valid_post),
     user: User = Security(get_admin_user, scopes=["posts:delete"]),
+    posts_service: PostService = Depends(get_posts_service),
 ):
     """
     Delete post
+    :param posts_service:
     :param post:
     :param user:
-    :param post_id:
     :return:
     """
     post = await posts_service.delete(post.id)
@@ -61,11 +64,12 @@ async def admin_delete_post(
 @router.put("/{post_id}")
 async def admin_update_post(
     post_data: AdminUpdatePostSchema,
-    post: Post = Depends(get_valid_post),
     user: User = Security(get_admin_user, scopes=["posts:update"]),
+    posts_service: PostService = Depends(get_posts_service),
 ):
     """
     Update post
+    :param posts_service:
     :param post:
     :param post_data:
     :param user:

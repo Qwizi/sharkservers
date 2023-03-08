@@ -9,6 +9,8 @@ from src.forum.dependencies import (
     get_valid_thread,
     get_valid_post,
     get_valid_post_author,
+    get_posts_service,
+    get_threads_service,
 )
 from src.forum.enums import PostEventEnum
 from src.forum.exceptions import (
@@ -18,16 +20,21 @@ from src.forum.exceptions import (
 )
 from src.forum.models import Post, Thread
 from src.forum.schemas import PostOut, CreatePostSchema, UpdatePostSchema
-from src.forum.services import posts_service, threads_service
+from src.forum.services import PostService, ThreadService
 from src.users.models import User
 
 router = APIRouter()
 
 
 @router.get("")
-async def get_posts(thread_id: int = None, params: Params = Depends()) -> Page[PostOut]:
+async def get_posts(
+    thread_id: int = None,
+    params: Params = Depends(),
+    posts_service: PostService = Depends(get_posts_service),
+) -> Page[PostOut]:
     """
     Get all posts by thread id.
+    :param posts_service:
     :param thread_id:
     :param params:
     :return:
@@ -62,9 +69,13 @@ async def get_post_by_id(post: Post = Depends(get_valid_post)) -> Post:
 async def create_post(
     post_data: CreatePostSchema,
     user: User = Security(get_current_active_user, scopes=["posts:create"]),
+    posts_service: PostService = Depends(get_posts_service),
+    threads_service: ThreadService = Depends(get_threads_service),
 ) -> PostOut:
     """
 
+    :param threads_service:
+    :param posts_service:
     :param post_data:
     :param user:
     :return:
@@ -72,7 +83,7 @@ async def create_post(
     dispatch(PostEventEnum.CREATE_PRE, payload={"data": post_data})
     post_data_dict = post_data.dict()
     thread_id = post_data_dict.pop("thread_id")
-    thread: Thread = await threads_service.get_one(id=thread_id)
+    thread = await threads_service.get_one(id=thread_id)
     if thread.is_closed:
         raise thread_is_closed_exception
     new_post = await posts_service.create(**post_data_dict, author=user)

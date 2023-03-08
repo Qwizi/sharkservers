@@ -7,6 +7,10 @@ from src.scopes.services import ScopeService
 
 
 class RoleService(BaseService):
+    class Meta:
+        model = Role
+        not_found_exception = role_not_found_exception
+
     async def create_default_roles(self, scopes_service: ScopeService):
         roles_to_create = [
             (ProtectedDefaultRolesEnum.ADMIN.value, "Admin", "#C53030"),
@@ -15,7 +19,7 @@ class RoleService(BaseService):
         ]
         for role in roles_to_create:
             logger_with_filename(filename=__file__, data=role)
-            default_role, created = await self.model.objects.get_or_create(
+            default_role, created = await self.Meta.model.objects.get_or_create(
                 id=role[0],
                 name=role[1],
                 color=role[2],
@@ -30,6 +34,3 @@ class RoleService(BaseService):
                 for scope in scopes:
                     logger_with_filename(filename=__file__, data=scope)
                     await default_role.scopes.add(scope)
-
-
-roles_service = RoleService(Role, not_found_exception=role_not_found_exception)

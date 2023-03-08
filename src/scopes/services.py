@@ -13,10 +13,9 @@ class ScopeService(BaseService):
     extra_scopes: list[CreateScopeSchema] | None
     default_scopes: list[str]
 
-    def __init__(self, model, not_found_exception):
-        super().__init__(model, not_found_exception)
-        self.extra_scopes = None
-        self.default_scopes = []
+    class Meta:
+        model = Scope
+        not_found_exception = scope_not_found_exception
 
     def add_default_scopes(self, apps: list[str]):
         """
@@ -65,7 +64,7 @@ class ScopeService(BaseService):
         :return:
         """
         for scope_enum in ScopeEnum:
-            scope, created = await self.model.objects.get_or_create(
+            scope, created = await self.Meta.model.objects.get_or_create(
                 app_name=app_name,
                 value=scope_enum.value,
                 description=f"{scope_enum.value} {app_name}s".capitalize(),
@@ -76,7 +75,7 @@ class ScopeService(BaseService):
             (
                 additional_scope,
                 additional_scope_created,
-            ) = await self.model.objects.get_or_create(
+            ) = await self.Meta.model.objects.get_or_create(
                 app_name=_app_name,
                 value=value,
                 description=description,
@@ -113,9 +112,9 @@ class ScopeService(BaseService):
         """
         scopes = None
         if role_id == ProtectedDefaultRolesEnum.ADMIN.value:
-            scopes = await self.model.objects.all()
+            scopes = await self.Meta.model.objects.all()
         elif role_id == ProtectedDefaultRolesEnum.USER.value:
-            scopes = await self.model.objects.filter(
+            scopes = await self.Meta.model.objects.filter(
                 or_(
                     and_(app_name="users", value="me"),
                     and_(app_name="users", value="me:username"),
@@ -127,6 +126,3 @@ class ScopeService(BaseService):
             ).all()
         print(scopes)
         return scopes
-
-
-scopes_service = ScopeService(Scope, not_found_exception=scope_not_found_exception)

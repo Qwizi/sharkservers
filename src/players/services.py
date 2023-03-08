@@ -13,6 +13,10 @@ settings = get_settings()
 class SteamRepService(BaseService):
     api_url = "https://steamrep.com/api/beta4/reputation/"
 
+    class Meta:
+        model = SteamRepProfile
+        not_found_exception = None
+
     async def get_data(self, steamid64: str):
         async with httpx.AsyncClient() as client:
             response = await client.get(
@@ -35,13 +39,11 @@ class SteamRepService(BaseService):
 class PlayerService(BaseService):
     steam_api_key: str = None
     steam_api: WebAPI = None
-    steam_rep_service: SteamRepService
+    steamrep_service: SteamRepService
 
-    def __init__(self, model, not_found_exception, steam_api_key, steamrep_service):
-        self.super = super().__init__(model, not_found_exception)
+    def __init__(self, steam_api_key, steamrep_service: SteamRepService):
         self.steam_api_key = steam_api_key
-        self.steam_api = WebAPI(self.steam_api_key, http_timeout=300)
-        self.steam_rep_service = steamrep_service
+        self.steamrep_service = steamrep_service
 
     def get_steam_player_info(self, steamid64: str) -> SteamPlayer:
         steam_api = WebAPI(self.steam_api_key)
@@ -70,7 +72,7 @@ class PlayerService(BaseService):
 
     async def create_player(self, steamid64: str) -> Player:
         player_info = self.get_steam_player_info(steamid64)
-        steamrep_profile = await self.steam_rep_service.create_profile(steamid64)
+        steamrep_profile = await self.steamrep_service.create_profile(steamid64)
         reputation = 1000
         if steamrep_profile.is_scammer:
             reputation = 800
@@ -86,14 +88,3 @@ class PlayerService(BaseService):
             reputation=reputation,
         )
         return player
-
-
-steamrep_profile_service = SteamRepService(
-    model=SteamRepProfile, not_found_exception=None
-)
-player_service = PlayerService(
-    model=Player,
-    not_found_exception=None,
-    steam_api_key=settings.STEAM_API_KEY,
-    steamrep_service=steamrep_profile_service,
-)

@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from fastapi import Depends
 from fastapi.security import SecurityScopes
+from ormar import Model
 
 from src.auth.exceptions import (
     no_permissions_exception,
@@ -9,10 +10,13 @@ from src.auth.exceptions import (
     inactivate_user_exception,
     not_admin_user_exception,
 )
-from src.auth.services import JWTService, auth_service
+from src.auth.services import JWTService, AuthService
+from src.roles.dependencies import get_roles_service
+from src.roles.services import RoleService
 from src.settings import Settings, get_settings
+from src.users.dependencies import get_users_service
 from src.users.models import User
-from src.users.services import users_service
+from src.users.services import UserService
 
 
 async def get_access_token_service(
@@ -43,13 +47,22 @@ async def get_refresh_token_service(
     )
 
 
+async def get_auth_service(
+    users_service: UserService = Depends(get_users_service),
+    roles_service: RoleService = Depends(get_roles_service),
+) -> AuthService:
+    return AuthService(users_service=users_service, roles_service=roles_service)
+
+
 async def get_current_user(
     security_scopes: SecurityScopes,
-    token: str = Depends(auth_service.oauth2_scheme),
+    token: str = Depends(AuthService.oauth2_scheme),
     access_token_service: JWTService = Depends(get_access_token_service),
-) -> User:
+    users_service: UserService = Depends(get_users_service),
+) -> Model:
     """
     Get current user
+    :param users_service:
     :param security_scopes:
     :param token:
     :param access_token_service:

@@ -4,13 +4,14 @@ from fastapi_pagination import Params
 from ormar import NoMatch
 
 from src.auth.dependencies import get_admin_user
+from src.players.dependencies import get_players_service
 from src.players.enums import PlayerEventEnum
 from src.players.exceptions import (
     SteamProfileNotFound,
 )
 from src.players.models import Player
 from src.players.schemas import steam_profile_out, CreateSteamProfile
-from src.players.services import player_service
+from src.players.services import PlayerService
 from src.users.models import User
 
 router = APIRouter()
@@ -20,8 +21,9 @@ router = APIRouter()
 async def admin_get_steam_profiles(
     params: Params = Depends(),
     user: User = Security(get_admin_user, scopes=["players:all"]),
+    players_service: PlayerService = Depends(get_players_service),
 ):
-    return await player_service.get_all(params, related=["steamrep_profile"])
+    return await players_service.get_all(params, related=["steamrep_profile"])
 
 
 @router.get("/{profile_id}", response_model=steam_profile_out)

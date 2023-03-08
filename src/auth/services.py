@@ -34,7 +34,7 @@ from src.auth.utils import crypto_key
 from src.logger import logger
 from src.players.services import PlayerService
 from src.roles.enums import ProtectedDefaultRolesEnum
-from src.roles.services import roles_service
+from src.roles.services import RoleService
 from src.scopes.utils import get_scopesv3
 from src.services import EmailService
 from src.users.exceptions import (
@@ -48,7 +48,7 @@ from src.users.schemas import (
     ChangePasswordSchema,
     ChangeUsernameSchema,
 )
-from src.users.services import UserService, users_service
+from src.users.services import UserService
 
 
 class JWTService:
@@ -132,12 +132,14 @@ class CodeService:
 
 
 class AuthService:
-    def __init__(self, _users_service: UserService):
-        self.users_service = _users_service
+    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/auth/token")
+
+    def __init__(self, users_service: UserService, roles_service: RoleService):
+        self.users_service = users_service
+        self.roles_service = roles_service
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
         self.crypto_key = Fernet.generate_key()
         self.fernet = Fernet(crypto_key)
-        self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
     def verify_password(self, plain_password, hashed_password):
         """
@@ -192,12 +194,12 @@ class AuthService:
         try:
             secret_salt = self.generate_secret_salt()
 
-            user_role = await roles_service.get_one(
+            user_role = await self.roles_service.get_one(
                 id=ProtectedDefaultRolesEnum.USER.value
             )
             role = user_role
             if is_superuser:
-                role = await roles_service.get_one(
+                role = await self.roles_service.get_one(
                     id=ProtectedDefaultRolesEnum.ADMIN.value
                 )
             registered_user = await self.users_service.create(
@@ -348,7 +350,7 @@ class AuthService:
         user_id = await code_service.get(code)
         if not user_id:
             return False, False
-        user = await users_service.get_one(id=int(user_id))
+        user = await self.users_service.get_one(id=int(user_id))
         if user.is_activated:
             await code_service.delete(code)
             raise user_activated_exception
@@ -441,6 +443,3 @@ class AuthService:
             updated_date=datetime.utcnow(),
         )
         return user, old_user_display_role
-
-
-auth_service = AuthService(_users_service=users_service)

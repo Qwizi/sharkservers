@@ -3,22 +3,25 @@ from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 
-from src.roles.dependencies import get_valid_role
+from src.roles.dependencies import get_valid_role, get_roles_service
 from src.roles.enums import RolesEventsEnum
 from src.roles.models import Role
 from src.roles.schemas import (
     RoleOut,
     RoleOutWithScopes,
 )
-from src.roles.services import roles_service
+from src.roles.services import RoleService
 
 router = APIRouter()
 
 
 @router.get("", response_model=Page[RoleOut], response_model_exclude_none=True)
-async def get_roles(params: Params = Depends()) -> AbstractPage:
+async def get_roles(
+    params: Params = Depends(), roles_service: RoleService = Depends(get_roles_service)
+) -> AbstractPage:
     """
     Get roles
+    :param roles_service:
     :param params:
     :return AbstractPage:
     """

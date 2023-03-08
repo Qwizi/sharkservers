@@ -6,6 +6,8 @@ from src.auth.dependencies import get_current_active_user
 from src.forum.dependencies import (
     get_valid_thread,
     get_valid_thread_with_author,
+    get_threads_service,
+    get_categories_service,
 )
 from src.forum.enums import ThreadEventEnum
 from src.forum.models import Thread
@@ -15,7 +17,7 @@ from src.forum.schemas import (
     ThreadOut,
     UpdateThreadSchema,
 )
-from src.forum.services import threads_service, categories_service
+from src.forum.services import CategoryService, ThreadService
 from src.users.models import User
 
 router = APIRouter()
@@ -23,10 +25,13 @@ router = APIRouter()
 
 @router.get("", response_model_exclude_none=True)
 async def get_threads(
-    params: Params = Depends(), category_id: int = None
+    params: Params = Depends(),
+    category_id: int = None,
+    threads_service: ThreadService = Depends(get_threads_service),
 ) -> Page[ThreadOut]:
     """
     Get all threads.
+    :param threads_service:
     :param category_id:
     :param params:
     :return:
@@ -51,9 +56,13 @@ async def get_threads(
 async def create_thread(
     thread_data: CreateThreadSchema,
     user: User = Security(get_current_active_user, scopes=["threads:create"]),
+    threads_service: ThreadService = Depends(get_threads_service),
+    categories_service: CategoryService = Depends(get_categories_service),
 ) -> thread_out:
     """
     Create new thread.
+    :param categories_service:
+    :param threads_service:
     :param thread_data:
     :param user:
     :return:
