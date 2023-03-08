@@ -11,7 +11,12 @@ router = APIRouter()
 
 
 @router.get("/")
-async def get_servers(params: Params = Depends(), ip: str = None, port: int = None):
+async def get_servers(
+    params: Params = Depends(),
+    ip: str = None,
+    port: int = None,
+    servers_service: ServerService = Depends(get_servers_service),
+):
     """
     Get all servers
     :return:
