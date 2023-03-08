@@ -8,10 +8,16 @@ from src.forum.models import Category, Thread, Post
 
 
 class CategoryService(BaseService):
-    pass
+    class Meta:
+        Model = Category
+        not_found_exception = category_not_found_exception
 
 
 class ThreadService(BaseService):
+    class Meta:
+        model = Thread
+        not_found_exception = thread_not_found_exception
+
     @staticmethod
     async def close_thread(thread: Thread):
         await thread.update(is_closed=True)
@@ -24,20 +30,10 @@ class ThreadService(BaseService):
 
 
 class PostService(BaseService):
-    pass
+    class Meta:
+        model = Post
+        not_found_exception = post_not_found_exception
 
 
 class SpecialThreadQuestionService(BaseService):
     pass
-
-
-categories_service = CategoryService(
-    model=Category, not_found_exception=category_not_found_exception
-)
-threads_service = ThreadService(
-    model=Thread, not_found_exception=thread_not_found_exception
-)
-posts_service = PostService(model=Post, not_found_exception=post_not_found_exception)
-special_thread_questions_service = SpecialThreadQuestionService(
-    model=SpecialThreadQuestionService, not_found_exception=post_not_found_exception
-)

@@ -3,10 +3,10 @@ from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 
-from src.auth.dependencies import get_current_active_user
-from src.auth.services import auth_service
+from src.auth.dependencies import get_current_active_user, get_auth_service
+from src.auth.services import AuthService
 from src.schemas import HTTPError401Schema
-from src.users.dependencies import get_valid_user
+from src.users.dependencies import get_valid_user, get_users_service
 from src.users.enums import UsersEventsEnum
 from src.users.models import User
 from src.users.schemas import (
@@ -17,15 +17,18 @@ from src.users.schemas import (
     ChangeDisplayRoleSchema,
     UserOut2Schema,
 )
-from src.users.services import users_service
+from src.users.services import UserService
 
 router = APIRouter()
 
 
-@router.get("", response_model=Page[UserOut2Schema])
-async def get_users(params: Params = Depends()) -> AbstractPage:
+@router.get("")
+async def get_users(
+    params: Params = Depends(), users_service: UserService = Depends(get_users_service)
+) -> Page[UserOut2Schema]:
     """
     Get users
+    :param users_service:
     :param params:
     :return Page[UserOut]:
     """
@@ -57,9 +60,11 @@ async def get_logged_user(
 async def change_user_username(
     change_username_data: ChangeUsernameSchema,
     user: User = Security(get_current_active_user, scopes=["users:me:username"]),
+    auth_service: AuthService = Depends(get_auth_service),
 ) -> UserOut:
     """
     Change user username
+    :param auth_service:
     :param change_username_data:
     :param user:
     :return UserOut:
@@ -76,6 +81,7 @@ async def change_user_username(
 async def change_user_password(
     change_password_data: ChangePasswordSchema,
     user: User = Security(get_current_active_user, scopes=["users:me:password"]),
+    auth_service: AuthService = Depends(get_auth_service),
 ) -> dict:
     """
     Change user password
@@ -95,6 +101,7 @@ async def change_user_password(
 async def change_user_display_role(
     change_display_role_data: ChangeDisplayRoleSchema,
     user: User = Security(get_current_active_user, scopes=["users:me:display-role"]),
+    auth_service: AuthService = Depends(get_auth_service),
 ) -> dict:
     """
     Change user display role
@@ -120,9 +127,12 @@ async def change_user_display_role(
 
 
 @router.get("/online", response_model=Page[UserOut])
-async def get_last_logged_users(params: Params = Depends()) -> AbstractPage:
+async def get_last_logged_users(
+    params: Params = Depends(), users_service: UserService = Depends(get_users_service)
+) -> AbstractPage:
     """
     Get last logged users
+    :param users_service:
     :param params:
     :return Page[UserOut]:
     """
@@ -137,7 +147,6 @@ async def get_user(user: User = Depends(get_valid_user)) -> UserOut:
     """
     Get user
     :param user:
-    :param user_id:
     :return UserOut:
     """
     dispatch(UsersEventsEnum.GET_ONE_PRE, payload={"user_id": user.id})

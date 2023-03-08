@@ -42,44 +42,44 @@ class DateFieldsMixins:
 
 
 class BaseService:
-    def __init__(self, model, not_found_exception):
-        self.model = model
-        self.not_found_exception = not_found_exception
+    class Meta:
+        model: ormar.Model = None
+        not_found_exception: HTTPException = None
 
     async def get_one(self, **kwargs) -> ormar.Model:
         try:
             related = kwargs.pop("related", None)
             if related:
                 model = (
-                    await self.model.objects.select_related(related)
+                    await self.Meta.model.objects.select_related(related)
                     .filter(_exclude=False, **kwargs)
                     .first()
                 )
             else:
-                model = await self.model.objects.filter(
+                model = await self.Meta.model.objects.filter(
                     _exclude=False, **kwargs
                 ).first()
             return model
         except ormar.NoMatch:
-            raise self.not_found_exception
+            raise self.Meta.not_found_exception
 
     async def get_all(self, params: Params = None, related=None, **kwargs):
         """
         if params:
             if related:
-                return await paginate(self.model.objects.select_related(related), params)
+                return await paginate(self.Meta.model.objects.select_related(related), params)
             else:
-                return await paginate(self.model.objects, params)
+                return await paginate(self.Meta.model.objects, params)
         if related:
-            return await self.model.objects.select_related(related).all()
-        return await self.model.objects.all()
+            return await self.Meta.model.objects.select_related(related).all()
+        return await self.Meta.model.objects.all()
         :param params:
         :param related:
         :param kwargs:
         :return:
         """
 
-        query = self.model.objects.filter(**kwargs)
+        query = self.Meta.model.objects.filter(**kwargs)
         if related:
             query = query.select_related(related)
         if params:
@@ -93,14 +93,14 @@ class BaseService:
 
     async def create(self, *args, **kwargs):
         try:
-            return await self.model.objects.create(**kwargs)
+            return await self.Meta.model.objects.create(**kwargs)
         except (IntegrityError, SQLIntegrityError, UniqueViolationError):
             raise HTTPException(422, "Key already exists")
 
     async def update(self, updated_data: dict, **kwargs):  # type: ignore
         try:
             related = kwargs.pop("related", None)
-            await self.model.objects.filter(_exclude=False, **kwargs).update(
+            await self.Meta.model.objects.filter(_exclude=False, **kwargs).update(
                 **updated_data
             )
             return await self.get_one(**kwargs, related=related)

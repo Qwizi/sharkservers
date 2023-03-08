@@ -12,6 +12,10 @@ from src.users.models import User
 
 
 class UserService(BaseService):
+    class Meta:
+        model = User
+        not_found_exception = user_not_found_exception
+
     @staticmethod
     async def get_last_logged_users(params: Params) -> AbstractPage:
         filter_after = datetime.utcnow() - timedelta(minutes=15)
@@ -21,6 +25,3 @@ class UserService(BaseService):
             ),
             params,
         )
-
-
-users_service = UserService(User, not_found_exception=user_not_found_exception)

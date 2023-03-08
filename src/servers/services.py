@@ -7,9 +7,13 @@ from src.servers.schemas import ServerStatusSchema
 
 
 class ServerService(BaseService):
+    class Meta:
+        model = Server
+        not_found_exception = server_not_found_exception
+
     async def get_status(self):
         servers_with_status = []
-        servers_from_db = await self.model.objects.all()
+        servers_from_db = await self.Meta.model.objects.all()
         for server in servers_from_db:
             try:
                 server_status = gs.a2s_info((server.ip, server.port))
@@ -43,8 +47,3 @@ class ServerService(BaseService):
                 )
 
         return servers_with_status
-
-
-servers_service = ServerService(
-    model=Server, not_found_exception=server_not_found_exception
-)

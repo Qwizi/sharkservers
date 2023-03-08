@@ -1,5 +1,6 @@
 from fastapi import Depends, Security
 from fastapi_events.dispatcher import dispatch
+from ormar import Model
 
 from src.auth.dependencies import get_current_active_user
 from src.forum.enums import ThreadEventEnum, CategoryEventEnum, PostEventEnum
@@ -9,13 +10,29 @@ from src.forum.exceptions import (
     post_not_found_exception,
 )
 from src.forum.models import Category, Thread, Post
-from src.forum.services import categories_service, threads_service, posts_service
+from src.forum.services import CategoryService, ThreadService, PostService
 from src.users.models import User
 
 
-async def get_valid_category(category_id: int) -> Category:
+async def get_categories_service() -> CategoryService:
+    return CategoryService()
+
+
+async def get_threads_service() -> ThreadService:
+    return ThreadService()
+
+
+async def get_posts_service() -> PostService:
+    return PostService()
+
+
+async def get_valid_category(
+    category_id: int,
+    categories_service: CategoryService = Depends(get_categories_service),
+) -> Model:
     """
     Get valid category
+    :param categories_service:
     :param category_id:
     :return Category:
     """
@@ -23,9 +40,12 @@ async def get_valid_category(category_id: int) -> Category:
     return await categories_service.get_one(id=category_id)
 
 
-async def get_valid_thread(thread_id: int) -> Thread:
+async def get_valid_thread(
+    thread_id: int, threads_service: ThreadService = Depends(get_threads_service)
+) -> Model:
     """
     Get valid thread
+    :param threads_service:
     :param thread_id:
     :return Thread:
     """
@@ -62,9 +82,12 @@ async def get_valid_thread_with_author(
     return thread
 
 
-async def get_valid_post(post_id: int) -> Post:
+async def get_valid_post(
+    post_id: int, posts_service: PostService = Depends(get_posts_service)
+) -> Model:
     """
     Get valid post
+    :param posts_service:
     :param post_id:
     :return Post:
     """

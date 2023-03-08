@@ -1,13 +1,26 @@
-from ormar import NoMatch
+from fastapi import Depends
+from fastapi_pagination.ext import ormar
+from ormar import NoMatch, Model
 
 from src.users.exceptions import user_not_found_exception
 from src.users.models import User
-from src.users.services import users_service
+from src.users.services import UserService
 
 
-async def get_valid_user(user_id: int) -> User:
+async def get_users_service() -> UserService:
+    """
+    Get users service
+    :return users_service:
+    """
+    return UserService()
+
+
+async def get_valid_user(
+    user_id: int, users_service: UserService = Depends(get_users_service)
+) -> Model:
     """
     Validate user id
+    :param users_service:
     :param user_id:
     :return User:
     """

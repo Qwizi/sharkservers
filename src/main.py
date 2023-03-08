@@ -1,6 +1,6 @@
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.routing import APIRoute
 from fastapi_events.handlers.local import local_handler
 from fastapi_events.middleware import EventHandlerASGIMiddleware
@@ -8,10 +8,11 @@ from fastapi_pagination import add_pagination
 from starlette.staticfiles import StaticFiles
 
 from src.__version import VERSION
+from src.auth.dependencies import get_auth_service
 from src.auth.schemas import RegisterUserSchema
+from src.auth.services import AuthService
 
 # Events
-from src.auth.services import auth_service
 from src.auth.views import router as auth_router_v1
 from src.db import database, create_redis_pool
 from src.forum.views import (
@@ -20,10 +21,12 @@ from src.forum.views import (
 )
 from src.players.views import router as steamprofile_router
 from src.players.views_admin import router as admin_steamprofiles_router
-from src.roles.services import roles_service
+from src.roles.dependencies import get_roles_service
+from src.roles.services import RoleService
 from src.roles.views import router as roles_router
 from src.roles.views_admin import router as admin_roles_router
-from src.scopes.services import scopes_service
+from src.scopes.dependencies import get_scopes_service
+from src.scopes.services import ScopeService
 from src.scopes.views import router as scopes_router
 from src.scopes.views_admin import router as admin_scopes_router
 from src.servers.views import router as servers_router
@@ -110,7 +113,12 @@ def create_app():
         await disconnect_db(_app)
 
     @_app.post("/install", tags=["root"])
-    async def install(user_data: RegisterUserSchema):
+    async def install(
+        user_data: RegisterUserSchema,
+        scopes_service: ScopeService = Depends(get_scopes_service),
+        roles_service: RoleService = Depends(get_roles_service),
+        auth_service: AuthService = Depends(get_auth_service),
+    ):
         await MainService.install(
             file_path=installed_file_path,
             admin_user_data=user_data,

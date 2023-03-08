@@ -4,11 +4,11 @@ from fastapi_pagination import Params
 from fastapi_pagination.ext.ormar import paginate
 
 from src.auth.dependencies import get_admin_user
-from src.forum.dependencies import get_valid_category
+from src.forum.dependencies import get_valid_category, get_categories_service
 from src.forum.enums import CategoryAdminEventEnum
 from src.forum.models import Category
 from src.forum.schemas import CreateCategorySchema
-from src.forum.services import categories_service
+from src.forum.services import CategoryService
 from src.users.models import User
 
 router = APIRouter()
@@ -18,9 +18,11 @@ router = APIRouter()
 async def admin_create_category(
     category_data: CreateCategorySchema,
     user: User = Security(get_admin_user, scopes=["categories:create"]),
+    categories_service: CategoryService = Depends(get_categories_service),
 ):
     """
     Create category
+    :param categories_service:
     :param category_data:
     :return:
     """
@@ -34,9 +36,11 @@ async def admin_create_category(
 async def admin_delete_category(
     category: Category = Depends(get_valid_category),
     user: User = Security(get_admin_user, scopes=["categories:delete"]),
+    categories_service: CategoryService = Depends(get_categories_service),
 ):
     """
     Delete category
+    :param categories_service:
     :param user:
     :param category:
     :return:
