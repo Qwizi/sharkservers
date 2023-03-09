@@ -10,20 +10,24 @@ from fastapi.security import OAuth2PasswordRequestForm
 from httpx import AsyncClient
 
 from src.logger import logger
-from src.auth.dependencies import get_access_token_service, get_refresh_token_service
+from src.auth.dependencies import (
+    get_access_token_service,
+    get_refresh_token_service,
+    get_auth_service,
+)
 from src.auth.schemas import RegisterUserSchema
-from src.auth.services import auth_service
 from src.auth.utils import create_admin_user, _login_user, register_user
 from src.db import metadata, get_redis, create_redis_pool
 from src.forum.models import Category
 from src.main import app
+from src.roles.dependencies import get_roles_service
 from src.roles.models import Role
-from src.roles.services import roles_service
 from src.roles.utils import get_user_role_scopes, create_default_roles
-from src.scopes.services import scopes_service
+from src.scopes.dependencies import get_scopes_service
 from src.scopes.utils import create_scopes
 from src.services import MainService
 from src.settings import get_settings
+from src.users.dependencies import get_users_service
 from src.users.models import User
 
 DATABASE_URL = "sqlite:///test.db"
@@ -43,10 +47,22 @@ TEST_ADMIN_USER = {
 settings = get_settings()
 
 
+async def _get_auth_service():
+    users_service = await get_users_service()
+    roles_service = await get_roles_service()
+    auth_service = await get_auth_service(
+        users_service=users_service, roles_service=roles_service
+    )
+    return auth_service
+
+
 @pytest_asyncio.fixture(autouse=True, scope="function")
 async def create_test_database():
     engine = sqlalchemy.create_engine(DATABASE_URL)
     metadata.create_all(engine)
+    roles_service = await get_roles_service()
+    scopes_service = await get_scopes_service()
+    auth_service = await _get_auth_service()
     await MainService.install(
         file_path=None,
         auth_service=auth_service,
@@ -108,6 +124,7 @@ async def client():
 
 
 async def auth_user_headers(username, password):
+    auth_service = await _get_auth_service()
     token, user = await auth_service.login(
         form_data=OAuth2PasswordRequestForm(
             username=username,
@@ -133,6 +150,7 @@ async def admin_client():
 
 @pytest_asyncio.fixture(scope="function")
 async def logged_client():
+    auth_service = await _get_auth_service()
     user = await auth_service.register(
         user_data=RegisterUserSchema(
             username=TEST_USER.get("username"),

@@ -2,12 +2,14 @@ import pytest
 from jose import jwt
 
 from src.auth.schemas import TokenSchema, RegisterUserSchema
-from src.auth.services import auth_service
+from src.auth.dependencies import get_auth_service
+from src.roles.dependencies import get_roles_service
 from src.roles.utils import create_default_roles
 from src.scopes.utils import create_scopes
 from src.settings import get_settings
+from src.users.dependencies import get_users_service
 from src.users.models import User
-from tests.conftest import create_fake_users, TEST_USER
+from tests.conftest import create_fake_users, TEST_USER, _get_auth_service
 
 TEST_REGISTER_USER = {
     "username": "Test",
@@ -24,7 +26,7 @@ TEST_LOGIN_USER = {
 
 @pytest.mark.asyncio
 async def test_auth_register(client):
-    r = await client.post("/auth/register", json=TEST_REGISTER_USER)
+    r = await client.post("/v1/auth/register", json=TEST_REGISTER_USER)
     assert r.status_code == 200
     assert len(await User.objects.all()) == 2
     assert r.json()["username"] == "Test"
@@ -39,7 +41,7 @@ async def test_auth_register(client):
 @pytest.mark.asyncio
 async def test_auth_register_exception_when_password_not_match(client):
     r = await client.post(
-        "/auth/register",
+        "/v1/auth/register",
         json={
             "username": TEST_REGISTER_USER["username"],
             "email": TEST_REGISTER_USER["email"],
@@ -65,11 +67,12 @@ async def test_auth_register_exception_when_password_not_match(client):
 async def test_auth_register_exception_when_username_or_password_is_taken(
     client,
 ):
+    auth_service = await _get_auth_service()
     user = await auth_service.register(
         user_data=RegisterUserSchema(**TEST_REGISTER_USER)
     )
     r = await client.post(
-        "/auth/register",
+        "/v1/auth/register",
         json={
             "username": user.username,
             "email": user.email,
@@ -82,9 +85,9 @@ async def test_auth_register_exception_when_username_or_password_is_taken(
 
 @pytest.mark.asyncio
 async def test_auth_create_access_token(client):
-    r = await client.post("/auth/register", json=TEST_REGISTER_USER)
+    r = await client.post("/v1/auth/register", json=TEST_REGISTER_USER)
     data = r.json()
-    r = await client.post("/auth/token", data=TEST_LOGIN_USER)
+    r = await client.post("/v1/auth/token", data=TEST_LOGIN_USER)
     assert r.status_code == 200
     assert "access_token" in r.json()
     assert "refresh_token" in r.json()
@@ -93,23 +96,23 @@ async def test_auth_create_access_token(client):
 
 @pytest.mark.asyncio
 async def test_get_access_token_from_refresh_token(client, faker):
-    await client.post("/auth/register", json=TEST_REGISTER_USER)
-    r = await client.post("/auth/token", data=TEST_LOGIN_USER)
+    await client.post("/v1/auth/register", json=TEST_REGISTER_USER)
+    r = await client.post("/v1/auth/token", data=TEST_LOGIN_USER)
     token_data = r.json()
 
     r_r = await client.post(
-        "/auth/token/refresh", json={"refresh_token": token_data["refresh_token"]}
+        "/v1/auth/token/refresh", json={"refresh_token": token_data["refresh_token"]}
     )
     assert r_r.status_code == 200
 
 
 @pytest.mark.asyncio
 async def test_logout_user(logged_client):
-    r = await logged_client.get("/users/me")
+    r = await logged_client.get("/v1/users/me")
     assert r.status_code == 200
 
-    logout_r = await logged_client.post("/auth/logout")
+    logout_r = await logged_client.post("/v1/auth/logout")
     assert logout_r.status_code == 200
 
-    r2 = await logged_client.get("/users/me")
+    r2 = await logged_client.get("/v1/users/me")
     assert r2.status_code == 401
