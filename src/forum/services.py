@@ -9,7 +9,7 @@ from src.forum.models import Category, Thread, Post
 
 class CategoryService(BaseService):
     class Meta:
-        Model = Category
+        model = Category
         not_found_exception = category_not_found_exception
 
 
