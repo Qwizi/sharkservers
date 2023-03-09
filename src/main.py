@@ -2,6 +2,7 @@ import os
 
 from fastapi import FastAPI, Depends
 from fastapi.routing import APIRoute
+from fastapi_events.dispatcher import dispatch
 from fastapi_events.handlers.local import local_handler
 from fastapi_events.middleware import EventHandlerASGIMiddleware
 from fastapi_pagination import add_pagination
@@ -38,8 +39,15 @@ from src.users.views import router as users_router_v1
 
 # Admin Routes
 from src.users.views_admin import router as admin_users_router
+from .forum.dependencies import get_categories_service, get_threads_service
+from .forum.services import CategoryService, ThreadService
 
 # import admin posts router
+
+
+from .handlers import handle_all_events_and_debug_log, generate_random_data
+from .users.dependencies import get_users_service
+from .users.services import UserService
 
 script_dir = os.path.dirname(__file__)
 st_abs_file_path = os.path.join(script_dir, "../static/")
@@ -131,6 +139,24 @@ def create_app():
     @_app.get("/generate-openapi", tags=["root"])
     async def generate_openapi():
         await MainService.generate_openapi_file()
+        return {"msg": "Done"}
+
+    @_app.get("/generate-random-data", tags=["root"])
+    async def generate_random_data(
+        auth_service: AuthService = Depends(get_auth_service),
+        roles_service: RoleService = Depends(get_roles_service),
+        categories_service: CategoryService = Depends(get_categories_service),
+        threads_service: ThreadService = Depends(get_threads_service),
+    ):
+        dispatch(
+            event_name="GENERATE_RANDOM_DATA",
+            payload={
+                "auth_service": auth_service,
+                "roles_service": roles_service,
+                "categories_service": categories_service,
+                "threads_service": threads_service,
+            },
+        )
         return {"msg": "Done"}
 
     return _app
