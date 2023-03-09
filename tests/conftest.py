@@ -209,21 +209,19 @@ def faker_session_locale():
     return ["en_US"]
 
 
-async def create_fake_users(faker: Faker, number: int = 50):
-    username_list = set()
-    while len(username_list) < number:
-        username_list.add(faker.first_name().lower())
+async def create_fake_users(number: int = 50):
     users_list = []
-    await create_scopes()
-    await create_default_roles()
-    for username in username_list:
-        email = f"{username}@test.pl"
-        print(email)
-        user_data = RegisterUserSchema(
-            username=username, email=email, password="test", password2="test"
+    auth_service = await _get_auth_service()
+    for x in range(number):
+        fake_user = await auth_service.register(
+            user_data=RegisterUserSchema(
+                username=f"test_user_{x}",
+                email=f"test_user_{x}@test.pl",
+                password="test_password",
+                password2="test_password",
+            )
         )
-        user = await register_user(user_data=user_data)
-        users_list.append(user)
+        users_list.append(fake_user)
     return users_list
 
 
