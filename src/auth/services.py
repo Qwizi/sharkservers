@@ -2,13 +2,14 @@ import random
 import string
 from datetime import timedelta, datetime
 from sqlite3 import IntegrityError as SQLIntegrityError
+from typing import Optional
 from urllib import parse
 
 import httpx
 from aioredis import Redis
 from asyncpg import UniqueViolationError
 from cryptography.fernet import Fernet
-from fastapi import HTTPException
+from fastapi import HTTPException, Form
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import jwt, JWTError
 from ormar import NoMatch
@@ -18,6 +19,7 @@ from sqlalchemy.exc import IntegrityError
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
+from src.apps.services import AppService
 from src.auth.exceptions import (
     invalid_credentials_exception,
     incorrect_username_password_exception,
@@ -49,6 +51,16 @@ from src.users.schemas import (
     ChangeUsernameSchema,
 )
 from src.users.services import UserService
+
+
+class OAuth2ClientSecretRequestForm:
+    def __init__(
+        self,
+        client_id: Optional[str] = Form(default=None),
+        client_secret: Optional[str] = Form(default=None),
+    ):
+        self.client_id = client_id
+        self.client_secret = client_secret
 
 
 class JWTService:
@@ -443,3 +455,68 @@ class AuthService:
             updated_date=datetime.utcnow(),
         )
         return user, old_user_display_role
+
+    @staticmethod
+    async def validate_app(
+        client_id: str, client_secret: str, apps_service: AppService
+    ):
+        """
+        Validate app
+        :param apps_service:
+        :param client_id:
+        :param client_secret:
+        :return:
+        """
+        app = await apps_service.get_one(
+            client_id=client_id, client_secret=client_secret, related=["scopes"]
+        )
+        if not app:
+            return False
+        return app
+
+    async def get_app_token(
+        self,
+        form_data: OAuth2ClientSecretRequestForm,
+        apps_service: AppService,
+        jwt_access_token_service: JWTService,
+        jwt_refresh_token_service: JWTService,
+    ) -> TokenSchema:
+        """
+        Get app token
+        :param form_data:
+        :return:
+        """
+        app = await AuthService.validate_app(
+            client_id=form_data.client_id,
+            client_secret=form_data.client_secret,
+            apps_service=apps_service,
+        )
+
+        if not app:
+            raise invalid_credentials_exception
+        scopes_list = []
+
+        for scope in app.scopes:
+            scopes_list.append(scope.get_string())
+
+        access_token = jwt_access_token_service.encode(
+            data={
+                "sub": str(app.id),
+                "name": app.name,
+                "scopes": scopes_list,
+                "secret": app.secret_key,
+            }
+        )
+        refresh_token = jwt_refresh_token_service.encode(
+            data={
+                "sub": str(app.id),
+                "name": app.name,
+                "scopes": scopes_list,
+                "secret": app.secret_key,
+            }
+        )
+        return TokenSchema(
+            access_token=access_token,
+            token_type="bearer",
+            refresh_token=refresh_token,
+        )

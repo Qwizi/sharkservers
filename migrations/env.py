@@ -28,6 +28,7 @@ from src.roles.models import Role
 from src.players.models import SteamRepProfile, Player, PlayerStats
 from src.forum.models import Category, Tag, Post, Thread, SpecialThreadQuestion
 from src.servers.models import Server
+from src.apps.models import App
 
 target_metadata = BaseMeta.metadata
 

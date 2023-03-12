@@ -2,8 +2,11 @@ from datetime import timedelta
 
 from fastapi import Depends
 from fastapi.security import SecurityScopes
+from jose import JWTError
 from ormar import Model
 
+from src.apps.dependencies import get_app_service
+from src.apps.services import AppService
 from src.auth.exceptions import (
     no_permissions_exception,
     invalid_credentials_exception,
@@ -98,3 +101,34 @@ async def get_admin_user(user: User = Depends(get_current_active_user)):
     if not user.is_superuser:
         raise not_admin_user_exception
     return user
+
+
+async def get_application(
+    security_scopes: SecurityScopes,
+    token: str = Depends(AuthService.oauth2_scheme),
+    access_token_service: JWTService = Depends(get_access_token_service),
+    apps_service: AppService = Depends(get_app_service),
+) -> Model:
+    """
+    Get application
+    :param apps_service:
+    :param users_service:
+    :param security_scopes:
+    :param token:
+    :param access_token_service:
+    :return dict:
+    """
+    try:
+        token_data = access_token_service.decode(token)
+        for scope in security_scopes.scopes:
+            if scope not in token_data["scopes"]:
+                raise no_permissions_exception
+        application = await apps_service.get_one(
+            id=int(token_data["sub"]),
+            related=["scopes"],
+        )
+        if application.secret_key != token_data["secret"]:
+            raise invalid_credentials_exception
+        return application
+    except JWTError as e:
+        raise invalid_credentials_exception

@@ -3,9 +3,15 @@ from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 
+from src.apps.dependencies import get_app_service
+from src.apps.schemas import CreateAppSchema
+from src.apps.services import AppService
 from src.auth.dependencies import get_current_active_user, get_auth_service
 from src.auth.services import AuthService
 from src.schemas import HTTPError401Schema
+from src.scopes.dependencies import get_scopes_service
+from src.scopes.services import ScopeService
+from src.settings import Settings, get_settings
 from src.users.dependencies import get_valid_user, get_users_service
 from src.users.enums import UsersEventsEnum
 from src.users.models import User
@@ -124,6 +130,52 @@ async def change_user_display_role(
         "old_display_role": old_user_display_role,
         "new_display_role": change_display_role_data.role_id,
     }
+
+
+@router.get("/me/apps")
+async def get_user_apps(
+    params: Params = Depends(),
+    user: User = Security(get_current_active_user, scopes=["apps:all"]),
+    apps_service: AppService = Depends(get_app_service),
+) -> dict:
+    """
+    Get user apps
+    :param apps_service:
+    :param user:
+    :return dict:
+    """
+    apps = await apps_service.get_all(params=params, owner__id=user.id)
+    return apps
+
+
+@router.post("/me/apps")
+async def create_user_app(
+    app_data: CreateAppSchema,
+    user: User = Security(get_current_active_user, scopes=["apps:create"]),
+    apps_service: AppService = Depends(get_app_service),
+    scopes_service: ScopeService = Depends(get_scopes_service),
+    settings: Settings = Depends(get_settings),
+) -> dict:
+    """
+    Create user app
+    :param scopes_service:
+    :param apps_service:
+    :param app_data:
+    :param user:
+    :return dict:
+    """
+    app = await apps_service.create(
+        name=app_data.name,
+        description=app_data.description,
+        owner=user,
+    )
+    if settings.DEBUG:
+        scopes = await scopes_service.Meta.model.objects.all()
+    else:
+        scopes = await scopes_service.Meta.model.filter(id__in=app_data.scopes)
+    for scope in scopes:
+        await app.scopes.add(scope)
+    return app
 
 
 @router.get("/online", response_model=Page[UserOut])

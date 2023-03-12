@@ -10,7 +10,7 @@ from src.players.exceptions import (
     SteamProfileNotFound,
 )
 from src.players.models import Player
-from src.players.schemas import steam_profile_out, CreateSteamProfile
+from src.players.schemas import steam_profile_out, CreatePlayerSchema
 from src.players.services import PlayerService
 from src.users.models import User
 
@@ -39,7 +39,7 @@ async def admin_get_steam_profile(
 
 @router.post("")
 async def admin_create_player(
-    profile_data: CreateSteamProfile,
+    profile_data: CreatePlayerSchema,
     user: User = Security(get_admin_user, scopes=["players:create"]),
 ):
     dispatch(
