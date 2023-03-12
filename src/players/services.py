@@ -1,8 +1,10 @@
 import httpx
+from fastapi import HTTPException
 from steam.steamid import SteamID
 from steam.webapi import WebAPI
 
 from src.db import BaseService
+from src.players.exceptions import player_not_found_exception
 from src.players.models import SteamRepProfile, Player
 from src.players.schemas import SteamPlayer
 from src.settings import get_settings
@@ -32,6 +34,15 @@ class SteamRepService(BaseService):
             return profile, is_scammer
 
     async def create_profile(self, steamid64: str):
+        """
+        :param steamid64:
+        :return:
+        """
+        profile_created = await self.Meta.model.filter(steamid64=steamid64).exists()
+        if profile_created:
+            raise HTTPException(
+                detail="SteamRep profile already exists", status_code=401
+            )
         profile, is_scammer = await self.get_data(steamid64)
         return await self.create(profile_url=profile, is_scammer=is_scammer)
 
@@ -40,6 +51,10 @@ class PlayerService(BaseService):
     steam_api_key: str = None
     steam_api: WebAPI = None
     steamrep_service: SteamRepService
+
+    class Meta:
+        model = Player
+        not_found_exception = player_not_found_exception
 
     def __init__(self, steam_api_key, steamrep_service: SteamRepService):
         self.steam_api_key = steam_api_key
@@ -71,6 +86,11 @@ class PlayerService(BaseService):
         )
 
     async def create_player(self, steamid64: str) -> Player:
+        player_created = await self.Meta.model.objects.filter(
+            steamid64=steamid64
+        ).exists()
+        if player_created:
+            raise HTTPException(detail="Player already exists", status_code=401)
         player_info = self.get_steam_player_info(steamid64)
         steamrep_profile = await self.steamrep_service.create_profile(steamid64)
         reputation = 1000

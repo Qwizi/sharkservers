@@ -47,3 +47,11 @@ test:
 
 generate:
 	curl -X GET http://localhost/generate-openapi
+
+
+migration:
+	alembic revision --autogenerate
+
+
+upgrade:
+	alembic upgrade head

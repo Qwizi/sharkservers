@@ -23,3 +23,17 @@ async def get_players_service(
     return PlayerService(
         steamrep_service=steamrep_service, steam_api_key=settings.STEAM_API_KEY
     )
+
+
+async def get_valid_player(
+    player_id: int, player_service: PlayerService = Depends(get_players_service)
+):
+    """
+    Get valid player
+    :param player_id:
+    :param player_service:
+    :return:
+    """
+    return await player_service.get_one(
+        id=player_id, select_related=["steamrep_profile"]
+    )

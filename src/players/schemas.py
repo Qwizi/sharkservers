@@ -18,5 +18,5 @@ class SteamPlayer(BaseModel):
     country_code: Optional[str] = None
 
 
-class CreateSteamProfile(BaseModel):
+class CreatePlayerSchema(BaseModel):
     steamid64: str

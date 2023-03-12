@@ -1,6 +1,6 @@
 import os
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Security
 from fastapi.routing import APIRoute
 from fastapi_events.dispatcher import dispatch
 from fastapi_events.handlers.local import local_handler
@@ -9,7 +9,7 @@ from fastapi_pagination import add_pagination
 from starlette.staticfiles import StaticFiles
 
 from src.__version import VERSION
-from src.auth.dependencies import get_auth_service
+from src.auth.dependencies import get_auth_service, get_application
 from src.auth.schemas import RegisterUserSchema
 from src.auth.services import AuthService
 
@@ -39,6 +39,7 @@ from src.users.views import router as users_router_v1
 
 # Admin Routes
 from src.users.views_admin import router as admin_users_router
+from .apps.models import App
 from .forum.dependencies import get_categories_service, get_threads_service
 from .forum.services import CategoryService, ThreadService
 
@@ -158,6 +159,12 @@ def create_app():
             },
         )
         return {"msg": "Done"}
+
+    @_app.get("/protected", tags=["root"])
+    async def protected_route(
+        app: App = Security(get_application, scopes=["users:create"]),
+    ):
+        return {"msg": "You are authenticated!"}
 
     return _app
 

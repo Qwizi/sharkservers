@@ -48,6 +48,7 @@ class MainService:
                 "tags",
                 "threads",
                 "posts",
+                "apps",
             ],
             additional=[
                 ("users", "me", "Get my profile"),

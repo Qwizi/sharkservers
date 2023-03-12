@@ -1,10 +1,13 @@
 import json
+from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Form
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_events.dispatcher import dispatch
 from starlette.requests import Request
 
+from src.apps.dependencies import get_app_service
+from src.apps.services import AppService
 from src.auth.dependencies import (
     get_access_token_service,
     get_refresh_token_service,
@@ -19,7 +22,12 @@ from src.auth.schemas import (
     ActivateUserCodeSchema,
     ResendActivationCodeSchema,
 )
-from src.auth.services import JWTService, AuthService, CodeService
+from src.auth.services import (
+    JWTService,
+    AuthService,
+    CodeService,
+    OAuth2ClientSecretRequestForm,
+)
 from src.auth.utils import (
     _get_access_token_from_refresh_token,
 )
@@ -176,4 +184,27 @@ async def steam_profile_callback(
 ):
     return await auth_service.authenticate_steam_user(
         request, user, player_service=players_service
+    )
+
+
+@router.post("/apps/token")
+async def get_app_token(
+    form_data: OAuth2ClientSecretRequestForm = Depends(),
+    access_token_service: JWTService = Depends(get_access_token_service),
+    jwt_refresh_token_service: JWTService = Depends(get_refresh_token_service),
+    auth_service: AuthService = Depends(get_auth_service),
+    apps_service: AppService = Depends(get_app_service),
+) -> TokenSchema:
+    """
+    Get app token
+    :param auth_service:
+    :param access_token_service:
+    :param form_data:
+    :return TokenSchema:
+    """
+    return await auth_service.get_app_token(
+        form_data,
+        jwt_access_token_service=access_token_service,
+        jwt_refresh_token_service=jwt_refresh_token_service,
+        apps_service=apps_service,
     )
