@@ -20,7 +20,7 @@ down:
 
 logs:
 	@echo "Starting logs"
-	docker-compose logs -f
+	docker-compose logs
 
 uninstall:
 	@echo "Starting removing containers"
