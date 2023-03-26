@@ -5,6 +5,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.ormar import paginate
 
 from src.db import BaseService
+from src.forum.services import PostService
 from src.users.exceptions import (
     user_not_found_exception,
 )
