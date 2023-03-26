@@ -63,7 +63,9 @@ class BaseService:
         except ormar.NoMatch:
             raise self.Meta.not_found_exception
 
-    async def get_all(self, params: Params = None, related=None, **kwargs):
+    async def get_all(
+        self, params: Params = None, related=None, order_by=None, **kwargs
+    ):
         """
         if params:
             if related:
@@ -82,6 +84,8 @@ class BaseService:
         query = self.Meta.model.objects.filter(**kwargs)
         if related:
             query = query.select_related(related)
+        if order_by:
+            query = query.order_by(order_by)
         if params:
             query = await paginate(query, params)
         return query

@@ -35,6 +35,7 @@ from src.scopes.views_admin import router as admin_scopes_router
 from src.servers.views import router as servers_router
 from src.servers.views_admin import router as admin_servers_router
 from src.services import MainService
+from src.chat.views import router as chat_router
 from aiocron import crontab
 
 # Routes
@@ -89,7 +90,8 @@ def init_routes(_app: FastAPI):
     _app.include_router(roles_router, prefix="/v1/roles", tags=["roles"])
     _app.include_router(steamprofile_router, prefix="/v1/players", tags=["players"])
     _app.include_router(forum_router)
-    _app.include_router(servers_router, prefix="/servers", tags=["servers"])
+    _app.include_router(servers_router, prefix="/v1/servers", tags=["servers"])
+    _app.include_router(chat_router, prefix="/v1/chat", tags=["chat"])
 
     # Admin routes
     _app.include_router(admin_users_router, prefix="/admin/users", tags=["admin-users"])
