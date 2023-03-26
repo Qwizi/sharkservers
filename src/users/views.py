@@ -8,6 +8,8 @@ from src.apps.schemas import CreateAppSchema
 from src.apps.services import AppService
 from src.auth.dependencies import get_current_active_user, get_auth_service
 from src.auth.services import AuthService
+from src.forum.dependencies import get_posts_service, get_threads_service
+from src.forum.services import PostService, ThreadService
 from src.schemas import HTTPError401Schema
 from src.scopes.dependencies import get_scopes_service
 from src.scopes.services import ScopeService
@@ -60,6 +62,54 @@ async def get_logged_user(
     dispatch(UsersEventsEnum.ME_PRE, payload={"user": user})
     dispatch(UsersEventsEnum.ME_POST, payload={"user": user})
     return user
+
+
+@router.get("/me/posts")
+async def get_logged_user_posts(
+    params: Params = Depends(),
+    user: User = Security(get_current_active_user, scopes=["posts:all"]),
+    posts_service: PostService = Depends(get_posts_service),
+):
+    """
+    Get user posts
+    :param params:
+    :param posts_service:
+    :param user:
+    :return AbstractPage:
+    """
+    return await posts_service.get_all(params=params, author__id=user.id)
+
+
+@router.get("/me/threads")
+async def get_logged_user_threads(
+    params: Params = Depends(),
+    user: User = Security(get_current_active_user, scopes=["threads:all"]),
+    threads_service: ThreadService = Depends(get_threads_service),
+):
+    """
+    Get user threads
+    :param threads_service:
+    :param params:
+    :param user:
+    :return AbstractPage:
+    """
+    return await threads_service.get_all(params=params, author__id=user.id)
+
+
+@router.get("/me/apps")
+async def get_user_apps(
+    params: Params = Depends(),
+    user: User = Security(get_current_active_user, scopes=["apps:all"]),
+    apps_service: AppService = Depends(get_app_service),
+) -> dict:
+    """
+    Get user apps
+    :param apps_service:
+    :param user:
+    :return dict:
+    """
+    apps = await apps_service.get_all(params=params, owner__id=user.id)
+    return apps
 
 
 @router.post("/me/username", response_model=UserOut)
@@ -132,22 +182,6 @@ async def change_user_display_role(
     }
 
 
-@router.get("/me/apps")
-async def get_user_apps(
-    params: Params = Depends(),
-    user: User = Security(get_current_active_user, scopes=["apps:all"]),
-    apps_service: AppService = Depends(get_app_service),
-) -> dict:
-    """
-    Get user apps
-    :param apps_service:
-    :param user:
-    :return dict:
-    """
-    apps = await apps_service.get_all(params=params, owner__id=user.id)
-    return apps
-
-
 @router.post("/me/apps")
 async def create_user_app(
     app_data: CreateAppSchema,
@@ -204,3 +238,35 @@ async def get_user(user: User = Depends(get_valid_user)) -> UserOut:
     dispatch(UsersEventsEnum.GET_ONE_PRE, payload={"user_id": user.id})
     dispatch(UsersEventsEnum.GET_ONE_POST, payload={"user": user})
     return user
+
+
+@router.get("/{user_id}/posts")
+async def get_user_posts(
+    params: Params = Depends(),
+    user: User = Depends(get_valid_user),
+    posts_service: PostService = Depends(get_posts_service),
+):
+    """
+    Get user posts
+    :param posts_service:
+    :param params:
+    :param user:
+    :return AbstractPage:
+    """
+    return await posts_service.get_all(params=params, author__id=user.id)
+
+
+@router.get("/{user_id}/threads")
+async def get_user_threads(
+    params: Params = Depends(),
+    user: User = Depends(get_valid_user),
+    threads_service: ThreadService = Depends(get_threads_service),
+):
+    """
+    Get user threads
+    :param threads_service:
+    :param params:
+    :param user:
+    :return AbstractPage:
+    """
+    return await threads_service.get_all(params=params, author__id=user.id)
