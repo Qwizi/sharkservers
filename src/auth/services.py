@@ -4,8 +4,9 @@ from datetime import timedelta, datetime
 from sqlite3 import IntegrityError as SQLIntegrityError
 from typing import Optional
 from urllib import parse
-
+import pytz
 import httpx
+import ormar
 from aioredis import Redis
 from asyncpg import UniqueViolationError
 from cryptography.fernet import Fernet
@@ -33,22 +34,28 @@ from src.auth.schemas import (
     RegisterUserSchema,
 )
 from src.auth.utils import crypto_key
+from src.db import BaseService
 from src.logger import logger
 from src.players.services import PlayerService
 from src.roles.enums import ProtectedDefaultRolesEnum
 from src.roles.services import RoleService
+from src.scopes.services import ScopeService
 from src.scopes.utils import get_scopesv3
 from src.services import EmailService
 from src.users.exceptions import (
     cannot_change_display_role_exception,
     invalid_current_password_exception,
     username_not_available_exception,
+    user_not_found_exception,
+    user_not_banned_exception,
+    user_already_banned_exception,
 )
-from src.users.models import User
+from src.users.models import User, Ban
 from src.users.schemas import (
     ChangeDisplayRoleSchema,
     ChangePasswordSchema,
     ChangeUsernameSchema,
+    BanUserSchema,
 )
 from src.users.services import UserService
 
@@ -146,9 +153,15 @@ class CodeService:
 class AuthService:
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/auth/token")
 
-    def __init__(self, users_service: UserService, roles_service: RoleService):
+    def __init__(
+        self,
+        users_service: UserService,
+        roles_service: RoleService,
+        scopes_service: ScopeService,
+    ):
         self.users_service = users_service
         self.roles_service = roles_service
+        self.scopes_service = scopes_service
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
         self.crypto_key = Fernet.generate_key()
         self.fernet = Fernet(crypto_key)
@@ -250,7 +263,7 @@ class AuthService:
         if not user:
             raise incorrect_username_password_exception
         # TODO must be change
-        scopes = await get_scopesv3(user.roles)
+        scopes = await self.scopes_service.get_scopes_list(user.roles)
         access_token = jwt_access_token_service.encode(
             data={"sub": str(user.id), "scopes": scopes, "secret": user.secret_salt}
         )
@@ -520,3 +533,57 @@ class AuthService:
             token_type="bearer",
             refresh_token=refresh_token,
         )
+
+
+class BanService(BaseService):
+    class Meta:
+        model = Ban
+        not_found_exception = user_not_found_exception
+
+    def __init__(self, roles_service: RoleService, auth_service: AuthService):
+        self.roles_service = roles_service
+        self.auth_service = auth_service
+
+    async def ban_user(
+        self, user: User, ban_data: BanUserSchema, banned_by: User
+    ) -> Ban:
+        already_banned = await self.Meta.model.objects.filter(user=user).exists()
+        if already_banned:
+            raise user_already_banned_exception
+        reason, ban_time = ban_data.reason, ban_data.ban_time
+        ban_time = datetime.utcnow() + timedelta(minutes=ban_time)
+        banned_role = await self.roles_service.get_one(
+            id=ProtectedDefaultRolesEnum.BANNED.value
+        )
+        await user.roles.add(banned_role)
+        await AuthService.change_display_role(
+            user=user,
+            change_display_role_data=ChangeDisplayRoleSchema(role_id=banned_role.id),
+        )
+        await self.auth_service.logout(user=user)
+        return await self.create(
+            user=user,
+            reason=ban_data.reason,
+            ban_time=ban_time,
+            banned_by=banned_by,
+        )
+
+    async def unban_user(self, user: User):
+        try:
+            banned_role = await self.roles_service.Meta.model.objects.get(
+                id=ProtectedDefaultRolesEnum.BANNED.value
+            )
+            logger.info(banned_role)
+            await self.Meta.model.objects.filter(user=user).delete()
+            if banned_role not in user.roles or banned_role.id != user.display_role.id:
+                raise user_not_banned_exception
+            await AuthService.change_display_role(
+                user=user,
+                change_display_role_data=ChangeDisplayRoleSchema(
+                    role_id=ProtectedDefaultRolesEnum.USER.value
+                ),
+            )
+            await user.roles.remove(banned_role)
+            return user
+        except ormar.NoMatch:
+            raise user_not_banned_exception

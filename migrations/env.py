@@ -22,7 +22,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata\
-from src.users.models import User
+from src.users.models import User, Ban
 from src.scopes.models import Scope
 from src.roles.models import Role
 from src.players.models import SteamRepProfile, Player, PlayerStats

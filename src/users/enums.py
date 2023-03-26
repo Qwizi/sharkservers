@@ -8,6 +8,8 @@ class UsersExceptionsDetailEnum(str, Enum):
     CANNOT_CHANGE_DISPLAY_ROLE = (
         "U cannot change your display role if u don't have this role"
     )
+    USER_NOT_BANNED = "User not banned"
+    USER_ALREADY_BANNED = "User already banned"
 
 
 class UsersEventsEnum(str, Enum):

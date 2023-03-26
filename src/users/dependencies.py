@@ -1,9 +1,7 @@
 from fastapi import Depends
-from fastapi_pagination.ext import ormar
 from ormar import NoMatch, Model
 
 from src.users.exceptions import user_not_found_exception
-from src.users.models import User
 from src.users.services import UserService
 
 

@@ -13,9 +13,11 @@ from src.auth.exceptions import (
     inactivate_user_exception,
     not_admin_user_exception,
 )
-from src.auth.services import JWTService, AuthService
+from src.auth.services import JWTService, AuthService, BanService
 from src.roles.dependencies import get_roles_service
 from src.roles.services import RoleService
+from src.scopes.dependencies import get_scopes_service
+from src.scopes.services import ScopeService
 from src.settings import Settings, get_settings
 from src.users.dependencies import get_users_service
 from src.users.models import User
@@ -53,8 +55,13 @@ async def get_refresh_token_service(
 async def get_auth_service(
     users_service: UserService = Depends(get_users_service),
     roles_service: RoleService = Depends(get_roles_service),
+    scopes_service: ScopeService = Depends(get_scopes_service),
 ) -> AuthService:
-    return AuthService(users_service=users_service, roles_service=roles_service)
+    return AuthService(
+        users_service=users_service,
+        roles_service=roles_service,
+        scopes_service=scopes_service,
+    )
 
 
 async def get_current_user(
@@ -132,3 +139,14 @@ async def get_application(
         return application
     except JWTError as e:
         raise invalid_credentials_exception
+
+
+async def get_ban_service(
+    roles_service: RoleService = Depends(get_roles_service),
+    auth_service: AuthService = Depends(get_auth_service),
+) -> BanService:
+    """
+    Get ban service
+    :return ban_service:
+    """
+    return BanService(roles_service=roles_service, auth_service=auth_service)

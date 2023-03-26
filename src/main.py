@@ -1,3 +1,4 @@
+import datetime
 import os
 
 from fastapi import FastAPI, Depends, Security
@@ -6,10 +7,11 @@ from fastapi_events.dispatcher import dispatch
 from fastapi_events.handlers.local import local_handler
 from fastapi_events.middleware import EventHandlerASGIMiddleware
 from fastapi_pagination import add_pagination
+from starlette.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
 
 from src.__version import VERSION
-from src.auth.dependencies import get_auth_service, get_application
+from src.auth.dependencies import get_auth_service, get_application, get_ban_service
 from src.auth.schemas import RegisterUserSchema
 from src.auth.services import AuthService
 
@@ -33,12 +35,16 @@ from src.scopes.views_admin import router as admin_scopes_router
 from src.servers.views import router as servers_router
 from src.servers.views_admin import router as admin_servers_router
 from src.services import MainService
+from aiocron import crontab
 
 # Routes
 from src.users.views import router as users_router_v1
 
 # Admin Routes
-from src.users.views_admin import router as admin_users_router
+from src.users.views_admin import (
+    router as admin_users_router,
+    bans_router as admin_bans_router,
+)
 from .apps.models import App
 from .forum.dependencies import get_categories_service, get_threads_service
 from .forum.services import CategoryService, ThreadService
@@ -87,6 +93,7 @@ def init_routes(_app: FastAPI):
 
     # Admin routes
     _app.include_router(admin_users_router, prefix="/admin/users", tags=["admin-users"])
+    _app.include_router(admin_bans_router, prefix="/v1/admin/bans", tags=["admin-bans"])
     _app.include_router(admin_roles_router, prefix="/admin/roles", tags=["admin-roles"])
     _app.include_router(
         admin_scopes_router, prefix="/admin/scopes", tags=["admin-scopes"]
@@ -101,12 +108,54 @@ def init_routes(_app: FastAPI):
     return _app
 
 
+async def unban_users_cron():
+    # This is an async cron job that runs every minute
+    logger.info("Cron job ran")
+
+    users_service = await get_users_service()
+    roles_service = await get_roles_service()
+    scopes_service = await get_scopes_service()
+    auth_service = await get_auth_service(
+        users_service=users_service,
+        roles_service=roles_service,
+        scopes_service=scopes_service,
+    )
+    ban_service = await get_ban_service(
+        auth_service=auth_service, roles_service=roles_service
+    )
+    active_bans = await ban_service.Meta.model.objects.filter(
+        ban_time__lte=datetime.datetime.utcnow()
+    ).all()
+
+    now = datetime.datetime.utcnow()
+
+    for ban in active_bans:
+        logger.info(ban.ban_time.date())
+        if ban.ban_time < now:
+            await ban_service.unban_user(ban.user)
+
+    logger.info(active_bans)
+
+
+@crontab("* * * * *")
+async def my_cron_job():
+    # This function calls the async cron job function
+    await unban_users_cron()
+
+
 def create_app():
     _app = FastAPI(
         name="Shark API",
         version=VERSION,
         debug=True,
         generate_unique_id_function=custom_generate_unique_id,
+    )
+    _app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
     _app.add_middleware(EventHandlerASGIMiddleware, handlers=[local_handler])
     _app.mount("/static", StaticFiles(directory=st_abs_file_path), name="static")

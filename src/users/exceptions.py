@@ -29,3 +29,13 @@ cannot_change_display_role_exception = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail=UsersExceptionsDetailEnum.CANNOT_CHANGE_DISPLAY_ROLE,
 )
+
+user_already_banned_exception = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail=UsersExceptionsDetailEnum.USER_ALREADY_BANNED,
+)
+
+user_not_banned_exception = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail=UsersExceptionsDetailEnum.USER_NOT_BANNED,
+)
