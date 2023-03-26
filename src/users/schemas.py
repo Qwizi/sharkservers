@@ -1,3 +1,4 @@
+import datetime
 from typing import Optional, List
 
 from pydantic import BaseModel, validator
@@ -61,3 +62,8 @@ class CreateUserSchema(BaseModel):
 
 class CreateAdminUserSchema(CreateUserSchema):
     is_admin: bool = True
+
+
+class BanUserSchema(BaseModel):
+    reason: str
+    ban_time: int

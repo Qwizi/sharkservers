@@ -3,10 +3,12 @@ from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 
-from src.auth.dependencies import get_admin_user
+from src.auth.dependencies import get_admin_user, get_ban_service
+from src.users.dependencies import get_valid_user
 from src.users.enums import UsersAdminEventsEnum
-from src.users.models import User
-from src.users.schemas import UserOutWithEmail, CreateUserSchema
+from src.users.models import User, Ban
+from src.users.schemas import UserOutWithEmail, CreateUserSchema, BanUserSchema
+from src.auth.services import BanService
 from src.users.utils import (
     _admin_get_users,
     _admin_get_user,
@@ -50,6 +52,40 @@ async def admin_get_user(
     return user
 
 
+@router.post("/{user_id}/ban")
+async def admin_ban_user(
+    ban_data: BanUserSchema,
+    ban_service: BanService = Depends(get_ban_service),
+    user: User = Depends(get_valid_user),
+    banned_by_user: User = Security(get_admin_user, scopes=["users:me"]),
+):
+    """
+    Admin ban user
+    :param ban_data:
+    :param ban_service:
+    :param user:
+    :return dict:
+    """
+    return await ban_service.ban_user(
+        user=user, banned_by=banned_by_user, ban_data=ban_data
+    )
+
+
+@router.post("/{user_id}/unban")
+async def admin_unban_user(
+    ban_service: BanService = Depends(get_ban_service),
+    user: User = Depends(get_valid_user),
+    banned_by_user: User = Security(get_admin_user, scopes=["users:me"]),
+):
+    """
+    Admin unban user
+    :param ban_service:
+    :param user:
+    :return dict:
+    """
+    return await ban_service.unban_user(user=user)
+
+
 @router.post("", response_model=UserOutWithEmail)
 async def admin_create_user(
     user_data: CreateUserSchema,
@@ -81,3 +117,20 @@ async def admin_delete_user(
     user = await _admin_delete_user(user_id)
     dispatch(UsersAdminEventsEnum.DELETE_POST, payload={"data": user})
     return {"msg": "Successfully deleted user"}
+
+
+bans_router = APIRouter()
+
+
+@bans_router.get("")
+async def admin_get_user_bans(
+    user: User = Security(get_admin_user, scopes=["users:a:all"]),
+    ban_service: BanService = Depends(get_ban_service),
+    params: Params = Depends(),
+):
+    """
+    Admin get user bans
+    :param user:
+    :return list[Ban]:
+    """
+    return await ban_service.get_all(params=params)

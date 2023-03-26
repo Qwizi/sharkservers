@@ -98,6 +98,8 @@ class ScopeService(BaseService):
         """
         scopes = []
         for role in roles:
+            if role.id == ProtectedDefaultRolesEnum.BANNED.value:
+                return []
             for scope in role.scopes:
                 scope_str = scope.get_string()
                 if scope_str not in scopes:

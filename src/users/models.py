@@ -26,3 +26,14 @@ class User(ormar.Model, DateFieldsMixins):
     )
     last_login: Optional[datetime.datetime] = ormar.DateTime(nullable=True)
     secret_salt: Optional[str] = ormar.String(max_length=255, unique=True)
+
+
+class Ban(ormar.Model, DateFieldsMixins):
+    class Meta(BaseMeta):
+        tablename = "banned"
+
+    id: int = ormar.Integer(primary_key=True)
+    user: Optional[User] = ormar.ForeignKey(User, related_name="banned_user")
+    reason: Optional[str] = ormar.String(max_length=255)
+    ban_time: Optional[datetime.datetime] = ormar.DateTime(nullable=True, timezone=True)
+    banned_by: Optional[User] = ormar.ForeignKey(User, related_name="banned_by")
