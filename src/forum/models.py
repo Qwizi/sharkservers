@@ -8,15 +8,6 @@ from src.servers.models import Server
 from src.users.models import User
 
 
-class SpecialThreadQuestion(ormar.Model, DateFieldsMixins):
-    class Meta(BaseMeta):
-        tablename = "forum_special_thread_questions"
-
-    id: int = ormar.Integer(primary_key=True)
-    name: str = ormar.String(max_length=64, unique=True)
-    value: str = ormar.String(max_length=256)
-
-
 class Category(ormar.Model, DateFieldsMixins):
     class Meta(BaseMeta):
         tablename = "forum_categories"
@@ -28,11 +19,6 @@ class Category(ormar.Model, DateFieldsMixins):
         max_length=64,
         choices=list(CategoryTypeEnum),
         default=CategoryTypeEnum.PUBLIC.value,
-    )
-    special_thread_question: Optional[SpecialThreadQuestion] = ormar.ManyToMany(
-        SpecialThreadQuestion,
-        related_name="category_sp_thread_question",
-        nullable=True,
     )
 
 

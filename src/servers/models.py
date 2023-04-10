@@ -3,6 +3,7 @@ from ormar import post_save
 
 from src.db import BaseMeta, DateFieldsMixins
 from src.logger import logger
+from src.players.models import Player, PlayerStats
 from src.roles.dependencies import get_roles_service
 from src.roles.enums import ProtectedDefaultRolesEnum
 from src.scopes.dependencies import get_scopes_service
@@ -16,6 +17,16 @@ class Server(ormar.Model, DateFieldsMixins):
     name: str = ormar.String(max_length=64, unique=True)
     ip: str = ormar.String(max_length=64, unique=True)
     port: int = ormar.Integer()
+
+
+class ServerPlayerStats(ormar.Model, DateFieldsMixins):
+    class Meta(BaseMeta):
+        tablename = "server_stats"
+
+    id: int = ormar.Integer(primary_key=True)
+    server: Server = ormar.ForeignKey(Server, related_name="server_stats")
+    player: Player = ormar.ForeignKey(Player, related_name="player_stats")
+    stats: list[PlayerStats] = ormar.ManyToMany(PlayerStats, related_name="stats")
 
 
 @post_save(Server)
