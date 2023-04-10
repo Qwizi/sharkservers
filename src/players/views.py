@@ -1,14 +1,18 @@
-from fastapi import APIRouter, HTTPException, Depends, Security
-from fastapi_pagination import Page, Params
-from fastapi_pagination.ext.ormar import paginate
+from fastapi import APIRouter, Depends
+from fastapi_pagination import Params
 
-from src.apps.models import App
-from src.auth.dependencies import get_application
-from src.players.dependencies import get_players_service, get_valid_player
+from src.players.dependencies import (
+    get_players_service,
+    get_valid_player_by_steamid,
+)
 from src.players.models import Player
-from src.players.schemas import steam_profile_out, CreatePlayerSchema
-from src.players.services import PlayerService
-from src.players.utils import get_steam_user_info
+from src.players.schemas import (
+    CreatePlayerSchema,
+    UpdatePlayerStatsSchema,
+)
+from src.players.services import (
+    PlayerService,
+)
 
 router = APIRouter()
 
@@ -25,7 +29,7 @@ async def get_players(
 async def create_player(
     player_data: CreatePlayerSchema,
     players_service: PlayerService = Depends(get_players_service),
-    app: App = Security(get_application, scopes=["players:create"]),
+    # app: App = Security(get_application, scopes=["players:create"]),
 ):
     """
     Create player
@@ -39,8 +43,8 @@ async def create_player(
     return player
 
 
-@router.get("/{player_id}")
+@router.get("/{steamid64}")
 async def get_player(
-    player: Player = Depends(get_valid_player),
+    player: Player = Depends(get_valid_player_by_steamid),
 ):
     return player

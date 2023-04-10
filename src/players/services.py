@@ -4,8 +4,12 @@ from steam.steamid import SteamID
 from steam.webapi import WebAPI
 
 from src.db import BaseService
-from src.players.exceptions import player_not_found_exception
-from src.players.models import SteamRepProfile, Player
+from src.logger import logger
+from src.players.exceptions import (
+    player_not_found_exception,
+    player_server_stats_not_found_exception,
+)
+from src.players.models import SteamRepProfile, Player, PlayerStats
 from src.players.schemas import SteamPlayer
 from src.settings import get_settings
 
@@ -38,13 +42,17 @@ class SteamRepService(BaseService):
         :param steamid64:
         :return:
         """
-        profile_created = await self.Meta.model.filter(steamid64=steamid64).exists()
+        profile_created = await self.Meta.model.objects.filter(
+            steamid64=steamid64
+        ).exists()
         if profile_created:
             raise HTTPException(
                 detail="SteamRep profile already exists", status_code=401
             )
         profile, is_scammer = await self.get_data(steamid64)
-        return await self.create(profile_url=profile, is_scammer=is_scammer)
+        return await self.create(
+            profile_url=profile, is_scammer=is_scammer, steamid64=steamid64
+        )
 
 
 class PlayerService(BaseService):
@@ -86,10 +94,7 @@ class PlayerService(BaseService):
         )
 
     async def create_player(self, steamid64: str) -> Player:
-        player_created = await self.Meta.model.objects.filter(
-            steamid64=steamid64
-        ).exists()
-        if player_created:
+        if await self.Meta.model.objects.filter(steamid64=steamid64).exists():
             raise HTTPException(detail="Player already exists", status_code=401)
         player_info = self.get_steam_player_info(steamid64)
         steamrep_profile = await self.steamrep_service.create_profile(steamid64)
@@ -108,3 +113,9 @@ class PlayerService(BaseService):
             reputation=reputation,
         )
         return player
+
+
+class PlayerStatsService(BaseService):
+    class Meta:
+        model = PlayerStats
+        not_found_exception = player_server_stats_not_found_exception

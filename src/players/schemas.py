@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Optional
 
 from pydantic import BaseModel
@@ -20,3 +21,29 @@ class SteamPlayer(BaseModel):
 
 class CreatePlayerSchema(BaseModel):
     steamid64: str
+
+
+class UpdatePlayerStatsSchema(BaseModel):
+    points: Optional[int] = None
+    kills: Optional[int] = None
+    deaths: Optional[int] = None
+    assists: Optional[int] = None
+    damage: Optional[int] = None
+    damage_taken: Optional[int] = None
+    healing: Optional[int] = None
+    healing_taken: Optional[int] = None
+    headshots: Optional[int] = None
+    backstabs: Optional[int] = None
+    dominations: Optional[int] = None
+    revenges: Optional[int] = None
+    captures: Optional[int] = None
+    defends: Optional[int] = None
+    ubers: Optional[int] = None
+    teleports: Optional[int] = None
+    suicides: Optional[int] = None
+    sentries: Optional[int] = None
+    buildings_destroyed: Optional[int] = None
+    buildings_destroyed_sentry: Optional[int] = None
+    buildings_destroyed_dispenser: Optional[int] = None
+    buildings_destroyed_teleporter: Optional[int] = None
+    time_played: Optional[int] = None

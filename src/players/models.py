@@ -4,7 +4,6 @@ from typing import Optional
 import ormar
 
 from src.db import DateFieldsMixins, BaseMeta
-from src.servers.models import Server
 from src.users.models import User
 
 
@@ -15,6 +14,7 @@ class SteamRepProfile(ormar.Model, DateFieldsMixins):
     id: int = ormar.Integer(primary_key=True)
     profile_url: str = ormar.String(max_length=255, unique=True)
     is_scammer: bool = ormar.Boolean(default=False)
+    steamid64: str = ormar.String(max_length=255, unique=True)
 
 
 class Player(ormar.Model, DateFieldsMixins):
@@ -38,12 +38,10 @@ class Player(ormar.Model, DateFieldsMixins):
 
 class PlayerStats(ormar.Model, DateFieldsMixins):
     class Meta(BaseMeta):
-        tablename = "playerstats"
+        tablename = "player_stats"
 
     id: int = ormar.Integer(primary_key=True)
-    steam_profile: Optional[Player] = ormar.ForeignKey(Player, related_name="stats")
-    server: Optional[Server] = ormar.ForeignKey(Server, related_name="stats")
-    points: int = ormar.Integer(default=1000)
+    points: int = ormar.Integer(default=0)
     kills: int = ormar.Integer(default=0)
     deaths: int = ormar.Integer(default=0)
     assists: int = ormar.Integer(default=0)
@@ -67,3 +65,4 @@ class PlayerStats(ormar.Model, DateFieldsMixins):
     buildings_destroyed_teleporter: int = ormar.Integer(default=0)
     time_played: int = ormar.Integer(default=0)
     last_time_played: datetime.datetime = ormar.DateTime(default=datetime.datetime.now)
+    date: datetime.date = ormar.Date(default=datetime.date.today)

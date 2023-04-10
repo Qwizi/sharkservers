@@ -99,7 +99,7 @@ class BaseService:
         try:
             return await self.Meta.model.objects.create(**kwargs)
         except (IntegrityError, SQLIntegrityError, UniqueViolationError):
-            raise HTTPException(422, "Key already exists")
+            raise HTTPException(status_code=422, detail="Key already exists")
 
     async def update(self, updated_data: dict, **kwargs):  # type: ignore
         try:
