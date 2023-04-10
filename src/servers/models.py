@@ -27,6 +27,7 @@ class ServerPlayerStats(ormar.Model, DateFieldsMixins):
     server: Server = ormar.ForeignKey(Server, related_name="server_stats")
     player: Player = ormar.ForeignKey(Player, related_name="player_stats")
     stats: list[PlayerStats] = ormar.ManyToMany(PlayerStats, related_name="stats")
+    points: int = ormar.Integer(default=1000)
 
 
 @post_save(Server)
