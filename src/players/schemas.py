@@ -24,7 +24,6 @@ class CreatePlayerSchema(BaseModel):
 
 
 class UpdatePlayerStatsSchema(BaseModel):
-    points: Optional[int] = None
     kills: Optional[int] = None
     deaths: Optional[int] = None
     assists: Optional[int] = None

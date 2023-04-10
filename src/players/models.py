@@ -41,7 +41,6 @@ class PlayerStats(ormar.Model, DateFieldsMixins):
         tablename = "player_stats"
 
     id: int = ormar.Integer(primary_key=True)
-    points: int = ormar.Integer(default=0)
     kills: int = ormar.Integer(default=0)
     deaths: int = ormar.Integer(default=0)
     assists: int = ormar.Integer(default=0)

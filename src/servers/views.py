@@ -65,7 +65,61 @@ async def get_server(server: Model = Depends(get_valid_server)):
     return server
 
 
-@router.get("/{server_id}/players/{steamid64}/stats")
+@router.get("/{server_id}/player-stats")
+async def get_players_stats(
+    params: Params = Depends(),
+    server: Server = Depends(get_valid_server),
+    server_player_stats_service: ServerPlayerStatsService = Depends(
+        get_server_player_stats_service
+    ),
+):
+    """
+    Get server player stats
+    :param server_player_stats_service:
+    :param server:
+    :return:
+    """
+
+    players_stats_from_db = await server_player_stats_service.get_all(
+        params=params,
+        server=server,
+        related=["player", "server", "stats"],
+        order_by=["-points"],
+    )
+    players_stats_from_db_copy = players_stats_from_db.copy()
+    server_players_stats_dict = players_stats_from_db_copy.dict()
+
+    for index, server_player_stats in enumerate(players_stats_from_db_copy.items):
+        logger.info(index)
+        stats = await server_player_stats.stats.sum(
+            [
+                "kills",
+                "deaths",
+                "assists",
+                "damage",
+                "damage_taken",
+                "healing",
+                "healing_taken",
+                "headshots",
+                "backstabs",
+                "dominations",
+                "revenges",
+                "captures",
+                "defends",
+                "ubers",
+                "teleports",
+                "suicides",
+                "sentries",
+                "buildings_destroyed",
+                "time_played",
+            ]
+        )
+
+        server_players_stats_dict["items"][index]["total_stats"] = stats
+    return server_players_stats_dict
+
+
+@router.get("/{server_id}/player-stats/{steamid64}")
 async def get_server_player_stats(
     server_player_stats_service: ServerPlayerStatsService = Depends(
         get_server_player_stats_service
@@ -83,7 +137,6 @@ async def get_server_player_stats(
     stats = await server_player_stats.stats.sum(
         [
             "kills",
-            "points",
             "deaths",
             "assists",
             "damage",
@@ -109,10 +162,11 @@ async def get_server_player_stats(
         "server": server_player_stats.server,
         "player": server_player_stats.player,
         "stats": stats,
+        "points": server_player_stats.points,
     }
 
 
-@router.post("/{server_id}/players/{steamid64}/stats")
+@router.post("/{server_id}/player-stats/{steamid64}")
 async def create_server_player_stats(
     server: Server = Depends(get_valid_server),
     player: Player = Depends(get_valid_player_by_steamid),
@@ -134,7 +188,7 @@ async def create_server_player_stats(
     return await server_player_stats_service.create(server=server, player=player)
 
 
-@router.put("/{server_id}/players/{steamid64}/stats")
+@router.put("/{server_id}/player-stats/{steamid64}")
 async def update_server_player_stats(
     player_stats_data: UpdatePlayerStatsSchema,
     server_player_stats: Model = Depends(get_valid_server_player_stats),
@@ -147,9 +201,7 @@ async def update_server_player_stats(
     :return:
     """
     today = datetime.date.today()
-    player_stats, created = await player_stats_service.Meta.model.objects.get_or_create(
-        date=today
-    )
+    player_stats, created = await server_player_stats.stats.get_or_create(date=today)
     if created:
         await server_player_stats.stats.add(player_stats)
 
@@ -159,6 +211,26 @@ async def update_server_player_stats(
         old_value = player_stats_dict[key]
         if value is None:
             continue
-        logger.info(f"{key}: {old_value} + {value}")
+        if key == "kills":
+            points = 5
+            points_multiple = points * value
+            points_to_add = server_player_stats.points + points_multiple
+            await server_player_stats.update(points=points_to_add)
+        elif key == "assists":
+            points = 2
+            points_multiple = points * value
+            points_to_add = server_player_stats.points + points_multiple
+            await server_player_stats.update(points=points_to_add)
+        elif key == "headshots":
+            points = 2
+            points_multiple = points * value
+            points_to_add = server_player_stats.points + points_multiple
+            await server_player_stats.update(points=points_to_add)
+        elif key == "deaths":
+            points = -2
+            points_multiple = (points * value) * -1
+            points_to_remove = server_player_stats.points - points_multiple
+            logger.info(points_to_remove)
+            await server_player_stats.update(points=points_to_remove)
         await player_stats.update(**{key: old_value + value})
     return player_stats
