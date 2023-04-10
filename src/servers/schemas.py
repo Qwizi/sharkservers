@@ -1,4 +1,7 @@
+from typing import Optional
+
 from pydantic import BaseModel, Field
+from pydantic.color import Color
 
 from src.servers.models import Server
 
@@ -20,3 +23,21 @@ class ServerStatusSchema(BaseModel):
     max_players: int
     map: str
     game: str
+
+
+class CreatePlayerChatColorSchema(BaseModel):
+    steamid64: Optional[str] = Field(max_length=17)
+    tag: str = Field(min_length=3, max_length=32)
+    flag: Optional[str] = Field(max_length=1)
+    tag_color: Color
+    name_color: Color
+    text_color: Color
+
+
+class UpdatePlayerChatColorSchema(BaseModel):
+    steamid64: Optional[str] = Field(max_length=17)
+    tag: Optional[str] = Field(min_length=3, max_length=32)
+    flag: Optional[str] = Field(max_length=1)
+    tag_color: Optional[Color]
+    name_color: Optional[Color]
+    text_color: Optional[Color]

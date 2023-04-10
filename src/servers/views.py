@@ -1,6 +1,6 @@
 import datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi_pagination import Params, Page
 from fastapi_pagination.ext.ormar import paginate
 from ormar import Model
@@ -9,19 +9,29 @@ from src.logger import logger
 from src.players.dependencies import (
     get_valid_player_by_steamid,
     get_player_stats_service,
+    get_players_service,
 )
 from src.players.models import Player
 from src.players.schemas import UpdatePlayerStatsSchema
-from src.players.services import PlayerStatsService
+from src.players.services import PlayerStatsService, PlayerService
 from src.servers.dependencies import (
     get_servers_service,
     get_valid_server,
     get_server_player_stats_service,
     get_valid_server_player_stats,
+    get_chat_color_module_service,
 )
 from src.servers.models import Server
-from src.servers.schemas import ServerOut
-from src.servers.services import ServerService, ServerPlayerStatsService
+from src.servers.schemas import (
+    ServerOut,
+    CreatePlayerChatColorSchema,
+    UpdatePlayerChatColorSchema,
+)
+from src.servers.services import (
+    ServerService,
+    ServerPlayerStatsService,
+    ChatColorModuleService,
+)
 
 router = APIRouter()
 
@@ -234,3 +244,97 @@ async def update_server_player_stats(
             await server_player_stats.update(points=points_to_remove)
         await player_stats.update(**{key: old_value + value})
     return player_stats
+
+
+@router.post("/{server_id}/modules/chat-colors/")
+async def create_player_chat_color(
+    data: CreatePlayerChatColorSchema,
+    server: Server = Depends(get_valid_server),
+    chat_color_module_service: ChatColorModuleService = Depends(
+        get_chat_color_module_service
+    ),
+    player_service: PlayerService = Depends(get_players_service),
+):
+    """
+    Create player chat color
+    :param data:
+    :param chat_color_module_service:
+    :param player:
+    :param server:
+    :return:
+    """
+    if data.steamid64:
+        player = await get_valid_player_by_steamid(data.steamid64, player_service)
+        return chat_color_module_service.create(
+            server=server,
+            player=player,
+            tag=data.tag,
+            tag_color=data.tag_color.as_hex(),
+            name_color=data.name_color.as_hex(),
+            text_color=data.text_color.as_hex(),
+        )
+    return await chat_color_module_service.create(
+        server=server,
+        tag=data.tag,
+        tag_color=data.tag_color.as_hex(),
+        name_color=data.name_color.as_hex(),
+        text_color=data.text_color.as_hex(),
+    )
+
+
+@router.get("/{server_id}/modules/chat-colors/")
+async def get_players_chat_colors(
+    params: Params = Depends(),
+    server: Server = Depends(get_valid_server),
+    chat_color_module_service: ChatColorModuleService = Depends(
+        get_chat_color_module_service
+    ),
+    player_service: PlayerService = Depends(get_players_service),
+    flag: str | None = None,
+    steamid64: str | None = None,
+):
+    """
+    Get players chat colors
+    :param flag:
+    :param server:
+    :param chat_color_module_service:
+    :return:
+    """
+    if flag:
+        return await chat_color_module_service.get_one(server=server, flag=flag)
+    if steamid64:
+        player = await get_valid_player_by_steamid(steamid64, player_service)
+        return await chat_color_module_service.get_one(server=server, player=player)
+    return await chat_color_module_service.get_all(server=server, params=params)
+
+
+@router.put("/{server_id}/modules/chat-colors/{tag_id}")
+async def update_player_chat_color(
+    data: UpdatePlayerChatColorSchema,
+    tag_id: int,
+    server: Server = Depends(get_valid_server),
+    chat_color_module_service: ChatColorModuleService = Depends(
+        get_chat_color_module_service
+    ),
+    player_service: PlayerService = Depends(get_players_service),
+):
+    """
+    Update player chat color
+    :param tag_id:
+    :param data:
+    :param chat_color_module_service:
+    :param server:
+    :return:
+    """
+    chat_color_obj = await chat_color_module_service.get_one(id=tag_id, server=server)
+    data_dict = data.dict()
+    steamid64 = data_dict.get("steamid64", None)
+    if steamid64:
+        player = await get_valid_player_by_steamid(steamid64, player_service)
+        data_dict.player = player
+    validated_update_data = {}
+    for item in data_dict.items():
+        if item[1] is not None:
+            validated_update_data[item[0]] = item[1]
+    await chat_color_obj.update(**validated_update_data)
+    return chat_color_obj

@@ -2,8 +2,11 @@ from steam import game_servers as gs
 
 from src.db import BaseService
 from src.players.exceptions import player_server_stats_not_found_exception
-from src.servers.exceptions import server_not_found_exception
-from src.servers.models import Server, ServerPlayerStats
+from src.servers.exceptions import (
+    server_not_found_exception,
+    chat_color_not_found_exception,
+)
+from src.servers.models import Server, ServerPlayerStats, ChatColorModule
 from src.servers.schemas import ServerStatusSchema
 
 
@@ -54,3 +57,9 @@ class ServerPlayerStatsService(BaseService):
     class Meta:
         model = ServerPlayerStats
         not_found_exception = player_server_stats_not_found_exception
+
+
+class ChatColorModuleService(BaseService):
+    class Meta:
+        model = ChatColorModule
+        not_found_exception = chat_color_not_found_exception
