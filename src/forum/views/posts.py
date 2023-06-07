@@ -28,9 +28,9 @@ router = APIRouter()
 
 @router.get("")
 async def get_posts(
-    thread_id: int = None,
-    params: Params = Depends(),
-    posts_service: PostService = Depends(get_posts_service),
+        thread_id: int = None,
+        params: Params = Depends(),
+        posts_service: PostService = Depends(get_posts_service),
 ) -> Page[PostOut]:
     """
     Get all posts by thread id.
@@ -45,11 +45,13 @@ async def get_posts(
             params=params,
             related=["author", "author__display_role", "thread_post"],
             thread_post__id=thread_id,
+            order_by=["-created_date"],
         )
     else:
         posts = await posts_service.get_all(
             params=params,
             related=["author", "author__display_role", "thread_post"],
+            order_by=["-created_date"],
         )
     dispatch(PostEventEnum.GET_ALL_POST, payload={"data": posts})
     return posts
@@ -67,10 +69,10 @@ async def get_post_by_id(post: Post = Depends(get_valid_post)) -> Post:
 
 @router.post("")
 async def create_post(
-    post_data: CreatePostSchema,
-    user: User = Security(get_current_active_user, scopes=["posts:create"]),
-    posts_service: PostService = Depends(get_posts_service),
-    threads_service: ThreadService = Depends(get_threads_service),
+        post_data: CreatePostSchema,
+        user: User = Security(get_current_active_user, scopes=["posts:create"]),
+        posts_service: PostService = Depends(get_posts_service),
+        threads_service: ThreadService = Depends(get_threads_service),
 ) -> PostOut:
     """
 
@@ -94,7 +96,7 @@ async def create_post(
 
 @router.put("/{post_id}", response_model=PostOut)
 async def update_post(
-    post_data: UpdatePostSchema, post: Post = Depends(get_valid_post_author)
+        post_data: UpdatePostSchema, post: Post = Depends(get_valid_post_author)
 ):
     post_updated = await post.update(**post_data.dict(exclude_unset=True))
     dispatch(PostEventEnum.UPDATE_POST, payload={"data": post_updated})

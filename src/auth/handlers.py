@@ -8,7 +8,6 @@ from src.handlers import log_debug_event
 from src.logger import logger
 from src.services import email_service
 from src.settings import get_settings
-from src.users.services import users_service
 
 """
 Auth events handlers

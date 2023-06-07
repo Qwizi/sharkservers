@@ -57,6 +57,7 @@ from .handlers import handle_all_events_and_debug_log, generate_random_data
 from .logger import logger
 from .users.dependencies import get_users_service
 from .users.services import UserService
+from .auth.handlers import create_activate_code_after_register
 
 script_dir = os.path.dirname(__file__)
 st_abs_file_path = os.path.join(script_dir, "../static/")
@@ -175,10 +176,10 @@ def create_app():
 
     @_app.post("/install", tags=["root"])
     async def install(
-        user_data: RegisterUserSchema,
-        scopes_service: ScopeService = Depends(get_scopes_service),
-        roles_service: RoleService = Depends(get_roles_service),
-        auth_service: AuthService = Depends(get_auth_service),
+            user_data: RegisterUserSchema,
+            scopes_service: ScopeService = Depends(get_scopes_service),
+            roles_service: RoleService = Depends(get_roles_service),
+            auth_service: AuthService = Depends(get_auth_service),
     ):
         await MainService.install(
             file_path=installed_file_path,
@@ -196,10 +197,10 @@ def create_app():
 
     @_app.get("/generate-random-data", tags=["root"])
     async def generate_random_data(
-        auth_service: AuthService = Depends(get_auth_service),
-        roles_service: RoleService = Depends(get_roles_service),
-        categories_service: CategoryService = Depends(get_categories_service),
-        threads_service: ThreadService = Depends(get_threads_service),
+            auth_service: AuthService = Depends(get_auth_service),
+            roles_service: RoleService = Depends(get_roles_service),
+            categories_service: CategoryService = Depends(get_categories_service),
+            threads_service: ThreadService = Depends(get_threads_service),
     ):
         dispatch(
             event_name="GENERATE_RANDOM_DATA",
@@ -214,7 +215,7 @@ def create_app():
 
     @_app.get("/protected", tags=["root"])
     async def protected_route(
-        app: App = Security(get_application, scopes=["users:create"]),
+            app: App = Security(get_application, scopes=["users:create"]),
     ):
         return {"msg": "You are authenticated!"}
 
