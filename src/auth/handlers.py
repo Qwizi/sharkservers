@@ -3,8 +3,6 @@ from fastapi_events.typing import Event
 
 from src.auth.enums import AuthEventsEnum, RedisAuthKeyEnum
 from src.auth.services import CodeService
-from src.auth.utils import create_activate_code
-from src.handlers import log_debug_event
 from src.logger import logger
 from src.services import email_service
 from src.settings import get_settings

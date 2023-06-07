@@ -10,7 +10,7 @@ from src.forum.exceptions import (
     post_not_found_exception,
 )
 from src.forum.models import Category, Thread, Post
-from src.forum.services import CategoryService, ThreadService, PostService
+from src.forum.services import CategoryService, ThreadService, PostService, LikeService
 from src.users.models import User
 
 
@@ -27,8 +27,8 @@ async def get_posts_service() -> PostService:
 
 
 async def get_valid_category(
-    category_id: int,
-    categories_service: CategoryService = Depends(get_categories_service),
+        category_id: int,
+        categories_service: CategoryService = Depends(get_categories_service),
 ) -> Model:
     """
     Get valid category
@@ -41,7 +41,7 @@ async def get_valid_category(
 
 
 async def get_valid_thread(
-    thread_id: int, threads_service: ThreadService = Depends(get_threads_service)
+        thread_id: int, threads_service: ThreadService = Depends(get_threads_service)
 ) -> Model:
     """
     Get valid thread
@@ -68,8 +68,8 @@ async def get_valid_open_thread(thread: Thread = Depends(get_valid_thread)) -> T
 
 
 async def get_valid_thread_with_author(
-    thread: Thread = Depends(get_valid_open_thread),
-    user: User = Security(get_current_active_user, scopes=["threads:update"]),
+        thread: Thread = Depends(get_valid_open_thread),
+        user: User = Security(get_current_active_user, scopes=["threads:update"]),
 ):
     """
     Get valid thread with author
@@ -83,7 +83,7 @@ async def get_valid_thread_with_author(
 
 
 async def get_valid_post(
-    post_id: int, posts_service: PostService = Depends(get_posts_service)
+        post_id: int, posts_service: PostService = Depends(get_posts_service)
 ) -> Model:
     """
     Get valid post
@@ -93,14 +93,18 @@ async def get_valid_post(
     """
     dispatch(PostEventEnum.GET_ONE_PRE, payload={"data": post_id})
     return await posts_service.get_one(
-        id=post_id, related=["author", "author__display_role"]
+        id=post_id, related=["author", "author__display_role", "likes"]
     )
 
 
 async def get_valid_post_author(
-    post: Post = Depends(get_valid_post),
-    user: User = Security(get_current_active_user, scopes=["posts:update"]),
+        post: Post = Depends(get_valid_post),
+        user: User = Security(get_current_active_user, scopes=["posts:update"]),
 ):
     if post.author != user:
         raise post_not_found_exception
     return post
+
+
+async def get_likes_service() -> LikeService:
+    return LikeService()

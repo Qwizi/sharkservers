@@ -2,25 +2,21 @@ from fastapi import APIRouter, Depends, Security
 from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Params, Page
 from fastapi_pagination.ext.ormar import paginate
-from ormar import NoMatch
 
 from src.auth.dependencies import get_current_active_user
 from src.forum.dependencies import (
-    get_valid_thread,
     get_valid_post,
     get_valid_post_author,
     get_posts_service,
-    get_threads_service,
+    get_threads_service, get_likes_service,
 )
 from src.forum.enums import PostEventEnum
 from src.forum.exceptions import (
-    thread_not_found_exception,
     thread_is_closed_exception,
-    post_not_found_exception,
 )
-from src.forum.models import Post, Thread
+from src.forum.models import Post
 from src.forum.schemas import PostOut, CreatePostSchema, UpdatePostSchema
-from src.forum.services import PostService, ThreadService
+from src.forum.services import PostService, ThreadService, LikeService
 from src.users.models import User
 
 router = APIRouter()
@@ -40,18 +36,20 @@ async def get_posts(
     :return:
     """
     dispatch(PostEventEnum.GET_ALL_PRE, payload={"data": params})
+    related = ["author", "author__display_role", "thread_post"]
+    order_by = ["-created_date"]
     if thread_id:
         posts = await posts_service.get_all(
             params=params,
-            related=["author", "author__display_role", "thread_post"],
+            related=related,
             thread_post__id=thread_id,
-            order_by=["-created_date"],
+            order_by=order_by,
         )
     else:
         posts = await posts_service.get_all(
             params=params,
-            related=["author", "author__display_role", "thread_post"],
-            order_by=["-created_date"],
+            related=related,
+            order_by=order_by,
         )
     dispatch(PostEventEnum.GET_ALL_POST, payload={"data": posts})
     return posts
@@ -101,3 +99,53 @@ async def update_post(
     post_updated = await post.update(**post_data.dict(exclude_unset=True))
     dispatch(PostEventEnum.UPDATE_POST, payload={"data": post_updated})
     return post_updated
+
+
+@router.get("/{post_id}/likes")
+async def get_post_likes(
+        post: Post = Depends(get_valid_post),
+        likes_service: LikeService = Depends(get_likes_service),
+        params: Params = Depends(),
+):
+    """
+    Get all post likes.
+    :param post:
+    :param likes_service:
+    :return:
+    """
+    return await paginate(
+        likes_service.Meta.model.objects.select_related(["user", "post_likes"]).filter(post_likes__id=post.id),
+        params)
+
+
+@router.post("/{post_id}/like")
+async def like_post(
+        post: Post = Depends(get_valid_post),
+        user: User = Security(get_current_active_user, scopes=["posts:create"]),
+        likes_service: LikeService = Depends(get_likes_service),
+):
+    """
+    Like post.
+    :param post:
+    :param user:
+    :param likes_service:
+    :return:
+    """
+    new_like, likes = await likes_service.add_like_to_post(post=post, user=user)
+    return {"message": "Post liked successfully", "data": {"new_like": new_like, "likes": likes}}
+
+
+@router.post("/{post_id}/dislike")
+async def dislike_post(
+        post: Post = Depends(get_valid_post),
+        user: User = Security(get_current_active_user, scopes=["posts:create"]),
+        likes_service: LikeService = Depends(get_likes_service),
+):
+    """
+    Dislike post.
+    :param post:
+    :param user:
+    :param likes_service:
+    :return:
+    """
+    return await likes_service.remove_like_from_post(post=post, user=user)

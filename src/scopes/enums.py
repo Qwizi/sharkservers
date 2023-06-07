@@ -7,11 +7,6 @@ class ScopeEnum(Enum):
     DELETE = "delete"
     RETRIEVE = "retrieve"
     ALL = "all"
-    ADMIN_CREATE = "a:create"
-    ADMIN_UPDATE = "a:update"
-    ADMIN_DELETE = "a:delete"
-    ADMIN_RETRIEVE = "a:retrieve"
-    ADMIN_ALL = "a:all"
 
 
 class ScopesExceptionsDetailEnum(str, Enum):

@@ -30,6 +30,14 @@ class Tag(ormar.Model, DateFieldsMixins):
     name: str = ormar.String(max_length=64, unique=True)
 
 
+class Like(ormar.Model, DateFieldsMixins):
+    class Meta(BaseMeta):
+        tablename = "forum_reputation"
+
+    id: int = ormar.Integer(primary_key=True)
+    user: Optional[User] = ormar.ForeignKey(User, related_name="user_reputation")
+
+
 class Post(ormar.Model, DateFieldsMixins):
     class Meta(BaseMeta):
         tablename = "forum_posts"
@@ -37,6 +45,7 @@ class Post(ormar.Model, DateFieldsMixins):
     id: int = ormar.Integer(primary_key=True)
     author: Optional[User] = ormar.ForeignKey(User, related_name="user_posts")
     content: str = ormar.Text()
+    likes: Optional[List[Like]] = ormar.ManyToMany(Like, related_name="post_likes")
 
 
 class Thread(ormar.Model, DateFieldsMixins):

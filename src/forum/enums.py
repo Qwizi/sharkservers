@@ -30,6 +30,13 @@ class PostExceptionsEnum(str, Enum):
     ALREADY_EXISTS = "Post already exists"
 
 
+class LikeExceptionsEnum(str, Enum):
+    """Enum for like exceptions."""
+
+    NOT_FOUND = "Like not found"
+    ALREADY_EXISTS = "U already liked this post"
+
+
 class CategoryEventEnum(str, Enum):
     """Enum for categories events."""
 
