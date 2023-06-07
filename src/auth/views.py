@@ -44,9 +44,9 @@ router = APIRouter()
 
 @router.post("/register", response_model=UserOut, name="register_user")
 async def register(
-    user_data: RegisterUserSchema,
-    redis=Depends(get_redis),
-    auth_service: AuthService = Depends(get_auth_service),
+        user_data: RegisterUserSchema,
+        redis=Depends(get_redis),
+        auth_service: AuthService = Depends(get_auth_service),
 ) -> UserOut:
     """
     Register a new user
@@ -65,10 +65,10 @@ async def register(
 
 @router.post("/token", response_model=TokenSchema)
 async def login_user(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    access_token_service: JWTService = Depends(get_access_token_service),
-    refresh_token_service: JWTService = Depends(get_refresh_token_service),
-    auth_service: AuthService = Depends(get_auth_service),
+        form_data: OAuth2PasswordRequestForm = Depends(),
+        access_token_service: JWTService = Depends(get_access_token_service),
+        refresh_token_service: JWTService = Depends(get_refresh_token_service),
+        auth_service: AuthService = Depends(get_auth_service),
 ) -> TokenSchema:
     """
     Login user
@@ -91,7 +91,10 @@ async def login_user(
 
 @router.post("/token/refresh", response_model=TokenSchema)
 async def get_access_token_from_refresh_token(
-    token_data: RefreshTokenSchema, settings: Settings = Depends(get_settings)
+        token_data: RefreshTokenSchema, settings: Settings = Depends(get_settings),
+        access_token_service: JWTService = Depends(get_access_token_service),
+        refresh_token_service: JWTService = Depends(get_refresh_token_service),
+        auth_service: AuthService = Depends(get_auth_service),
 ) -> TokenSchema:
     """
     Get access token from refresh token
@@ -99,7 +102,11 @@ async def get_access_token_from_refresh_token(
     :param settings:
     :return TokenSchema:
     """
-    token, user = await _get_access_token_from_refresh_token(token_data, settings)
+    token, user = await auth_service.create_access_token_from_refresh_token(
+        token_data,
+        jwt_access_token_service=access_token_service,
+        jwt_refresh_token_service=refresh_token_service,
+    )
     payload = {"user": json.loads(user.json()), "token": json.loads(token.json())}
     dispatch(AuthEventsEnum.REFRESH_TOKEN_POST, payload=payload)
     return token
@@ -107,8 +114,8 @@ async def get_access_token_from_refresh_token(
 
 @router.post("/logout")
 async def logout_user(
-    user: User = Depends(get_current_active_user),
-    auth_service: AuthService = Depends(get_auth_service),
+        user: User = Depends(get_current_active_user),
+        auth_service: AuthService = Depends(get_auth_service),
 ):
     """
     Logout user
@@ -121,9 +128,9 @@ async def logout_user(
 
 @router.post("/activate")
 async def activate_user(
-    activate_code_data: ActivateUserCodeSchema,
-    redis=Depends(get_redis),
-    auth_service: AuthService = Depends(get_auth_service),
+        activate_code_data: ActivateUserCodeSchema,
+        redis=Depends(get_redis),
+        auth_service: AuthService = Depends(get_auth_service),
 ) -> bool:
     """
     Activate user
@@ -148,9 +155,9 @@ async def activate_user(
 
 @router.post("/activate/resend")
 async def resend_activate_code(
-    data: ResendActivationCodeSchema,
-    redis=Depends(get_redis),
-    auth_service: AuthService = Depends(get_auth_service),
+        data: ResendActivationCodeSchema,
+        redis=Depends(get_redis),
+        auth_service: AuthService = Depends(get_auth_service),
 ):
     """
     Resend activate code
@@ -170,17 +177,17 @@ async def resend_activate_code(
 
 @router.get("/connect/steam")
 async def connect_steam_profile(
-    auth_service: AuthService = Depends(get_auth_service),
+        auth_service: AuthService = Depends(get_auth_service),
 ):
     return auth_service.redirect_to_steam()
 
 
 @router.get("/callback/steam")
 async def steam_profile_callback(
-    request: Request,
-    user: User = Depends(get_current_active_user),
-    auth_service: AuthService = Depends(get_auth_service),
-    players_service: PlayerService = Depends(get_players_service),
+        request: Request,
+        user: User = Depends(get_current_active_user),
+        auth_service: AuthService = Depends(get_auth_service),
+        players_service: PlayerService = Depends(get_players_service),
 ):
     return await auth_service.authenticate_steam_user(
         request, user, player_service=players_service
@@ -189,11 +196,11 @@ async def steam_profile_callback(
 
 @router.post("/apps/token")
 async def get_app_token(
-    form_data: OAuth2ClientSecretRequestForm = Depends(),
-    access_token_service: JWTService = Depends(get_access_token_service),
-    jwt_refresh_token_service: JWTService = Depends(get_refresh_token_service),
-    auth_service: AuthService = Depends(get_auth_service),
-    apps_service: AppService = Depends(get_app_service),
+        form_data: OAuth2ClientSecretRequestForm = Depends(),
+        access_token_service: JWTService = Depends(get_access_token_service),
+        jwt_refresh_token_service: JWTService = Depends(get_refresh_token_service),
+        auth_service: AuthService = Depends(get_auth_service),
+        apps_service: AppService = Depends(get_app_service),
 ) -> TokenSchema:
     """
     Get app token

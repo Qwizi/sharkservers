@@ -62,9 +62,9 @@ from src.users.services import UserService
 
 class OAuth2ClientSecretRequestForm:
     def __init__(
-        self,
-        client_id: Optional[str] = Form(default=None),
-        client_secret: Optional[str] = Form(default=None),
+            self,
+            client_id: Optional[str] = Form(default=None),
+            client_secret: Optional[str] = Form(default=None),
     ):
         self.client_id = client_id
         self.client_secret = client_secret
@@ -72,10 +72,10 @@ class OAuth2ClientSecretRequestForm:
 
 class JWTService:
     def __init__(
-        self,
-        secret_key: str,
-        algorithm: str = "HS256",
-        expires_delta: timedelta = timedelta(minutes=15),
+            self,
+            secret_key: str,
+            algorithm: str = "HS512",
+            expires_delta: timedelta = timedelta(minutes=15),
     ):
         self.secret_key = secret_key
         self.algorithm = algorithm
@@ -154,10 +154,10 @@ class AuthService:
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/auth/token")
 
     def __init__(
-        self,
-        users_service: UserService,
-        roles_service: RoleService,
-        scopes_service: ScopeService,
+            self,
+            users_service: UserService,
+            roles_service: RoleService,
+            scopes_service: ScopeService,
     ):
         self.users_service = users_service
         self.roles_service = roles_service
@@ -196,17 +196,17 @@ class AuthService:
             )
             secret_salt = self.generate_secret_salt()
             await user.update(secret_salt=secret_salt)
-            if not self.verify_password(password, user.password):
+            if not self.verify_password(password, user.password) or not user.is_activated:
                 return False
         except NoMatch:
             return False
         return user
 
     async def register(
-        self,
-        user_data: RegisterUserSchema,
-        is_activated: bool = False,
-        is_superuser: bool = False,
+            self,
+            user_data: RegisterUserSchema,
+            is_activated: bool = False,
+            is_superuser: bool = False,
     ) -> User:
         """
         Register new user
@@ -247,10 +247,10 @@ class AuthService:
             raise user_exists_exception
 
     async def login(
-        self,
-        form_data: OAuth2PasswordRequestForm,
-        jwt_access_token_service: JWTService,
-        jwt_refresh_token_service: JWTService,
+            self,
+            form_data: OAuth2PasswordRequestForm,
+            jwt_access_token_service: JWTService,
+            jwt_refresh_token_service: JWTService,
     ) -> (TokenSchema, User):
         """
         Login user
@@ -281,10 +281,10 @@ class AuthService:
         )
 
     async def create_access_token_from_refresh_token(
-        self,
-        token_data: RefreshTokenSchema,
-        jwt_access_token_service: JWTService,
-        jwt_refresh_token_service: JWTService,
+            self,
+            token_data: RefreshTokenSchema,
+            jwt_access_token_service: JWTService,
+            jwt_refresh_token_service: JWTService,
     ):
         """
 
@@ -348,7 +348,7 @@ class AuthService:
         )
 
     async def resend_activation_code(
-        self, email: EmailStr, code_service: CodeService, email_service: EmailService
+            self, email: EmailStr, code_service: CodeService, email_service: EmailService
     ):
         """
         Activate user
@@ -398,7 +398,7 @@ class AuthService:
         return RedirectResponse(auth_url)
 
     async def authenticate_steam_user(
-        self, request: Request, user: User, player_service: PlayerService
+            self, request: Request, user: User, player_service: PlayerService
     ):
         steam_login_url_base = "https://steamcommunity.com/openid/login"
 
@@ -418,7 +418,7 @@ class AuthService:
 
     @staticmethod
     async def change_username(
-        user: User, change_username_data: ChangeUsernameSchema
+            user: User, change_username_data: ChangeUsernameSchema
     ) -> User:
         """
         Change user username
@@ -435,7 +435,7 @@ class AuthService:
             raise username_not_available_exception
 
     async def change_password(
-        self, user: User, change_password_data: ChangePasswordSchema
+            self, user: User, change_password_data: ChangePasswordSchema
     ) -> User:
         """
         Change user password
@@ -444,7 +444,7 @@ class AuthService:
         :return:
         """
         if not self.verify_password(
-            change_password_data.current_password, user.password
+                change_password_data.current_password, user.password
         ):
             raise invalid_current_password_exception
         new_password = self.get_password_hash(change_password_data.new_password)
@@ -453,7 +453,7 @@ class AuthService:
 
     @staticmethod
     async def change_display_role(
-        user: User, change_display_role_data: ChangeDisplayRoleSchema
+            user: User, change_display_role_data: ChangeDisplayRoleSchema
     ) -> (User, int):
         display_role_exists_in_user_roles = False
         old_user_display_role = user.display_role.id
@@ -471,7 +471,7 @@ class AuthService:
 
     @staticmethod
     async def validate_app(
-        client_id: str, client_secret: str, apps_service: AppService
+            client_id: str, client_secret: str, apps_service: AppService
     ):
         """
         Validate app
@@ -488,11 +488,11 @@ class AuthService:
         return app
 
     async def get_app_token(
-        self,
-        form_data: OAuth2ClientSecretRequestForm,
-        apps_service: AppService,
-        jwt_access_token_service: JWTService,
-        jwt_refresh_token_service: JWTService,
+            self,
+            form_data: OAuth2ClientSecretRequestForm,
+            apps_service: AppService,
+            jwt_access_token_service: JWTService,
+            jwt_refresh_token_service: JWTService,
     ) -> TokenSchema:
         """
         Get app token
@@ -545,7 +545,7 @@ class BanService(BaseService):
         self.auth_service = auth_service
 
     async def ban_user(
-        self, user: User, ban_data: BanUserSchema, banned_by: User
+            self, user: User, ban_data: BanUserSchema, banned_by: User
     ) -> Ban:
         already_banned = await self.Meta.model.objects.filter(user=user).exists()
         if already_banned:

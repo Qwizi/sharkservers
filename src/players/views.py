@@ -38,7 +38,6 @@ async def create_player(
     :param players_service:
     :return:
     """
-    pass
     player = await players_service.create_player(player_data.steamid64)
     return player
 

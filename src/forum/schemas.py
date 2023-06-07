@@ -53,8 +53,8 @@ class ThreadOut(BaseModel):
 
 
 class CreateThreadSchema(BaseModel):
-    title: str = Field(max_length=64)
-    content: str
+    title: str = Field(max_length=64, min_length=3)
+    content: str = Field(min_length=2)
     category: int
     # tags: Optional[List[str]] = None
 
@@ -83,7 +83,7 @@ class PostOut(BaseModel):
 
 class CreatePostSchema(BaseModel):
     thread_id: int
-    content: str
+    content: str = Field(min_length=2)
 
 
 class UpdatePostSchema(BaseModel):

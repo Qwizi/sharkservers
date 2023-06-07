@@ -25,9 +25,9 @@ router = APIRouter()
 
 @router.get("", response_model_exclude_none=True)
 async def get_threads(
-    params: Params = Depends(),
-    category_id: int = None,
-    threads_service: ThreadService = Depends(get_threads_service),
+        params: Params = Depends(),
+        category_id: int = None,
+        threads_service: ThreadService = Depends(get_threads_service),
 ) -> Page[ThreadOut]:
     """
     Get all threads.
@@ -42,11 +42,13 @@ async def get_threads(
             params=params,
             related=["category", "author", "author__display_role", "tags"],
             category__id=category_id,
+            order_by=["-created_date"],
         )
     else:
         threads = await threads_service.get_all(
             params=params,
             related=["category", "author", "author__display_role", "tags"],
+            order_by=["-created_date"],
         )
     dispatch(ThreadEventEnum.GET_ALL_POST, payload={"data": threads})
     return threads
@@ -54,10 +56,10 @@ async def get_threads(
 
 @router.post("")
 async def create_thread(
-    thread_data: CreateThreadSchema,
-    user: User = Security(get_current_active_user, scopes=["threads:create"]),
-    threads_service: ThreadService = Depends(get_threads_service),
-    categories_service: CategoryService = Depends(get_categories_service),
+        thread_data: CreateThreadSchema,
+        user: User = Security(get_current_active_user, scopes=["threads:create"]),
+        threads_service: ThreadService = Depends(get_threads_service),
+        categories_service: CategoryService = Depends(get_categories_service),
 ) -> thread_out:
     """
     Create new thread.
@@ -90,8 +92,8 @@ async def get_thread(thread: Thread = Depends(get_valid_thread)):
 
 @router.put("/{thread_id}", response_model=ThreadOut)
 async def update_thread(
-    thread_data: UpdateThreadSchema,
-    thread: Thread = Depends(get_valid_thread_with_author),
+        thread_data: UpdateThreadSchema,
+        thread: Thread = Depends(get_valid_thread_with_author),
 ):
     """
     Update thread by id.
