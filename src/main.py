@@ -54,6 +54,7 @@ from .forum.services import CategoryService, ThreadService
 
 
 from .handlers import handle_all_events_and_debug_log, generate_random_data
+from .auth.handlers import create_activate_code_after_register
 from .logger import logger
 from .users.dependencies import get_users_service
 from .users.services import UserService

@@ -15,12 +15,13 @@ from src.auth.dependencies import (
     get_auth_service,
 )
 from src.auth.enums import AuthEventsEnum, RedisAuthKeyEnum
+from src.auth.exceptions import invalid_activation_code_exception
 from src.auth.schemas import (
     RegisterUserSchema,
     TokenSchema,
     RefreshTokenSchema,
     ActivateUserCodeSchema,
-    ResendActivationCodeSchema,
+    ResendActivationCodeSchema, UserActivatedSchema,
 )
 from src.auth.services import (
     JWTService,
@@ -42,7 +43,7 @@ from src.users.schemas import UserOut
 router = APIRouter()
 
 
-@router.post("/register", response_model=UserOut, name="register_user")
+@router.post("/register")
 async def register(
         user_data: RegisterUserSchema,
         redis=Depends(get_redis),
@@ -63,7 +64,7 @@ async def register(
     return registered_user
 
 
-@router.post("/token", response_model=TokenSchema)
+@router.post("/token")
 async def login_user(
         form_data: OAuth2PasswordRequestForm = Depends(),
         access_token_service: JWTService = Depends(get_access_token_service),
@@ -89,7 +90,7 @@ async def login_user(
     return token
 
 
-@router.post("/token/refresh", response_model=TokenSchema)
+@router.post("/token/refresh")
 async def get_access_token_from_refresh_token(
         token_data: RefreshTokenSchema, settings: Settings = Depends(get_settings),
         access_token_service: JWTService = Depends(get_access_token_service),
@@ -116,7 +117,7 @@ async def get_access_token_from_refresh_token(
 async def logout_user(
         user: User = Depends(get_current_active_user),
         auth_service: AuthService = Depends(get_auth_service),
-):
+) -> UserOut:
     """
     Logout user
     :param auth_service:
@@ -131,7 +132,7 @@ async def activate_user(
         activate_code_data: ActivateUserCodeSchema,
         redis=Depends(get_redis),
         auth_service: AuthService = Depends(get_auth_service),
-) -> bool:
+) -> UserActivatedSchema:
     """
     Activate user
     :param auth_service:
@@ -146,11 +147,13 @@ async def activate_user(
     user_activated, user = await auth_service.activate_user(
         code=activate_code_data.code, code_service=code_service
     )
+    if not user_activated:
+        raise invalid_activation_code_exception
     dispatch(
         AuthEventsEnum.ACTIVATED_POST,
         payload={"activated": user_activated, "user": user},
     )
-    return user_activated
+    return user
 
 
 @router.post("/activate/resend")
