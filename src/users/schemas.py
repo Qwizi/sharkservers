@@ -6,7 +6,7 @@ from pydantic import BaseModel, validator
 from src.players.schemas import SteamPlayer
 from src.users.models import User
 
-UserOut = User.get_pydantic(exclude={"password", "email"})
+UserOut = User.get_pydantic(exclude={"password", "email", "secret_salt", "apps", "players", "last_login"})
 UserOutWithEmail = User.get_pydantic(exclude={"password"})
 
 

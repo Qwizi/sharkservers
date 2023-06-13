@@ -37,3 +37,8 @@ class ActivateUserCodeSchema(BaseModel):
 
 class ResendActivationCodeSchema(BaseModel):
     email: EmailStr
+
+
+class UserActivatedSchema(BaseModel):
+    id: int
+    is_activated: bool

@@ -243,7 +243,7 @@ class AuthService:
                 await registered_user.roles.add(user_role)
                 await registered_user.roles.add(role)
             return registered_user
-        except (IntegrityError, SQLIntegrityError, UniqueViolationError) as e:
+        except (IntegrityError, SQLIntegrityError, UniqueViolationError, HTTPException) as e:
             raise user_exists_exception
 
     async def login(
