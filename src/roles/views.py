@@ -15,10 +15,10 @@ from src.roles.services import RoleService
 router = APIRouter()
 
 
-@router.get("", response_model=Page[RoleOut], response_model_exclude_none=True)
+@router.get("", response_model_exclude_none=True)
 async def get_roles(
-    params: Params = Depends(), roles_service: RoleService = Depends(get_roles_service)
-) -> AbstractPage:
+        params: Params = Depends(), roles_service: RoleService = Depends(get_roles_service)
+) -> Page[RoleOut]:
     """
     Get roles
     :param roles_service:
@@ -29,21 +29,6 @@ async def get_roles(
     roles = await roles_service.get_all(params=params)
     dispatch(event_name=RolesEventsEnum.GET_ALL_POST, payload={"data": roles})
     return roles
-
-
-@router.get("/staff")
-async def get_staff_roles():
-    """
-    Get staff roles
-    :return:
-    """
-    """
-    dispatch(event_name=RolesEventsEnum.STAFF_GET_ALL_PRE, payload={})
-    roles = await _get_staff_roles()
-    dispatch(event_name=RolesEventsEnum.STAFF_GET_ALL_POST, payload={"data": roles})
-    return roles
-    """
-    return {"msg": "Not implemented"}
 
 
 @router.get("/{role_id}", response_model=RoleOutWithScopes)

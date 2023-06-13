@@ -10,6 +10,9 @@ from src.auth.dependencies import get_current_active_user, get_auth_service
 from src.auth.services import AuthService
 from src.forum.dependencies import get_posts_service, get_threads_service
 from src.forum.services import PostService, ThreadService
+from src.roles.dependencies import get_roles_service
+from src.roles.schemas import StaffRolesSchema
+from src.roles.services import RoleService
 from src.schemas import HTTPError401Schema
 from src.scopes.dependencies import get_scopes_service
 from src.scopes.services import ScopeService
@@ -44,6 +47,19 @@ async def get_users(
     users = await users_service.get_all(params=params, related=["display_role"])
     dispatch(UsersEventsEnum.GET_ALL_POST, payload={"data": users})
     return users
+
+
+@router.get("/staff")
+async def get_staff_users(
+        params: Params = Depends(), roles_service: RoleService = Depends(get_roles_service)
+) -> Page[StaffRolesSchema]:
+    """
+    Get staff users
+    :param users_service:
+    :param params:
+    :return Page[UserOut]:
+    """
+    return await roles_service.get_staff_roles(params)
 
 
 @router.get(
