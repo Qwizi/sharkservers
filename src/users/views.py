@@ -23,7 +23,7 @@ from src.users.schemas import (
     ChangeUsernameSchema,
     ChangePasswordSchema,
     ChangeDisplayRoleSchema,
-    UserOut2Schema,
+    UserOut2Schema, SuccessChangeUsernameSchema, SuccessChangeDisplayRoleSchema,
 )
 from src.users.services import UserService
 
@@ -32,7 +32,7 @@ router = APIRouter()
 
 @router.get("")
 async def get_users(
-    params: Params = Depends(), users_service: UserService = Depends(get_users_service)
+        params: Params = Depends(), users_service: UserService = Depends(get_users_service)
 ) -> Page[UserOut2Schema]:
     """
     Get users
@@ -48,11 +48,9 @@ async def get_users(
 
 @router.get(
     "/me",
-    response_model=UserOutWithEmail,
-    responses={401: {"model": HTTPError401Schema}},
 )
 async def get_logged_user(
-    user: User = Depends(get_current_active_user),
+        user: User = Depends(get_current_active_user),
 ) -> UserOutWithEmail:
     """
     Get logged user
@@ -66,9 +64,9 @@ async def get_logged_user(
 
 @router.get("/me/posts")
 async def get_logged_user_posts(
-    params: Params = Depends(),
-    user: User = Security(get_current_active_user, scopes=["posts:all"]),
-    posts_service: PostService = Depends(get_posts_service),
+        params: Params = Depends(),
+        user: User = Security(get_current_active_user, scopes=["posts:all"]),
+        posts_service: PostService = Depends(get_posts_service),
 ):
     """
     Get user posts
@@ -82,9 +80,9 @@ async def get_logged_user_posts(
 
 @router.get("/me/threads")
 async def get_logged_user_threads(
-    params: Params = Depends(),
-    user: User = Security(get_current_active_user, scopes=["threads:all"]),
-    threads_service: ThreadService = Depends(get_threads_service),
+        params: Params = Depends(),
+        user: User = Security(get_current_active_user, scopes=["threads:all"]),
+        threads_service: ThreadService = Depends(get_threads_service),
 ):
     """
     Get user threads
@@ -98,9 +96,9 @@ async def get_logged_user_threads(
 
 @router.get("/me/apps")
 async def get_user_apps(
-    params: Params = Depends(),
-    user: User = Security(get_current_active_user, scopes=["apps:all"]),
-    apps_service: AppService = Depends(get_app_service),
+        params: Params = Depends(),
+        user: User = Security(get_current_active_user, scopes=["apps:all"]),
+        apps_service: AppService = Depends(get_app_service),
 ) -> dict:
     """
     Get user apps
@@ -112,12 +110,12 @@ async def get_user_apps(
     return apps
 
 
-@router.post("/me/username", response_model=UserOut)
+@router.post("/me/username")
 async def change_user_username(
-    change_username_data: ChangeUsernameSchema,
-    user: User = Security(get_current_active_user, scopes=["users:me:username"]),
-    auth_service: AuthService = Depends(get_auth_service),
-) -> UserOut:
+        change_username_data: ChangeUsernameSchema,
+        user: User = Security(get_current_active_user, scopes=["users:me:username"]),
+        auth_service: AuthService = Depends(get_auth_service),
+) -> SuccessChangeUsernameSchema:
     """
     Change user username
     :param auth_service:
@@ -128,16 +126,17 @@ async def change_user_username(
     dispatch(
         UsersEventsEnum.CHANGE_USERNAME_PRE, payload={"data": change_username_data}
     )
+    old_username = user.username
     user = await auth_service.change_username(user, change_username_data)
     dispatch(UsersEventsEnum.CHANGE_USERNAME_POST, payload={"data": user})
-    return user
+    return SuccessChangeUsernameSchema(old_username=old_username, new_username=change_username_data.username)
 
 
 @router.post("/me/password")
 async def change_user_password(
-    change_password_data: ChangePasswordSchema,
-    user: User = Security(get_current_active_user, scopes=["users:me:password"]),
-    auth_service: AuthService = Depends(get_auth_service),
+        change_password_data: ChangePasswordSchema,
+        user: User = Security(get_current_active_user, scopes=["users:me:password"]),
+        auth_service: AuthService = Depends(get_auth_service),
 ) -> dict:
     """
     Change user password
@@ -155,12 +154,13 @@ async def change_user_password(
 
 @router.post("/me/display-role")
 async def change_user_display_role(
-    change_display_role_data: ChangeDisplayRoleSchema,
-    user: User = Security(get_current_active_user, scopes=["users:me:display-role"]),
-    auth_service: AuthService = Depends(get_auth_service),
-) -> dict:
+        change_display_role_data: ChangeDisplayRoleSchema,
+        user: User = Security(get_current_active_user, scopes=["users:me:display-role"]),
+        auth_service: AuthService = Depends(get_auth_service),
+) -> SuccessChangeDisplayRoleSchema:
     """
     Change user display role
+    :param auth_service:
     :param change_display_role_data:
     :param user:
     :return dict:
@@ -176,19 +176,33 @@ async def change_user_display_role(
         UsersEventsEnum.CHANGE_DISPLAY_ROLE_POST,
         payload={"data": user, "old_user_display_role": old_user_display_role},
     )
-    return {
-        "old_display_role": old_user_display_role,
-        "new_display_role": change_display_role_data.role_id,
-    }
+    return SuccessChangeDisplayRoleSchema(old_display_role=old_user_display_role,
+                                          new_display_role=change_display_role_data.role_id)
+
+
+@router.get("/me/apps")
+async def get_user_apps(
+        params: Params = Depends(),
+        user: User = Security(get_current_active_user, scopes=["apps:all"]),
+        apps_service: AppService = Depends(get_app_service),
+) -> dict:
+    """
+    Get user apps
+    :param apps_service:
+    :param user:
+    :return dict:
+    """
+    apps = await apps_service.get_all(params=params, owner__id=user.id)
+    return apps
 
 
 @router.post("/me/apps")
 async def create_user_app(
-    app_data: CreateAppSchema,
-    user: User = Security(get_current_active_user, scopes=["apps:create"]),
-    apps_service: AppService = Depends(get_app_service),
-    scopes_service: ScopeService = Depends(get_scopes_service),
-    settings: Settings = Depends(get_settings),
+        app_data: CreateAppSchema,
+        user: User = Security(get_current_active_user, scopes=["apps:create"]),
+        apps_service: AppService = Depends(get_app_service),
+        scopes_service: ScopeService = Depends(get_scopes_service),
+        settings: Settings = Depends(get_settings),
 ) -> dict:
     """
     Create user app
@@ -214,7 +228,7 @@ async def create_user_app(
 
 @router.get("/online", response_model=Page[UserOut])
 async def get_last_logged_users(
-    params: Params = Depends(), users_service: UserService = Depends(get_users_service)
+        params: Params = Depends(), users_service: UserService = Depends(get_users_service)
 ) -> AbstractPage:
     """
     Get last logged users
@@ -242,9 +256,9 @@ async def get_user(user: User = Depends(get_valid_user)) -> UserOut:
 
 @router.get("/{user_id}/posts")
 async def get_user_posts(
-    params: Params = Depends(),
-    user: User = Depends(get_valid_user),
-    posts_service: PostService = Depends(get_posts_service),
+        params: Params = Depends(),
+        user: User = Depends(get_valid_user),
+        posts_service: PostService = Depends(get_posts_service),
 ):
     """
     Get user posts
@@ -258,9 +272,9 @@ async def get_user_posts(
 
 @router.get("/{user_id}/threads")
 async def get_user_threads(
-    params: Params = Depends(),
-    user: User = Depends(get_valid_user),
-    threads_service: ThreadService = Depends(get_threads_service),
+        params: Params = Depends(),
+        user: User = Depends(get_valid_user),
+        threads_service: ThreadService = Depends(get_threads_service),
 ):
     """
     Get user threads
