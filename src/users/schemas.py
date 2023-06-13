@@ -3,11 +3,12 @@ from typing import Optional, List
 
 from pydantic import BaseModel, validator
 
+from src.auth.schemas import UsernameRegex
 from src.players.schemas import SteamPlayer
 from src.users.models import User
 
 UserOut = User.get_pydantic(exclude={"password", "email", "secret_salt", "apps", "players", "last_login"})
-UserOutWithEmail = User.get_pydantic(exclude={"password"})
+UserOutWithEmail = User.get_pydantic(exclude={"password", "secret_salt", "apps", "players"})
 
 
 class UserInSchema(BaseModel):
@@ -28,12 +29,15 @@ class UserOut2Schema(BaseModel):
     username: Optional[str] = None
     avatar: Optional[str] = None
     display_role: Optional[UserOutRoleSchema] = None
-    roles: Optional[List[UserOutRoleSchema]] = None
-    steamprofile: Optional[SteamPlayer] = None
 
 
-class ChangeUsernameSchema(BaseModel):
-    username: str
+class ChangeUsernameSchema(UsernameRegex):
+    pass
+
+
+class SuccessChangeUsernameSchema(BaseModel):
+    old_username: str
+    new_username: str
 
 
 class ChangePasswordSchema(BaseModel):
@@ -49,6 +53,11 @@ class ChangePasswordSchema(BaseModel):
 
 class ChangeDisplayRoleSchema(BaseModel):
     role_id: int
+
+
+class SuccessChangeDisplayRoleSchema(BaseModel):
+    old_role_id: int
+    new_role_id: int
 
 
 class CreateUserSchema(BaseModel):

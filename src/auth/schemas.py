@@ -1,13 +1,15 @@
 from pydantic import BaseModel, validator, Field, EmailStr
 
 
-class RegisterUserSchema(BaseModel):
-    username: str = Field(
-        max_length=32, min_length=4, regex="^[a-zA-Z0-9_]+$", default="your_username"
-    )
-    email: EmailStr = Field(default="test@test.pl")
-    password: str = Field(max_length=255, default="test123456")
-    password2: str = Field(max_length=255, default="test123456")
+class UsernameRegex(BaseModel):
+    username: str = Field(min_length=3, max_length=64, regex=r"^[a-zA-Z0-9_-]+$", strip_whitespace=True,
+                          default="username")
+
+
+class RegisterUserSchema(UsernameRegex):
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=255)
+    password2: str = Field(min_length=8, max_length=255)
 
     @validator("password2")
     def passwords_match(cls, value, values, **kwargs):

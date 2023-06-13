@@ -17,11 +17,10 @@ class UserService(BaseService):
         model = User
         not_found_exception = user_not_found_exception
 
-    @staticmethod
-    async def get_last_logged_users(params: Params) -> AbstractPage:
+    async def get_last_logged_users(self, params: Params) -> AbstractPage:
         filter_after = datetime.utcnow() - timedelta(minutes=15)
         return await paginate(
-            User.objects.select_related("display_role").filter(
+            self.Meta.model.objects.select_related("display_role").filter(
                 last_login__gt=filter_after
             ),
             params,
