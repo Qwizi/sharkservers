@@ -34,3 +34,6 @@ class RoleService(BaseService):
                 for scope in scopes:
                     logger_with_filename(filename=__file__, data=scope)
                     await default_role.scopes.add(scope)
+
+    async def get_staff_roles(self, params):
+        return await self.get_all(params=params, related=["user_display_role"], is_staff=True)
