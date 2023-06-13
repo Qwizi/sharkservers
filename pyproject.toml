@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "shark-api"
-version = "0.0.33"
+version = "0.0.34"
 description = ""
 authors = ["Adrian Ciołek <ciolek.adrian@protonmail.com>"]
 readme = "README.md"
@@ -8,8 +8,8 @@ packages = []
 
 [tool.poetry.dependencies]
 python = "^3.10"
-fastapi = {extras = ["all"], version = "^0.97.0"}
-fastapi-pagination = {extras = ["ormar"], version = "^0.12.4"}
+fastapi = { extras = ["all"], version = "^0.97.0" }
+fastapi-pagination = { extras = ["ormar"], version = "^0.12.4" }
 ormar = "^0.12.1"
 fastapi-mail = "^1.2.8"
 alembic = "^1.11.1"
@@ -19,7 +19,7 @@ aioredis = "^2.0.1"
 asyncpg = "^0.27.0"
 psycopg2-binary = "^2.9.6"
 pytz = "^2023.3"
-passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+passlib = { extras = ["bcrypt"], version = "^1.7.4" }
 steam = "^1.4.4"
 aiocron = "^1.8"
 
