@@ -7,7 +7,7 @@ from urllib import parse
 import pytz
 import httpx
 import ormar
-from aioredis import Redis
+from redis import asyncio as aioredis
 from asyncpg import UniqueViolationError
 from cryptography.fernet import Fernet
 from fastapi import HTTPException, Form
@@ -108,10 +108,10 @@ class JWTService:
 
 
 class CodeService:
-    redis: Redis
+    redis: aioredis.Redis
     key: str
 
-    def __init__(self, redis: Redis, key: str):
+    def __init__(self, redis: aioredis.Redis, key: str):
         self.redis = redis
         self.key = key
 
