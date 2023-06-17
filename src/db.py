@@ -1,7 +1,7 @@
 import datetime
 from sqlite3 import IntegrityError as SQLIntegrityError
 
-import aioredis
+from redis import asyncio as aioredis
 import databases
 import ormar
 import sqlalchemy
@@ -64,7 +64,7 @@ class BaseService:
             raise self.Meta.not_found_exception
 
     async def get_all(
-        self, params: Params = None, related=None, order_by=None, **kwargs
+            self, params: Params = None, related=None, order_by=None, **kwargs
     ):
         """
         if params:
