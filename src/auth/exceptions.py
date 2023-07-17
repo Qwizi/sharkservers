@@ -35,7 +35,7 @@ invalid_credentials_exception = HTTPException(
     detail=AuthExceptionsDetailEnum.INVALID_CREDENTIALS,
 )
 inactivate_user_exception = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
+    status_code=status.HTTP_400_BAD_REQUEST,
     detail=AuthExceptionsDetailEnum.INACTIVE_USER,
 )
 user_exists_exception = HTTPException(
@@ -45,4 +45,8 @@ user_exists_exception = HTTPException(
 invalid_activation_code_exception = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail=AuthExceptionsDetailEnum.INVALID_CODE,
+)
+token_expired_exception = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail=AuthExceptionsDetailEnum.TOKEN_EXPIRED,
 )
