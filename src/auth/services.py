@@ -60,6 +60,10 @@ from src.users.schemas import (
 from src.users.services import UserService
 
 
+def now_datetime() -> datetime:
+    return datetime.utcnow()
+
+
 class OAuth2ClientSecretRequestForm:
     def __init__(
             self,
@@ -83,7 +87,7 @@ class JWTService:
 
     def encode(self, data: dict) -> str:
         to_encode = data.copy()
-        expire = datetime.utcnow() + self.expires_delta
+        expire = now_datetime() + self.expires_delta
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
         return encoded_jwt
@@ -294,30 +298,34 @@ class AuthService:
         :param jwt_refresh_token_service:
         :return:
         """
-        payload = jwt_refresh_token_service.decode(token_data.refresh_token)
-        exp = payload.get("exp", None)
-        if datetime.utcfromtimestamp(exp) < datetime.utcnow():
-            raise token_expired_exception
-        user_id = int(payload.get("sub"))
-        secret: str = payload.get("secret")
-        user = await self.users_service.get_one(
-            id=user_id, related=["roles", "roles__scopes"]
-        )
-        if not user or user.secret_salt != secret:
+        try:
+
+            payload = jwt_refresh_token_service.decode(token_data.refresh_token)
+            exp = payload.get("exp", None)
+            if datetime.utcfromtimestamp(exp) < now_datetime():
+                raise token_expired_exception
+            user_id = int(payload.get("sub"))
+            secret: str = payload.get("secret")
+            user = await self.users_service.get_one(
+                id=user_id, related=["roles", "roles__scopes"]
+            )
+            if not user or user.secret_salt != secret:
+                raise invalid_credentials_exception
+            scopes = await self.scopes_service.get_scopes_list(user.roles)
+            access_token = jwt_access_token_service.encode(
+                data={"sub": str(user.id), "scopes": scopes, "secret": user.secret_salt}
+            )
+            await user.update(last_login=datetime.utcnow())
+            return (
+                TokenSchema(
+                    access_token=access_token,
+                    refresh_token=token_data.refresh_token,
+                    token_type="bearer",
+                ),
+                user,
+            )
+        except JWTError as e:
             raise invalid_credentials_exception
-        scopes = await self.scopes_service.get_scopes_list(user.roles)
-        access_token = jwt_access_token_service.encode(
-            data={"sub": str(user.id), "scopes": scopes, "secret": user.secret_salt}
-        )
-        await user.update(last_login=datetime.utcnow())
-        return (
-            TokenSchema(
-                access_token=access_token,
-                refresh_token=token_data.refresh_token,
-                token_type="bearer",
-            ),
-            user,
-        )
 
     async def logout(self, user: User):
         """

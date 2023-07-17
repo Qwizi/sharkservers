@@ -26,7 +26,7 @@ from src.settings import get_settings
 from src.users.dependencies import get_users_service
 from src.users.models import User
 
-DATABASE_URL = "sqlite:///test.db"
+DATABASE_URL = "sqlite:///../test.db"
 
 TEST_USER = {
     "username": "User",

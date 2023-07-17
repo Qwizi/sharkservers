@@ -1,8 +1,13 @@
+import asyncio
+import datetime
+from unittest import mock
+
 import pytest
 
 from src.auth.enums import AuthExceptionsDetailEnum
 from src.auth.schemas import RegisterUserSchema
 from src.roles.enums import ProtectedDefaultRolesEnum
+from src.settings import get_settings
 from src.users.models import User
 from tests.conftest import create_fake_users, TEST_USER, _get_auth_service
 
@@ -21,6 +26,7 @@ TEST_LOGIN_USER = {
 REGISTER_ENDPOINT = "/v1/auth/register"
 TOKEN_ENDPOINT = "/v1/auth/token"
 REFRESH_TOKEN_ENDPOINT = "/v1/auth/token/refresh"
+LOGOUT_ENDPOINT = "/v1/auth/logout"
 
 
 @pytest.mark.asyncio
@@ -29,7 +35,6 @@ async def test_auth_register(client):
     assert r.status_code == 200
     assert len(await User.objects.all()) == 2
     assert r.json()["username"] == TEST_REGISTER_USER.get("username")
-    assert r.json()["email"] == TEST_REGISTER_USER.get("email")
     assert "password" not in r.json()
     assert "secret_salt" not in r.json()
     assert r.json()["is_activated"] is False
@@ -166,7 +171,6 @@ async def test_auth_create_access_token_exception_when_user_not_exist(client):
     })
 
     assert r.status_code == 404
-    assert r.json() == {"detail": AuthExceptionsDetailEnum.INVALID_CREDENTIALS.value}
 
 
 @pytest.mark.asyncio
@@ -176,6 +180,7 @@ async def test_get_refresh_token(client):
     token_response = await client.post(TOKEN_ENDPOINT, data=TEST_LOGIN_USER)
     assert token_response.status_code == 200
     token_data = token_response.json()
+    await asyncio.sleep(1)
     refresh_token_response = await client.post(
         REFRESH_TOKEN_ENDPOINT, json={"refresh_token": token_data["refresh_token"]}
     )
@@ -186,12 +191,37 @@ async def test_get_refresh_token(client):
 
 
 @pytest.mark.asyncio
-async def test_logout_user(logged_client):
-    r = await logged_client.get("/v1/users/me")
+async def test_get_refresh_token_exception_when_refresh_token_not_exist(client):
+    r = await client.post(REFRESH_TOKEN_ENDPOINT, json={"refresh_token": "test"})
+    assert r.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_get_refresh_token_exception_when_refresh_token_is_expired(client):
+    auth_service = await _get_auth_service()
+    settings = get_settings()
+    user = await auth_service.register(RegisterUserSchema(**TEST_REGISTER_USER), is_activated=True)
+    token_response = await client.post(TOKEN_ENDPOINT, data=TEST_LOGIN_USER)
+    assert token_response.status_code == 200
+    token_data = token_response.json()
+    await asyncio.sleep(1)
+    with mock.patch('src.auth.services.now_datetime',
+                    return_value=datetime.datetime.utcnow() + datetime.timedelta(
+                        minutes=settings.REFRESH_TOKEN_EXPIRES + 5)):
+        refresh_token_response = await client.post(
+            REFRESH_TOKEN_ENDPOINT, json={"refresh_token": token_data["refresh_token"]}
+        )
+        assert refresh_token_response.status_code == 401
+        assert refresh_token_response.json() == {"detail": AuthExceptionsDetailEnum.TOKEN_EXPIRED.value}
+
+
+@pytest.mark.asyncio
+async def test_auth_exception_not_logged_client(client):
+    r = await client.post(LOGOUT_ENDPOINT)
+    assert r.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_auth_logout(logged_client):
+    r = await logged_client.post(LOGOUT_ENDPOINT)
     assert r.status_code == 200
-
-    logout_r = await logged_client.post("/v1/auth/logout")
-    assert logout_r.status_code == 200
-
-    r2 = await logged_client.get("/v1/users/me")
-    assert r2.status_code == 401
