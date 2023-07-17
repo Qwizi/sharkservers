@@ -34,7 +34,7 @@ class Settings(BaseSettings):
 
     def get_database_url(self):
         if self.TESTING:
-            return "sqlite:///test.db"
+            return "sqlite:///../test.db"
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}/{self.POSTGRES_DB}"
 
     def get_database_url_sync(self):
