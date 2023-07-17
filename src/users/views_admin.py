@@ -1,63 +1,61 @@
 from fastapi import APIRouter, Depends, Security
 from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
-from fastapi_pagination.bases import AbstractPage
 
-from src.auth.dependencies import get_admin_user, get_ban_service
-from src.users.dependencies import get_valid_user
+from src.auth.dependencies import get_admin_user, get_ban_service, get_auth_service
+from src.auth.schemas import RegisterUserSchema
+from src.auth.services import BanService, AuthService
+from src.roles.dependencies import get_roles_service
+from src.roles.services import RoleService
+from src.users.dependencies import get_valid_user, get_users_service
 from src.users.enums import UsersAdminEventsEnum
-from src.users.models import User, Ban
-from src.users.schemas import UserOutWithEmail, CreateUserSchema, BanUserSchema
-from src.auth.services import BanService
-from src.users.utils import (
-    _admin_get_users,
-    _admin_get_user,
-    _admin_create_user,
-    _admin_delete_user,
-)
+from src.users.models import User
+from src.users.schemas import UserOutWithEmail, CreateUserSchema, BanUserSchema, AdminUpdateUserSchema
+from src.users.services import UserService
 
 router = APIRouter()
 
 
 @router.get("", response_model=Page[UserOutWithEmail], response_model_exclude_none=True)
 async def admin_get_users(
-    params: Params = Depends(),
-    user: User = Security(get_admin_user, scopes=["users:all"]),
-) -> AbstractPage:
+        params: Params = Depends(),
+        users_service: UserService = Depends(get_users_service),
+        admin_user: User = Security(get_admin_user, scopes=["users:all"]),
+) -> Page[UserOutWithEmail]:
     """
-    Admin get all users
+    Admin route to get users list
+    :param admin_user:
+    :param users_service:
     :param params:
-    :param user:
     :return Page[UserOutWithEmail]:
     """
-    dispatch(UsersAdminEventsEnum.GET_ALL_PRE, payload={"data": params})
-    users = await _admin_get_users(params)
-    dispatch(UsersAdminEventsEnum.GET_ALL_POST, payload={"data": users})
+    users = await users_service.get_all(params=params, related=["display_role"])
+    dispatch(UsersAdminEventsEnum.GET_ALL, payload={"data": users})
     return users
 
 
 @router.get("/{user_id}", response_model=UserOutWithEmail)
 async def admin_get_user(
-    user_id: int, user: User = Security(get_admin_user, scopes=["users:retrieve"])
+        user: User = Depends(get_valid_user),
+        admin_users: User = Security(get_admin_user, scopes=["users:retrieve"]),
 ) -> UserOutWithEmail:
     """
-    Admin get user
-    :param user_id:
+    Admin route to get user
+    :param admin_users:
     :param user:
     :return UserOutWithEmail:
     """
-    dispatch(UsersAdminEventsEnum.GET_ONE_PRE, payload={"data": user_id})
-    user = await _admin_get_user(user_id)
-    dispatch(UsersAdminEventsEnum.GET_ONE_POST, payload={"data": user})
+    # emit event
+    dispatch(UsersAdminEventsEnum.GET_ONE, payload={"data": user})
     return user
 
 
 @router.post("/{user_id}/ban")
 async def admin_ban_user(
-    ban_data: BanUserSchema,
-    ban_service: BanService = Depends(get_ban_service),
-    user: User = Depends(get_valid_user),
-    banned_by_user: User = Security(get_admin_user, scopes=["users:me"]),
+        ban_data: BanUserSchema,
+        ban_service: BanService = Depends(get_ban_service),
+        user: User = Depends(get_valid_user),
+        banned_by_user: User = Security(get_admin_user, scopes=["users:me"]),
 ):
     """
     Admin ban user
@@ -73,9 +71,9 @@ async def admin_ban_user(
 
 @router.post("/{user_id}/unban")
 async def admin_unban_user(
-    ban_service: BanService = Depends(get_ban_service),
-    user: User = Depends(get_valid_user),
-    banned_by_user: User = Security(get_admin_user, scopes=["users:me"]),
+        ban_service: BanService = Depends(get_ban_service),
+        user: User = Depends(get_valid_user),
+        banned_by_user: User = Security(get_admin_user, scopes=["users:me"]),
 ):
     """
     Admin unban user
@@ -88,8 +86,9 @@ async def admin_unban_user(
 
 @router.post("", response_model=UserOutWithEmail)
 async def admin_create_user(
-    user_data: CreateUserSchema,
-    user: User = Security(get_admin_user, scopes=["users:create"]),
+        user_data: CreateUserSchema,
+        auth_service: AuthService = Depends(get_auth_service),
+        admin_user: User = Security(get_admin_user, scopes=["users:create"]),
 ) -> UserOutWithEmail:
     """
     Admin create user
@@ -97,40 +96,66 @@ async def admin_create_user(
     :param user:
     :return UserOutWithEmail:
     """
-    dispatch(UsersAdminEventsEnum.CREATE_PRE, payload={"data": user_data})
-    user = await _admin_create_user(user_data)
-    dispatch(UsersAdminEventsEnum.CREATE_POST, payload={"data": user})
-    return user
+    created_user = await auth_service.register(RegisterUserSchema(
+        username=user_data.username,
+        email=user_data.email,
+        password=user_data.password,
+        password2=user_data.password
+    ),
+        is_activated=user_data.is_activated,
+        is_superuser=user_data.is_superuser,
+    )
+    dispatch(UsersAdminEventsEnum.CREATE, payload={"data": created_user})
+    return created_user
 
 
 @router.delete("/{user_id}")
 async def admin_delete_user(
-    user_id: int, user: User = Security(get_admin_user, scopes=["users:delete"])
+        validate_user: User = Depends(get_valid_user),
+        admin_user: User = Security(get_admin_user, scopes=["users:delete"]),
+        users_service: UserService = Depends(get_users_service),
 ) -> dict:
     """
     Admin delete user
+    :param users_service:
+    :param validate_user:
     :param user_id:
-    :param user:
+    :param admin_user:
     :return dict:
     """
-    dispatch(UsersAdminEventsEnum.DELETE_PRE, payload={"data": user_id})
-    user = await _admin_delete_user(user_id)
-    dispatch(UsersAdminEventsEnum.DELETE_POST, payload={"data": user})
-    return {"msg": "Successfully deleted user"}
+    user_deleted = await users_service.delete(_id=validate_user.id)
+    dispatch(UsersAdminEventsEnum.DELETE, payload={"data": user_deleted})
+    return {"detail": f"User with id {validate_user.id} was deleted"}
 
 
-bans_router = APIRouter()
+@router.put("/{user_id}")
+async def admin_update_user(
+        update_user_data: AdminUpdateUserSchema,
+        admin_user: User = Security(get_admin_user, scopes=["users:update"]),
+        validate_user: User = Depends(get_valid_user),
+        roles_service: RoleService = Depends(get_roles_service)
 
-
-@bans_router.get("")
-async def admin_get_user_bans(
-    user: User = Security(get_admin_user, scopes=["users:a:all"]),
-    ban_service: BanService = Depends(get_ban_service),
-    params: Params = Depends(),
-):
-    """
-    Admin get user bans
-    :param user:
-    :return list[Ban]:
-    """
-    return await ban_service.get_all(params=params)
+) -> UserOutWithEmail:
+    update_user_data_dict = update_user_data.dict()
+    filtered = {k: v for k, v in update_user_data_dict.items() if v is not None}
+    update_user_data_dict.clear()
+    update_user_data_dict.update(filtered)
+    roles_ids: list[int] | None = update_user_data_dict.pop("roles", None)
+    display_role_id: int | None = update_user_data_dict.pop("display_role", None)
+    print(roles_ids)
+    roles = []
+    if roles_ids:
+        for role_id in roles_ids:
+            role = await roles_service.get_one(id=role_id)
+            roles.append(role)
+    print(roles)
+    if roles:
+        for _role in validate_user.roles:
+            await validate_user.roles.remove(_role)
+        for role in roles:
+            await validate_user.roles.add(role)
+    if display_role_id:
+        display_role = await roles_service.get_one(id=display_role_id)
+        await validate_user.update(display_role=display_role)
+    await validate_user.update(**update_user_data_dict)
+    return validate_user

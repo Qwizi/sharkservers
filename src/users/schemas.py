@@ -64,9 +64,8 @@ class CreateUserSchema(BaseModel):
     username: str
     email: str
     password: str
-    display_role: Optional[int] = None
-    roles: Optional[List[int]] = None
-    is_activated: bool = True
+    is_activated: bool = False
+    is_superuser: bool = False
 
 
 class CreateAdminUserSchema(CreateUserSchema):
@@ -76,3 +75,15 @@ class CreateAdminUserSchema(CreateUserSchema):
 class BanUserSchema(BaseModel):
     reason: str
     ban_time: int
+
+
+class AdminUpdateUserSchema(BaseModel):
+    username: Optional[str]
+    email: Optional[str]
+    password: Optional[str]
+    is_activated: Optional[bool]
+    is_superuser: Optional[bool]
+    avatar: Optional[str]
+    roles: Optional[list[int]]
+    display_role: Optional[int]
+    secret_salt: Optional[str]
