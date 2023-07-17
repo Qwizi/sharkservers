@@ -25,7 +25,7 @@ from src.auth.exceptions import (
     invalid_credentials_exception,
     incorrect_username_password_exception,
     user_exists_exception,
-    user_activated_exception,
+    user_activated_exception, inactivate_user_exception, token_expired_exception,
 )
 from src.auth.schemas import (
     TokenDataSchema,
@@ -196,6 +196,8 @@ class AuthService:
             )
             secret_salt = self.generate_secret_salt()
             await user.update(secret_salt=secret_salt)
+            if not user.is_activated:
+                raise inactivate_user_exception
             if not self.verify_password(password, user.password) or not user.is_activated:
                 return False
         except NoMatch:
@@ -262,7 +264,6 @@ class AuthService:
         user = await self.authenticate_user(form_data.username, form_data.password)
         if not user:
             raise incorrect_username_password_exception
-        # TODO must be change
         scopes = await self.scopes_service.get_scopes_list(user.roles)
         access_token = jwt_access_token_service.encode(
             data={"sub": str(user.id), "scopes": scopes, "secret": user.secret_salt}
@@ -296,7 +297,7 @@ class AuthService:
         payload = jwt_refresh_token_service.decode(token_data.refresh_token)
         exp = payload.get("exp", None)
         if datetime.utcfromtimestamp(exp) < datetime.utcnow():
-            raise invalid_credentials_exception
+            raise token_expired_exception
         user_id = int(payload.get("sub"))
         secret: str = payload.get("secret")
         user = await self.users_service.get_one(
@@ -304,7 +305,7 @@ class AuthService:
         )
         if not user or user.secret_salt != secret:
             raise invalid_credentials_exception
-        scopes = await get_scopesv3(user.roles)
+        scopes = await self.scopes_service.get_scopes_list(user.roles)
         access_token = jwt_access_token_service.encode(
             data={"sub": str(user.id), "scopes": scopes, "secret": user.secret_salt}
         )

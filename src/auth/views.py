@@ -1,7 +1,6 @@
 import json
-from typing import Optional
 
-from fastapi import APIRouter, Depends, Form
+from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_events.dispatcher import dispatch
 from starlette.requests import Request
@@ -28,9 +27,6 @@ from src.auth.services import (
     AuthService,
     CodeService,
     OAuth2ClientSecretRequestForm,
-)
-from src.auth.utils import (
-    _get_access_token_from_refresh_token,
 )
 from src.db import get_redis
 from src.players.dependencies import get_players_service
@@ -92,15 +88,17 @@ async def login_user(
 
 @router.post("/token/refresh")
 async def get_access_token_from_refresh_token(
-        token_data: RefreshTokenSchema, settings: Settings = Depends(get_settings),
+        token_data: RefreshTokenSchema,
         access_token_service: JWTService = Depends(get_access_token_service),
         refresh_token_service: JWTService = Depends(get_refresh_token_service),
         auth_service: AuthService = Depends(get_auth_service),
 ) -> TokenSchema:
     """
     Get access token from refresh token
+    :param auth_service:
+    :param refresh_token_service:
+    :param access_token_service:
     :param token_data:
-    :param settings:
     :return TokenSchema:
     """
     token, user = await auth_service.create_access_token_from_refresh_token(

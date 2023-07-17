@@ -2,7 +2,7 @@ from pydantic import BaseModel, validator, Field, EmailStr
 
 
 class UsernameRegex(BaseModel):
-    username: str = Field(min_length=3, max_length=64, regex=r"^[a-zA-Z0-9_-]+$", strip_whitespace=True,
+    username: str = Field(min_length=3, max_length=32, regex=r"^[a-zA-Z0-9_-]+$", strip_whitespace=True,
                           default="username")
 
 

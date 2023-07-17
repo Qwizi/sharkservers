@@ -14,6 +14,7 @@ class AuthExceptionsDetailEnum(str, Enum):
     INVALID_CODE = "Invalid code"
     USER_ACTIVATED = "User is already activated"
     INVALID_CREDENTIALS = "Invalid credentials"
+    TOKEN_EXPIRED = "Token has expired"
     INACTIVE_USER = "Inactive user"
     NOT_ADMIN_USER = "Not admin user"
     INCORRECT_USERNAME_PASSWORD = "Incorrect username or password"

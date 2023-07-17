@@ -1,6 +1,7 @@
 import datetime
 from sqlite3 import IntegrityError as SQLIntegrityError
 
+import redis
 from redis import asyncio as aioredis
 import databases
 import ormar
@@ -11,7 +12,7 @@ from fastapi_pagination import Params
 from fastapi_pagination.ext.ormar import paginate
 from psycopg2 import IntegrityError
 from starlette.requests import Request
-
+from fakeredis import aioredis as fake_aioredis
 from src.settings import get_settings
 
 settings = get_settings()
@@ -23,8 +24,9 @@ metadata = sqlalchemy.MetaData()
 
 
 async def create_redis_pool():
-    redis = aioredis.from_url(REDIS_URL, encoding="utf-8", decode_responses=True)
-    return redis
+    if settings.TESTING:
+        return await fake_aioredis.FakeRedis()
+    return aioredis.from_url(REDIS_URL, encoding="utf-8", decode_responses=True)
 
 
 async def get_redis(request: Request):
