@@ -44,7 +44,6 @@ from src.users.views import router as users_router_v1
 # Admin Routes
 from src.users.views_admin import (
     router as admin_users_router,
-    bans_router as admin_bans_router,
 )
 from .apps.models import App
 from .forum.dependencies import get_categories_service, get_threads_service
@@ -96,8 +95,7 @@ def init_routes(_app: FastAPI):
     _app.include_router(chat_router, prefix="/v1/chat", tags=["chat"])
 
     # Admin routes
-    _app.include_router(admin_users_router, prefix="/admin/users", tags=["admin-users"])
-    _app.include_router(admin_bans_router, prefix="/v1/admin/bans", tags=["admin-bans"])
+    _app.include_router(admin_users_router, prefix="/v1/admin/users", tags=["admin-users"])
     _app.include_router(admin_roles_router, prefix="/admin/roles", tags=["admin-roles"])
     _app.include_router(
         admin_scopes_router, prefix="/admin/scopes", tags=["admin-scopes"]
@@ -143,8 +141,9 @@ async def unban_users_cron():
 
 @crontab("* * * * *")
 async def my_cron_job():
+    pass
     # This function calls the async cron job function
-    await unban_users_cron()
+    # await unban_users_cron()
 
 
 def create_app():

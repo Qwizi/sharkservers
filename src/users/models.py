@@ -15,8 +15,8 @@ class User(ormar.Model, DateFieldsMixins):
     username: Optional[str] = ormar.String(max_length=64, unique=True)
     email: Optional[str] | None = ormar.String(max_length=255, unique=True)
     password: Optional[str] = ormar.String(max_length=255)
-    is_activated: Optional[str] = ormar.Boolean(default=False)
-    is_superuser: Optional[str] = ormar.Boolean(default=False)
+    is_activated: Optional[bool] = ormar.Boolean(default=False)
+    is_superuser: Optional[bool] = ormar.Boolean(default=False)
     avatar: Optional[str] = ormar.String(
         max_length=255, default="/static/images/avatars/default_avatar.png"
     )
