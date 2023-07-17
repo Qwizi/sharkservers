@@ -10,7 +10,6 @@ from httpx import AsyncClient
 from src.auth.dependencies import (
     get_access_token_service,
     get_refresh_token_service,
-    get_auth_service,
 )
 from src.auth.schemas import RegisterUserSchema
 from src.auth.services import AuthService
@@ -129,35 +128,6 @@ async def logged_client():
     app.state.redis = await create_redis_pool()
     async with AsyncClient(app=app, base_url="http://localhost", headers=headers) as c:
         yield c
-
-
-"""
-
-@pytest_asyncio.fixture(scope="function")
-async def logged_client():
-    await create_scopes()
-    await create_default_roles()
-    app.state.redis = await create_redis_pool()
-    user = await register_user(
-        user_data=RegisterUserSchema(
-            username=TEST_USER.get("username"),
-            email=TEST_USER.get("email"),
-            password=TEST_USER.get("password"),
-            password2=TEST_USER.get("password"),
-        )
-    )
-    await user.update(is_activated=True)
-    settings = get_settings()
-    token, user = await _login_user(
-        form_data=OAuth2PasswordRequestForm(
-            username=user.username, password=TEST_USER.get("password"), scope=""
-        ),
-        settings=settings,
-    )
-    headers = {"Authorization": f"Bearer {token.access_token}"}
-    async with AsyncClient(app=app, base_url="http://localhost", headers=headers) as c:
-        yield c
-"""
 
 
 @pytest.fixture(scope="module")
