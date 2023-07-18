@@ -52,6 +52,7 @@ TEST_CATEGORY = {
 TEST_ROLE = {
     "name": "Test Role",
     "description": "Test Description",
+    "color": "#000000",
 }
 
 settings = get_settings()
