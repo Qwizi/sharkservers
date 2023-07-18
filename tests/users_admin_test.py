@@ -15,7 +15,7 @@ ENDPOINT = "/v1/admin/users"
         ENDPOINT + "/1",
     ],
 )
-async def test_unauthorized_get_admin_users(route, client):
+async def test_unauthorized_admin_get_users(route, client):
     r = await client.get(route)
     assert r.status_code == 401
 
