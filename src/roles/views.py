@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends
 from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
-from fastapi_pagination.bases import AbstractPage
 
 from src.roles.dependencies import get_valid_role, get_roles_service
 from src.roles.enums import RolesEventsEnum

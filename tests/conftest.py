@@ -49,6 +49,11 @@ TEST_CATEGORY = {
     "type": CategoryTypeEnum.PUBLIC.value,
 }
 
+TEST_ROLE = {
+    "name": "Test Role",
+    "description": "Test Description",
+}
+
 settings = get_settings()
 
 

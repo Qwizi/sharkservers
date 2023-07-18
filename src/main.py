@@ -96,16 +96,16 @@ def init_routes(_app: FastAPI):
 
     # Admin routes
     _app.include_router(admin_users_router, prefix="/v1/admin/users", tags=["admin-users"])
-    _app.include_router(admin_roles_router, prefix="/admin/roles", tags=["admin-roles"])
+    _app.include_router(admin_roles_router, prefix="/v1/admin/roles", tags=["admin-roles"])
     _app.include_router(
-        admin_scopes_router, prefix="/admin/scopes", tags=["admin-scopes"]
+        admin_scopes_router, prefix="/v1/admin/scopes", tags=["admin-scopes"]
     )
     _app.include_router(
-        admin_steamprofiles_router, prefix="/admin/players", tags=["admin-players"]
+        admin_steamprofiles_router, prefix="/v1/admin/players", tags=["admin-players"]
     )
     _app.include_router(admin_forum_router)
     _app.include_router(
-        admin_servers_router, prefix="/admin/servers", tags=["admin-servers"]
+        admin_servers_router, prefix="/v1/admin/servers", tags=["admin-servers"]
     )
     return _app
 

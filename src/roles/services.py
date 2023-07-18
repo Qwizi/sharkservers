@@ -3,6 +3,7 @@ from src.logger import logger_with_filename
 from src.roles.enums import ProtectedDefaultRolesEnum
 from src.roles.exceptions import role_not_found_exception
 from src.roles.models import Role
+from src.roles.schemas import CreateRoleSchema
 from src.scopes.services import ScopeService
 
 
@@ -36,3 +37,14 @@ class RoleService(BaseService):
 
     async def get_staff_roles(self, params):
         return await self.get_all(params=params, related=["user_display_role"], is_staff=True)
+
+    async def admin_create_role(self, role_data: CreateRoleSchema, scopes_service: ScopeService) -> Role:
+        """ Create role with scopes """
+        scopes = []
+        if role_data.scopes:
+            scopes = await scopes_service.Meta.model.objects.filter(id__in=role_data.scopes)
+        role = await self.create(role_data)
+        if scopes:
+            for scope in scopes:
+                await role.scopes.add(scope)
+        return role
