@@ -8,8 +8,9 @@ from fastapi_mail import FastMail, ConnectionConfig, MessageSchema, MessageType
 from pydantic import EmailStr
 
 from src.auth.schemas import RegisterUserSchema
-from src.logger import logger
+from src.logger import logger, logger_with_filename
 from src.settings import get_settings
+from src.users.models import User
 
 
 class EmailService:
@@ -62,25 +63,28 @@ class MainService:
 
     @staticmethod
     async def install(
-        file_path,
-        admin_user_data: RegisterUserSchema,
-        scopes_service,
-        roles_service,
-        auth_service,
-        create_file: bool = True,
+            file_path,
+            admin_user_data: RegisterUserSchema,
+            scopes_service,
+            roles_service,
+            auth_service,
+            create_file: bool = True,
     ):
-        logger.info("Step 0 - Install started")
+        logger_with_filename(filename=MainService.__name__, data="Step 0 - Install started")
         if create_file:
             if os.path.exists(file_path):
                 raise HTTPException(detail="Its already installed", status_code=400)
-        logger.info("Step 1 - Create default scopes")
+        logger_with_filename(filename=MainService.__name__, data="Step 1 - Create default scopes")
         await MainService.create_default_scopes(scopes_service=scopes_service)
-        logger.info("Step 2 - Create default roles")
+        logger_with_filename(filename=MainService.__name__, data="Step 2 - Create default roles")
         await roles_service.create_default_roles(scopes_service=scopes_service)
-        logger.info("Step 3 - Create admin user")
-        await auth_service.register(
+        logger_with_filename(filename=MainService.__name__, data="Step 2 - Default roles created")
+        logger_with_filename(filename=MainService.__name__, data="Step 3 - Create admin user")
+        admin_user: User = await auth_service.register(
             admin_user_data, is_activated=True, is_superuser=True
         )
+        logger_with_filename(filename=MainService.__name__,
+                             data=f"Step 3 - {admin_user.get_pydantic(exclude={'password', })} created")
         if create_file:
             open(file_path, "w+")
 
@@ -99,7 +103,7 @@ class MainService:
                     tag = operation["tags"][0]
                     operation_id = operation["operationId"]
                     to_remove = f"{tag}-"
-                    new_operation_id = operation_id[len(to_remove) :]
+                    new_operation_id = operation_id[len(to_remove):]
                     print(operation_id)
                     operation["operationId"] = new_operation_id
                     print(new_operation_id)
