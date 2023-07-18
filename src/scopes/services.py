@@ -55,7 +55,7 @@ class ScopeService(BaseService):
         return self.extra_scopes or []
 
     async def create_scopes_for_app(
-        self, app_name: str, additional_scopes: list[tuple[str, str, str]]
+            self, app_name: str, additional_scopes: list[tuple[str, str, str]]
     ):
         """
         Create scopes for app
@@ -126,5 +126,4 @@ class ScopeService(BaseService):
                     and_(app_name="posts", value="create"),
                 )
             ).all()
-        print(scopes)
         return scopes

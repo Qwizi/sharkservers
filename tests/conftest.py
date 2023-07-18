@@ -14,7 +14,10 @@ from src.auth.dependencies import (
 from src.auth.schemas import RegisterUserSchema
 from src.auth.services import AuthService
 from src.db import metadata, create_redis_pool
+from src.forum.dependencies import get_categories_service
+from src.forum.enums import CategoryTypeEnum
 from src.forum.models import Category
+from src.forum.services import CategoryService
 from src.logger import logger
 from src.main import app
 from src.roles.dependencies import get_roles_service
@@ -38,6 +41,12 @@ TEST_ADMIN_USER = {
     "username": "Admin",
     "email": "admin@test.pl",
     "password": "test123456",
+}
+
+TEST_CATEGORY = {
+    "name": "Test Category",
+    "description": "Test Description",
+    "type": CategoryTypeEnum.PUBLIC.value,
 }
 
 settings = get_settings()
@@ -174,9 +183,15 @@ async def create_fake_roles(faker: Faker, number: int = 50):
 
 
 async def create_fake_categories(number: int = 50):
-    categories_list = []
+    categories_service: CategoryService = await get_categories_service()
+    categories_list: list[Category] = []
     for i in range(number):
         category_name = "Category " + str(i)
-        category = await Category.objects.create(name=category_name)
+        category_description = "Category description " + str(i)
+        category = await categories_service.create(
+            name=category_name,
+            description=category_description,
+            type=CategoryTypeEnum.PUBLIC.value,
+        )
         categories_list.append(category)
     return categories_list

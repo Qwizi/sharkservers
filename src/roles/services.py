@@ -18,7 +18,7 @@ class RoleService(BaseService):
             (ProtectedDefaultRolesEnum.BANNED.value, "Banned", "#000000"),
         ]
         for role in roles_to_create:
-            logger_with_filename(filename=__file__, data=role)
+            logger_with_filename(filename=self.__class__.__name__, data=role)
             default_role, created = await self.Meta.model.objects.get_or_create(
                 id=role[0],
                 name=role[1],
@@ -32,7 +32,6 @@ class RoleService(BaseService):
             )
             if not role[0] == ProtectedDefaultRolesEnum.BANNED.value:
                 for scope in scopes:
-                    logger_with_filename(filename=__file__, data=scope)
                     await default_role.scopes.add(scope)
 
     async def get_staff_roles(self, params):
