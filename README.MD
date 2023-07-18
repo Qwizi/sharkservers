@@ -1,3 +1,3 @@
 # SHARK-API
 
-version: 0.0.37
+version: 1.0.0
