@@ -24,6 +24,7 @@ from src.roles.dependencies import get_roles_service
 from src.roles.models import Role
 from src.roles.utils import get_user_role_scopes
 from src.scopes.dependencies import get_scopes_service
+from src.scopes.models import Scope
 from src.services import MainService
 from src.settings import get_settings
 from src.users.dependencies import get_users_service
@@ -53,6 +54,13 @@ TEST_ROLE = {
     "name": "Test Role",
     "description": "Test Description",
     "color": "#000000",
+}
+
+TEST_SCOPE = {
+    "app_name": "test_app",
+    "value": "test_value",
+    "description": "test_description",
+    "protected": True,
 }
 
 settings = get_settings()
@@ -201,3 +209,20 @@ async def create_fake_categories(number: int = 50):
         )
         categories_list.append(category)
     return categories_list
+
+
+async def create_fake_scopes(number: int, protected: bool = False) -> list[Scope]:
+    scopes_service = await get_scopes_service()
+    scopes_list = []
+    app_name = "test_app"
+    for i in range(number):
+        scope_value = f"{app_name}_scope_{i}"
+        scope_description = f"Scope description {i}"
+        scope = await scopes_service.create(
+            app_name=app_name,
+            value=scope_value,
+            description=scope_description,
+            protected=protected,
+        )
+        scopes_list.append(scope)
+    return scopes_list
