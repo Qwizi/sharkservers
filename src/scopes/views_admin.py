@@ -7,7 +7,7 @@ from src.auth.dependencies import get_admin_user
 from src.scopes.dependencies import get_scopes_service, get_valid_scope
 from src.scopes.enums import ScopesAdminEventsEnum
 from src.scopes.models import Scope
-from src.scopes.schemas import ScopeOut, CreateScopeSchema
+from src.scopes.schemas import ScopeOut, CreateScopeSchema, UpdateScopeSchema
 from src.scopes.services import ScopeService
 from src.scopes.utils import _get_scopes, _get_scope, _create_scope, _delete_scope
 from src.users.models import User
@@ -50,6 +50,7 @@ async def admin_get_scope(
 async def admin_create_scope(
         scope_data: CreateScopeSchema,
         admin_user: User = Security(get_admin_user, scopes=["scopes:create"]),
+        scopes_service: ScopeService = Depends(get_scopes_service),
 ) -> ScopeOut:
     """
     Admin create scope.
@@ -60,22 +61,43 @@ async def admin_create_scope(
     dispatch(
         ScopesAdminEventsEnum.CREATE_PRE, payload={"data": scope_data, "user": admin_user}
     )
-    scope = await _create_scope(scope_data)
+    scope = await scopes_service.create(**scope_data.dict())
     dispatch(ScopesAdminEventsEnum.CREATE_POST, payload={"data": scope, "user": admin_user})
     return scope
 
 
 @router.delete("/{scope_id}", response_model=ScopeOut)
 async def admin_delete_scope(
-        scope_id: int, user: User = Security(get_admin_user, scopes=["scopes:delete"])
+        scope: Scope = Depends(get_valid_scope), admin_user: User = Security(get_admin_user, scopes=["scopes:delete"]),
+        scopes_service: ScopeService = Depends(get_scopes_service),
 ) -> ScopeOut:
     """
     Admin delete scope.
-    :param scope_id:
-    :param user:
+    :param scope:
+    :param admin_user:
     :return:
     """
-    dispatch(ScopesAdminEventsEnum.DELETE_PRE, payload={"data": scope_id, "user": user})
-    scope = await _delete_scope(scope_id)
-    dispatch(ScopesAdminEventsEnum.DELETE_POST, payload={"data": scope, "user": user})
+    dispatch(ScopesAdminEventsEnum.DELETE_PRE, payload={"data": scope, "user": admin_user})
+    scope = await scopes_service.delete(_id=scope.id)
+    dispatch(ScopesAdminEventsEnum.DELETE_POST, payload={"data": scope, "user": admin_user})
+    return scope
+
+
+@router.put("/{scope_id}")
+async def admin_update_scope(
+        update_scope_data: UpdateScopeSchema,
+        scope: Scope = Depends(get_valid_scope),
+        admin_user: User = Security(get_admin_user, scopes=["scopes:update"]),
+) -> ScopeOut:
+    """
+    Admin update scope.
+    :param update_scope_data:
+    :param scopes_service:
+    :param scope:
+    :param admin_user:
+    :return:
+    """
+    dispatch(ScopesAdminEventsEnum.UPDATE_PRE, payload={"data": scope, "user": admin_user})
+    await scope.update(**update_scope_data.dict(exclude_unset=True, exclude_none=True))
+    dispatch(ScopesAdminEventsEnum.UPDATE_POST, payload={"data": scope, "user": admin_user})
     return scope
