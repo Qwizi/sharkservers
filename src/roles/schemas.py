@@ -27,3 +27,10 @@ class CreateRoleSchema(BaseModel):
     color: str
     is_staff: bool = False
     scopes: Optional[List[int]] = None
+
+
+class UpdateRoleSchema(BaseModel):
+    name: Optional[str]
+    color: Optional[str]
+    is_staff: Optional[bool]
+    scopes: Optional[List[int]]

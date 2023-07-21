@@ -182,16 +182,18 @@ async def create_fake_users(number: int = 50):
     return users_list
 
 
-async def create_fake_roles(faker: Faker, number: int = 50):
+async def create_fake_roles(number: int = 50, scopes: list[Scope] = None, is_staff: bool = False):
+    roles_service = await get_roles_service()
     roles_list = []
-    role_name_list = set()
-    while len(role_name_list) < number:
-        role_name_list.add(faker.job())
-    for role_name in role_name_list:
-        role = await Role.objects.create(name=role_name, color="test_color")
-        user_scopes = await get_user_role_scopes()
-        for scope in user_scopes:
-            await role.scopes.add(scope)
+    for role_id in range(number):
+        role = await roles_service.create(
+            name=f"test_role_{role_id}",
+            color="#000000",
+            is_staff=is_staff,
+        )
+        if scopes:
+            for scope in scopes:
+                role.scopes.add(scope)
         roles_list.append(role)
     return roles_list
 

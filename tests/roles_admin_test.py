@@ -4,7 +4,7 @@ import pytest
 
 from src.scopes.dependencies import get_scopes_service
 from src.scopes.services import ScopeService
-from tests.conftest import TEST_ROLE
+from tests.conftest import TEST_ROLE, create_fake_roles, create_fake_scopes
 
 ADMIN_ROLES_ENDPOINT = "/v1/admin/roles"
 
@@ -28,7 +28,6 @@ async def test_unauthorized_create_role(client):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_unauthorized_update_role(client):
     r = await client.put(f"{ADMIN_ROLES_ENDPOINT}/1")
     assert r.status_code == 401
@@ -80,3 +79,43 @@ async def test_admin_create_role_with_scopes(admin_client):
     assert r.status_code == 200
     assert r.json()["name"] == TEST_ROLE["name"]
     assert len(r.json()["scopes"]) == len(users_scopes_ids)
+
+
+@pytest.mark.asyncio
+async def test_admin_update_role_without_scopes(admin_client):
+    roles = await create_fake_roles(1, is_staff=True)
+    r = await admin_client.put(f"{ADMIN_ROLES_ENDPOINT}/{roles[0].id}", json={
+        "name": roles[0].name,
+        "color": roles[0].color,
+        "is_staff": roles[0].is_staff,
+    })
+    assert r.status_code == 200
+    assert r.json()["name"] == roles[0].name
+    assert r.json()["scopes"] == []
+
+
+@pytest.mark.asyncio
+async def test_admin_update_role_with_scopes(admin_client):
+    scopes = await create_fake_scopes(3)
+    roles = await create_fake_roles(1, scopes=scopes, is_staff=True)
+    r = await admin_client.put(f"{ADMIN_ROLES_ENDPOINT}/{roles[0].id}", json={
+        "name": roles[0].name,
+        "color": roles[0].color,
+        "is_staff": roles[0].is_staff,
+        "scopes": [scope.id for scope in scopes]
+    })
+    assert r.status_code == 200
+    assert r.json()["name"] == roles[0].name
+    assert len(r.json()["scopes"]) == len(scopes)
+
+
+@pytest.mark.asyncio
+async def test_admin_update_role_with_not_exists_scope(admin_client):
+    roles = await create_fake_roles(1, is_staff=True)
+    r = await admin_client.put(f"{ADMIN_ROLES_ENDPOINT}/{roles[0].id}", json={
+        "name": roles[0].name,
+        "color": roles[0].color,
+        "is_staff": roles[0].is_staff,
+        "scopes": [99, 100]
+    })
+    assert r.status_code == 404
