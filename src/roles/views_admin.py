@@ -9,7 +9,7 @@ from src.roles.dependencies import get_roles_service, get_valid_role
 from src.roles.enums import RolesAdminEventsEnum
 from src.roles.exceptions import role_not_found_exception
 from src.roles.models import Role
-from src.roles.schemas import RoleOut, RoleOutWithScopes, CreateRoleSchema
+from src.roles.schemas import RoleOut, RoleOutWithScopes, CreateRoleSchema, UpdateRoleSchema
 from src.roles.services import RoleService
 from src.roles.utils import _delete_role
 from src.scopes.dependencies import get_scopes_service
@@ -90,6 +90,42 @@ async def admin_delete_role(
     dispatch(RolesAdminEventsEnum.DELETE_PRE, payload={"data": role.id})
     await roles_service.delete(_id=role.id)
     dispatch(RolesAdminEventsEnum.DELETE_POST, payload={"data": role})
+    return role
+
+
+@router.put("/{role_id}")
+async def admin_update_role(
+        update_role_data: UpdateRoleSchema,
+        role: Role = Depends(get_valid_role),
+        admin_user: User = Security(get_admin_user, scopes=["roles:update"]),
+        scopes_service: ScopeService = Depends(get_scopes_service),
+):
+    """
+    Admin update role.
+    :param update_role_data:
+    :param scopes_service:
+    :param role:
+    :param admin_user:
+    :return:
+    """
+    dispatch(RolesAdminEventsEnum.UPDATE_PRE, payload={"data": role.id})
+    update_role_data_dict = update_role_data.dict(exclude_unset=True)
+    scopes_ids = update_role_data_dict.pop("scopes", None)
+    scopes_list = []
+    if scopes_ids:
+        # Get scopes by ids
+        for scope_id in scopes_ids:
+            scope = await scopes_service.get_one(id=scope_id)
+            scopes_list.append(scope)
+
+        # First remove all scopes from role
+        for _scope in role.scopes:
+            await role.scopes.remove(_scope)
+        # Then add new scopes to role
+        for scope in scopes_list:
+            await role.scopes.add(scope)
+    await role.update(**update_role_data_dict)
+    dispatch(RolesAdminEventsEnum.UPDATE_POST, payload={"data": role})
     return role
 
 
