@@ -1,3 +1,4 @@
+import logging
 import random
 import string
 from datetime import timedelta, datetime
@@ -17,6 +18,7 @@ from ormar import NoMatch
 from passlib.context import CryptContext
 from pydantic import EmailStr
 from sqlalchemy.exc import IntegrityError
+from starlette.authentication import AuthenticationBackend
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
@@ -33,7 +35,7 @@ from src.auth.schemas import (
     RefreshTokenSchema,
     RegisterUserSchema,
 )
-from src.auth.utils import crypto_key
+from src.auth.utils import crypto_key, now_datetime
 from src.db import BaseService
 from src.logger import logger
 from src.players.services import PlayerService
@@ -42,6 +44,7 @@ from src.roles.services import RoleService
 from src.scopes.services import ScopeService
 from src.scopes.utils import get_scopesv3
 from src.services import EmailService
+from src.users.dependencies import get_users_service
 from src.users.exceptions import (
     cannot_change_display_role_exception,
     invalid_current_password_exception,
@@ -58,10 +61,6 @@ from src.users.schemas import (
     BanUserSchema,
 )
 from src.users.services import UserService
-
-
-def now_datetime() -> datetime:
-    return datetime.utcnow()
 
 
 class OAuth2ClientSecretRequestForm:
@@ -275,7 +274,7 @@ class AuthService:
         refresh_token = jwt_refresh_token_service.encode(
             data={"sub": str(user.id), "secret": user.secret_salt}
         )
-        await user.update(last_login=datetime.utcnow())
+        await user.update(last_login=now_datetime(), last_online=now_datetime())
         return (
             TokenSchema(
                 access_token=access_token,
@@ -437,10 +436,10 @@ class AuthService:
         """
         try:
             await user.update(
-                username=change_username_data.username, updated_date=datetime.utcnow()
+                username=change_username_data.username, updated_date=now_datetime()
             )
             return user
-        except UniqueViolationError:
+        except (UniqueViolationError, IntegrityError, SQLIntegrityError):
             raise username_not_available_exception
 
     async def change_password(
@@ -457,7 +456,7 @@ class AuthService:
         ):
             raise invalid_current_password_exception
         new_password = self.get_password_hash(change_password_data.new_password)
-        await user.update(password=new_password, updated_date=datetime.utcnow())
+        await user.update(password=new_password, updated_date=now_datetime())
         return user
 
     @staticmethod
@@ -474,7 +473,7 @@ class AuthService:
             raise cannot_change_display_role_exception
         await user.update(
             display_role=change_display_role_data.role_id,
-            updated_date=datetime.utcnow(),
+            updated_date=now_datetime(),
         )
         return user, old_user_display_role
 
@@ -596,3 +595,31 @@ class BanService(BaseService):
             return user
         except ormar.NoMatch:
             raise user_not_banned_exception
+
+
+class BearerTokenAuthBackend(AuthenticationBackend):
+    async def authenticate(self, request):
+        """
+        Authenticate user
+        :param request:
+        :return:
+        """
+        if "Authorization" not in request.headers:
+            return
+        auth = request.headers["Authorization"]
+        try:
+            token = auth[1]
+            jwt_access_token_service = JWTService(
+                secret_key=crypto_key, expires_delta=timedelta(minutes=15)
+            )
+            token_data = jwt_access_token_service.decode_token(token)
+            users_service = await get_users_service()
+            user = await users_service.get_one(id=token_data.user_id)
+            if not user:
+                raise user_not_found_exception
+            return auth, user
+        except KeyError:
+            logging.debug("Invalid token")
+        except (JWTError, HTTPException):
+            logging.debug("Invalid token")
+            return None

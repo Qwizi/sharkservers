@@ -21,6 +21,7 @@ services:
       - REFRESH_TOKEN_EXPIRES=43829
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - TZ="Europe/Warsaw"
     depends_on:
       db:
         condition: service_started

@@ -5,6 +5,7 @@ import pytest_asyncio
 import sqlalchemy
 from faker import Faker
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi_events.dispatcher import dispatch
 from httpx import AsyncClient
 
 from src.auth.dependencies import (
@@ -14,7 +15,7 @@ from src.auth.dependencies import (
 from src.auth.schemas import RegisterUserSchema
 from src.auth.services import AuthService
 from src.db import metadata, create_redis_pool
-from src.forum.dependencies import get_categories_service
+from src.forum.dependencies import get_categories_service, get_posts_service, get_threads_service
 from src.forum.enums import CategoryTypeEnum
 from src.forum.models import Category
 from src.forum.services import CategoryService
@@ -228,3 +229,30 @@ async def create_fake_scopes(number: int, protected: bool = False) -> list[Scope
         )
         scopes_list.append(scope)
     return scopes_list
+
+
+async def create_fake_posts(number: int = 50, author: User = None, thread=None):
+    posts_service = await get_posts_service()
+    posts_list = []
+    for i in range(number):
+        post = await posts_service.create(
+            content=f"Test content {i}",
+            author=author,
+        )
+        posts_list.append(post)
+        if thread:
+            await thread.posts.add(post)
+    return posts_list
+
+
+async def create_fake_threads(number: int = 50, author: User = None):
+    threads_service = await get_threads_service()
+    threads_list = []
+    for i in range(number):
+        thread = await threads_service.create(
+            title=f"Test title {i}",
+            content=f"Test content {i}",
+            author=author,
+        )
+        threads_list.append(thread)
+    return threads_list
