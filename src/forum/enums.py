@@ -21,6 +21,7 @@ class ThreadExceptionEnum(str, Enum):
     NOT_FOUND = "Thread not found"
     ALREADY_EXISTS = "Thread with this title on this category exists"
     IS_CLOSED = "Thread is closed"
+    NOT_VALID_THREAD_AUTHOR = "You are not allowed to update this thread"
 
 
 class PostExceptionsEnum(str, Enum):
