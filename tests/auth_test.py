@@ -6,6 +6,7 @@ import pytest
 
 from src.auth.enums import AuthExceptionsDetailEnum
 from src.auth.schemas import RegisterUserSchema
+from src.auth.utils import now_datetime
 from src.roles.enums import ProtectedDefaultRolesEnum
 from src.settings import get_settings
 from src.users.models import User
@@ -206,7 +207,7 @@ async def test_get_refresh_token_exception_when_refresh_token_is_expired(client)
     token_data = token_response.json()
     await asyncio.sleep(1)
     with mock.patch('src.auth.services.now_datetime',
-                    return_value=datetime.datetime.utcnow() + datetime.timedelta(
+                    return_value=now_datetime() + datetime.timedelta(
                         minutes=settings.REFRESH_TOKEN_EXPIRES + 5)):
         refresh_token_response = await client.post(
             REFRESH_TOKEN_ENDPOINT, json={"refresh_token": token_data["refresh_token"]}
