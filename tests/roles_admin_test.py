@@ -2,6 +2,7 @@ import json
 
 import pytest
 
+from src.roles.enums import ProtectedDefaultRolesEnum
 from src.scopes.dependencies import get_scopes_service
 from src.scopes.services import ScopeService
 from tests.conftest import TEST_ROLE, create_fake_roles, create_fake_scopes
@@ -47,9 +48,9 @@ async def test_admin_get_default_roles(admin_client):
 
 @pytest.mark.asyncio
 async def test_admin_get_role(admin_client):
-    r = await admin_client.get(f"{ADMIN_ROLES_ENDPOINT}/{TEST_ROLE['id']}")
+    r = await admin_client.get(f"{ADMIN_ROLES_ENDPOINT}/{ProtectedDefaultRolesEnum.ADMIN.value}")
     assert r.status_code == 200
-    assert r.json()["name"] == TEST_ROLE["name"]
+    assert r.json()["id"] == ProtectedDefaultRolesEnum.ADMIN.value
 
 
 @pytest.mark.asyncio

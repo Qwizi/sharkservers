@@ -131,7 +131,7 @@ async def test_update_thread(logged_client):
     new_content = "New content"
     r = await logged_client.put(f"{THREADS_ENDPOINT}/{threads[0].id}", json={
         "title": new_title,
-        "content": old_content,
+        "content": new_content,
     })
 
     assert r.status_code == 200
