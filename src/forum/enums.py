@@ -29,6 +29,7 @@ class PostExceptionsEnum(str, Enum):
 
     NOT_FOUND = "Post not found"
     ALREADY_EXISTS = "Post already exists"
+    NOT_VALID_AUTHOR = "You are not allowed to update this post"
 
 
 class LikeExceptionsEnum(str, Enum):

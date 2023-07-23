@@ -125,6 +125,7 @@ class ScopeService(BaseService):
                     and_(app_name="threads", value="create"),
                     and_(app_name="threads", value="update"),
                     and_(app_name="posts", value="create"),
+                    and_(app_name="posts", value="update"),
                 )
             ).all()
         return scopes

@@ -39,6 +39,11 @@ post_not_found_exception = HTTPException(
     detail=PostExceptionsEnum.NOT_FOUND,
 )
 
+post_not_valid_author_exception = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail=PostExceptionsEnum.NOT_VALID_AUTHOR,
+)
+
 like_not_found_exception = HTTPException(
     status_code=status.HTTP_404_NOT_FOUND,
     detail=PostExceptionsEnum.NOT_FOUND,

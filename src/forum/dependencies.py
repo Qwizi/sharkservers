@@ -7,7 +7,7 @@ from src.forum.enums import ThreadEventEnum, CategoryEventEnum, PostEventEnum
 from src.forum.exceptions import (
     thread_is_closed_exception,
     thread_not_found_exception,
-    post_not_found_exception, thread_not_valid_author_exception,
+    post_not_found_exception, thread_not_valid_author_exception, post_not_valid_author_exception,
 )
 from src.forum.models import Category, Thread, Post
 from src.forum.services import CategoryService, ThreadService, PostService, LikeService
@@ -102,7 +102,7 @@ async def get_valid_post_author(
         user: User = Security(get_current_active_user, scopes=["posts:update"]),
 ):
     if post.author != user:
-        raise post_not_found_exception
+        raise post_not_valid_author_exception
     return post
 
 
