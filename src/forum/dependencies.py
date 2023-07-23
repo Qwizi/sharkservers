@@ -7,7 +7,7 @@ from src.forum.enums import ThreadEventEnum, CategoryEventEnum, PostEventEnum
 from src.forum.exceptions import (
     thread_is_closed_exception,
     thread_not_found_exception,
-    post_not_found_exception,
+    post_not_found_exception, thread_not_valid_author_exception,
 )
 from src.forum.models import Category, Thread, Post
 from src.forum.services import CategoryService, ThreadService, PostService, LikeService
@@ -78,7 +78,7 @@ async def get_valid_thread_with_author(
     :return Thread:
     """
     if thread.author != user:
-        raise thread_not_found_exception
+        raise thread_not_valid_author_exception
     return thread
 
 

@@ -123,6 +123,7 @@ class ScopeService(BaseService):
                     and_(app_name="users", value="me:password"),
                     and_(app_name="users", value="me:display-role"),
                     and_(app_name="threads", value="create"),
+                    and_(app_name="threads", value="update"),
                     and_(app_name="posts", value="create"),
                 )
             ).all()

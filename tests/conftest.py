@@ -64,6 +64,11 @@ TEST_SCOPE = {
     "protected": True,
 }
 
+TEST_THREAD = {
+    "title": "Test Title",
+    "content": "Test Content",
+}
+
 settings = get_settings()
 
 
@@ -245,7 +250,7 @@ async def create_fake_posts(number: int = 50, author: User = None, thread=None):
     return posts_list
 
 
-async def create_fake_threads(number: int = 50, author: User = None):
+async def create_fake_threads(number: int = 50, author: User = None, category: Category = None):
     threads_service = await get_threads_service()
     threads_list = []
     for i in range(number):
@@ -253,6 +258,7 @@ async def create_fake_threads(number: int = 50, author: User = None):
             title=f"Test title {i}",
             content=f"Test content {i}",
             author=author,
+            category=category,
         )
         threads_list.append(thread)
     return threads_list

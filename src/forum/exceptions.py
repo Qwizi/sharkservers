@@ -29,6 +29,11 @@ thread_is_closed_exception = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST, detail=ThreadExceptionEnum.IS_CLOSED
 )
 
+thread_not_valid_author_exception = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail=ThreadExceptionEnum.NOT_VALID_THREAD_AUTHOR,
+)
+
 post_not_found_exception = HTTPException(
     status_code=status.HTTP_404_NOT_FOUND,
     detail=PostExceptionsEnum.NOT_FOUND,
