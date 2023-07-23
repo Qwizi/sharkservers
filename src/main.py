@@ -1,23 +1,32 @@
 import datetime
+import logging
 import os
+from time import time
 
-from fastapi import FastAPI, Depends, Security
+from fastapi import FastAPI, Depends, Security, HTTPException
 from fastapi.routing import APIRoute
+from fastapi.security import SecurityScopes
 from fastapi_events.dispatcher import dispatch
 from fastapi_events.handlers.local import local_handler
 from fastapi_events.middleware import EventHandlerASGIMiddleware
 from fastapi_pagination import add_pagination
+from jose import JWTError
+from starlette.concurrency import iterate_in_threadpool
+from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.middleware.cors import CORSMiddleware
+from starlette.requests import Request
+from starlette.responses import Response
 from starlette.staticfiles import StaticFiles
 
 from src.__version import VERSION
-from src.auth.dependencies import get_auth_service, get_application, get_ban_service
+from src.auth.dependencies import get_auth_service, get_application, get_ban_service, get_current_active_user, \
+    get_current_user, get_access_token_service
 from src.auth.schemas import RegisterUserSchema
-from src.auth.services import AuthService
+from src.auth.services import AuthService, BearerTokenAuthBackend
 
 # Events
 from src.auth.views import router as auth_router_v1
-from src.db import database, create_redis_pool
+from src.db import database, create_redis_pool, settings
 from src.forum.views import (
     router_v1 as forum_router,
     admin_router_v1 as admin_forum_router,
@@ -46,6 +55,7 @@ from src.users.views_admin import (
     router as admin_users_router,
 )
 from .apps.models import App
+from .auth.utils import now_datetime
 from .forum.dependencies import get_categories_service, get_threads_service
 from .forum.services import CategoryService, ThreadService
 
@@ -56,6 +66,7 @@ from .handlers import handle_all_events_and_debug_log, generate_random_data
 from .auth.handlers import create_activate_code_after_register
 from .logger import logger
 from .users.dependencies import get_users_service
+from .users.enums import UsersEventsEnum
 from .users.services import UserService
 from .auth.handlers import create_activate_code_after_register
 
@@ -153,6 +164,7 @@ def create_app():
         debug=True,
         generate_unique_id_function=custom_generate_unique_id,
     )
+    _app.add_middleware(AuthenticationMiddleware, backend=BearerTokenAuthBackend())
     _app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -160,7 +172,8 @@ def create_app():
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    _app.add_middleware(EventHandlerASGIMiddleware, handlers=[local_handler])
+    event_handler_id: int = id(_app)
+    _app.add_middleware(EventHandlerASGIMiddleware, handlers=[local_handler], middleware_id=event_handler_id)
     _app.mount("/static", StaticFiles(directory=st_abs_file_path), name="static")
     _app.state.database = database
     init_routes(_app)
@@ -173,6 +186,45 @@ def create_app():
     @_app.on_event("shutdown")
     async def shutdown():
         await disconnect_db(_app)
+
+    """
+    
+    @_app.middleware("http")
+    async def emit_event(request: Request, call_next):
+        event_name = None
+        for route in _app.routes:
+            if route.path == request.url.path:
+                print(route.name)
+                event_name = f"{route.name}"
+                break
+        post_event_name = f"{event_name}"
+        start_time = time()
+        response = await call_next(request)
+        process_time = time() - start_time
+        response.headers["X-Process-Time"] = str(process_time)
+        response_body = [chunk async for chunk in response.body_iterator]
+        response.body_iterator = iterate_in_threadpool(iter(response_body))
+        print(f"response_body={response_body[0].decode()}")
+        dispatch(post_event_name, payload={"request": request, "response": response, "body": response_body[0].decode()},
+                 middleware_id=event_handler_id)
+        return response
+        """
+
+    @_app.middleware("http")
+    async def update_user_last_online_time(request: Request, call_next):
+        response = await call_next(request)
+        if "Authorization" not in request.headers:
+            return response
+        try:
+            access_token_service = await get_access_token_service(settings=settings)
+            jwt_token = await AuthService.oauth2_scheme(request=request)
+            token_data = access_token_service.decode_token(jwt_token)
+            users_service = await get_users_service()
+            user = await users_service.get_one(id=token_data.user_id)
+            await user.update(last_online=now_datetime())
+            return response
+        except (JWTError, HTTPException):
+            return response
 
     @_app.post("/install", tags=["root"])
     async def install(

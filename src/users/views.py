@@ -66,7 +66,7 @@ async def get_staff_users(
     "/me",
 )
 async def get_logged_user(
-        user: User = Depends(get_current_active_user),
+        user: User = Security(get_current_active_user, scopes=["users:me"])
 ) -> UserOutWithEmail:
     """
     Get logged user
@@ -81,7 +81,7 @@ async def get_logged_user(
 @router.get("/me/posts")
 async def get_logged_user_posts(
         params: Params = Depends(),
-        user: User = Security(get_current_active_user, scopes=["posts:all"]),
+        user: User = Security(get_current_active_user, scopes=["users:me"]),
         posts_service: PostService = Depends(get_posts_service),
 ):
     """
@@ -97,7 +97,7 @@ async def get_logged_user_posts(
 @router.get("/me/threads")
 async def get_logged_user_threads(
         params: Params = Depends(),
-        user: User = Security(get_current_active_user, scopes=["threads:all"]),
+        user: User = Security(get_current_active_user, scopes=["users:me"]),
         threads_service: ThreadService = Depends(get_threads_service),
 ):
     """
@@ -173,7 +173,7 @@ async def change_user_display_role(
         change_display_role_data: ChangeDisplayRoleSchema,
         user: User = Security(get_current_active_user, scopes=["users:me:display-role"]),
         auth_service: AuthService = Depends(get_auth_service),
-) -> SuccessChangeDisplayRoleSchema:
+):
     """
     Change user display role
     :param auth_service:
@@ -181,19 +181,10 @@ async def change_user_display_role(
     :param user:
     :return dict:
     """
-    dispatch(
-        UsersEventsEnum.CHANGE_DISPLAY_ROLE_PRE,
-        payload={"data": change_display_role_data},
-    )
     user, old_user_display_role = await auth_service.change_display_role(
         user, change_display_role_data
     )
-    dispatch(
-        UsersEventsEnum.CHANGE_DISPLAY_ROLE_POST,
-        payload={"data": user, "old_user_display_role": old_user_display_role},
-    )
-    return SuccessChangeDisplayRoleSchema(old_display_role=old_user_display_role,
-                                          new_display_role=change_display_role_data.role_id)
+    return user
 
 
 @router.get("/me/apps")
@@ -253,7 +244,7 @@ async def get_last_logged_users(
     :return Page[UserOut]:
     """
     dispatch(UsersEventsEnum.GET_LAST_LOGGED_PRE, payload={"data": params})
-    logged_users = await users_service.get_last_logged_users(params=params)
+    logged_users = await users_service.get_last_online_users(params=params)
     dispatch(UsersEventsEnum.GET_LAST_LOGGED_POST, payload={"data": logged_users})
     return logged_users
 

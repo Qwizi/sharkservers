@@ -1,114 +1,278 @@
+from datetime import datetime, timedelta
+from unittest import mock
+
 import pytest
-from starlette import status
+from fastapi.security import OAuth2PasswordRequestForm
 
-from src.roles.utils import create_default_roles
-from src.scopes.utils import create_scopes
-from src.users.exceptions import UserNotFound
-from src.users.models import User
-from tests.auth_test import TEST_REGISTER_USER, TEST_LOGIN_USER
-from tests.conftest import TEST_USER, create_fake_users
+from src.auth.dependencies import get_access_token_service, get_refresh_token_service
+from src.roles.dependencies import get_roles_service
+from src.roles.enums import ProtectedDefaultRolesEnum
+from src.settings import get_settings
+from src.users.dependencies import get_users_service
+from tests.conftest import create_fake_users, TEST_USER, TEST_ADMIN_USER, create_fake_posts, create_fake_threads, \
+    _get_auth_service, settings
+
+USERS_ENDPOINT = "/v1/users"
 
 
 @pytest.mark.asyncio
-async def test_users_list(client):
-    users = await create_fake_users(25)
-    response = await client.get("/v1/users?size=25")
+async def test_get_users(client):
+    response = await client.get(USERS_ENDPOINT)
     assert response.status_code == 200
-    data = response.json()
-    assert "items" in data
-    assert "page" in data
-    assert "total" in data
-    assert data["page"] == 1
-    assert data["total"] == 26  # 26 because we created admin user on tests start
-
-    single_user = data["items"][0]
-    assert "password" not in single_user
-    assert "email" not in single_user
-    assert "username" is not None
+    # 1 because of the admin user
+    assert response.json()["total"] == 1
 
 
 @pytest.mark.asyncio
-async def test_users_list_pagination(client):
-    users_ = await create_fake_users(100)
-    response = await client.get("/v1/users?size=25")
+async def test_get_user(client):
+    users = await create_fake_users(1)
+    response = await client.get(f"{USERS_ENDPOINT}/{users[0].id}")
     assert response.status_code == 200
-    data = response.json()
-    assert len(data["items"]) == 25
-
-    response2 = await client.get("/v1/users?size=25&page=2")
-    assert response2.status_code == 200
-    data2 = response2.json()
-    assert len(data2["items"]) == 25
-    assert data2["page"] == 2
-    assert data != data2
+    assert response.json()["id"] == users[0].id
+    assert response.json()["username"] == users[0].username
+    assert "password" not in response.json()
+    assert "email" not in response.json()
+    assert "secret_salt" not in response.json()
 
 
 @pytest.mark.asyncio
-async def test_user_get(client):
-    users_ = await create_fake_users(number=1)
-    user_id = users_[0].id
-    response = await client.get(f"/v1/users/{user_id}")
+async def test_get_user_not_found(client):
+    response = await client.get(f"{USERS_ENDPOINT}/9999")
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_get_staff_users(client):
+    response = await client.get(f"{USERS_ENDPOINT}/staff")
     assert response.status_code == 200
-    single_user = response.json()
-    assert single_user["id"] == user_id
-    assert "password" not in single_user
-    assert "email" not in single_user
+    assert response.json()["total"] == 1
+    assert response.json()["items"][0]["id"] == ProtectedDefaultRolesEnum.ADMIN.value
+    assert response.json()["items"][0]["user_display_role"][0]["username"] == TEST_ADMIN_USER.get("username")
 
 
 @pytest.mark.asyncio
-async def test_user_get_not_found(client):
-    response = await client.get("/v1/users/999")
-    user_not_found = UserNotFound()
-    assert response.status_code == user_not_found.status_code
-    assert response.json()["detail"] == user_not_found.detail
+@pytest.mark.parametrize("endpoint", [
+    f"{USERS_ENDPOINT}/me",
+    f"{USERS_ENDPOINT}/me/posts",
+    f"{USERS_ENDPOINT}/me/threads",
+    f"{USERS_ENDPOINT}/me/apps",
+
+])
+async def test_unauthorized_get_logged_user(endpoint, client):
+    response = await client.get(endpoint)
+    assert response.status_code == 401
 
 
 @pytest.mark.asyncio
-async def test_get_unactivated_logged_user(client):
-    register_r = await client.post("/v1/auth/register", json=TEST_REGISTER_USER)
-    token_r = await client.post("/v1/auth/token", data=TEST_LOGIN_USER)
-    access_token = token_r.json()["access_token"]
-    r = await client.get(
-        "/v1/users/me", headers={"Authorization": f"Bearer {access_token}"}
-    )
-    assert r.status_code == status.HTTP_401_UNAUTHORIZED
+@pytest.mark.parametrize("endpoint", [
+    f"{USERS_ENDPOINT}/me/username",
+    f"{USERS_ENDPOINT}/me/password",
+    f"{USERS_ENDPOINT}/me/display-role"
+])
+async def test_unauthorized_change_user_data(endpoint, client):
+    response = await client.post(endpoint)
+    assert response.status_code == 401
 
 
 @pytest.mark.asyncio
 async def test_get_logged_user(logged_client):
-    r = await logged_client.get("/v1/users/me")
-    assert r.status_code == status.HTTP_200_OK
-    assert r.json()["username"] == TEST_USER.get("username")
-    assert r.json()["is_activated"] is True
-    assert r.json()["is_superuser"] is False
-    assert "roles" in r.json()
-    assert "display_role" in r.json()
+    response = await logged_client.get(f"{USERS_ENDPOINT}/me")
+    assert response.status_code == 200
+    assert response.json()["username"] == TEST_USER.get("username")
+    assert "password" not in response.json()
 
 
 @pytest.mark.asyncio
-async def test_change_logged_user_username(logged_client):
-    change_username_r = await logged_client.post(
-        "/v1/users/me/username", json={"username": "New username"}
+async def test_get_logged_user_posts(logged_client):
+    users_service = await get_users_service()
+    author = await users_service.get_one(username=TEST_USER.get("username"),
+                                         related=["display_role", "display_role__scopes"])
+    posts = await create_fake_posts(1, author)
+    response = await logged_client.get(f"{USERS_ENDPOINT}/me/posts")
+    assert response.status_code == 200
+    assert response.json()["total"] == 1
+    assert response.json()["items"][0]["id"] == posts[0].id
+
+
+@pytest.mark.asyncio
+async def test_get_logged_user_threads(logged_client):
+    users_service = await get_users_service()
+    author = await users_service.get_one(username=TEST_USER.get("username"),
+                                         related=["display_role", "display_role__scopes"])
+    threads = await create_fake_threads(1, author)
+    response = await logged_client.get(f"{USERS_ENDPOINT}/me/threads")
+    assert response.status_code == 200
+    assert response.json()["total"] == 1
+    assert response.json()["items"][0]["id"] == threads[0].id
+
+
+@pytest.mark.asyncio
+async def test_logged_user_change_username(logged_client):
+    new_username = "NewUsername"
+    response = await logged_client.post(f"{USERS_ENDPOINT}/me/username", json={
+        "username": new_username
+    })
+    assert response.status_code == 200
+    assert response.json()["new_username"] != TEST_USER.get("username")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("username", [
+    # 3 because of min length
+    "a" * 2,
+    # 20 because of max length
+    "a" * 33,
+    # Invalid characters
+    "a@#$%^&*()_+",
+])
+async def test_logged_user_change_username_with_invalid_data(username, logged_client):
+    response = await logged_client.post(f"{USERS_ENDPOINT}/me/username", json={
+        "username": username
+    })
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_logged_user_change_username_with_already_taken_username(logged_client):
+    response = await logged_client.post(f"{USERS_ENDPOINT}/me/username", json={
+        "username": TEST_ADMIN_USER.get("username")
+    })
+    assert response.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_logged_user_change_password(logged_client):
+    new_password = "newpassword123"
+    response = await logged_client.post(f"{USERS_ENDPOINT}/me/password", json={
+        "current_password": TEST_USER.get("password"),
+        "new_password": new_password,
+        "new_password2": new_password,
+    })
+    assert response.status_code == 200
+
+    # Now try to login with new password
+    auth_service = await _get_auth_service()
+    token, user = await auth_service.login(
+        form_data=OAuth2PasswordRequestForm(
+            username=TEST_USER.get("username"),
+            password=new_password,
+            scope="",
+        ),
+        jwt_access_token_service=await get_access_token_service(settings),
+        jwt_refresh_token_service=await get_refresh_token_service(settings),
     )
-    assert change_username_r.status_code == status.HTTP_200_OK
-    assert change_username_r.json()["username"] != TEST_USER.get("username")
-    assert change_username_r.json()["username"] == "New username"
+
+    assert token is not None
 
 
 @pytest.mark.asyncio
-async def test_change_logged_user_username_unauthenticated(client):
-    r = await client.post("/v1/users/me/username", json={"username": "New username"})
-    assert r.status_code == status.HTTP_401_UNAUTHORIZED
+async def test_logged_user_change_password_with_invalid_current_password(logged_client):
+    password = "newpassword123"
+    response = await logged_client.post(f"{USERS_ENDPOINT}/me/password", json={
+        "current_password": "invalidpassword",
+        "new_password": password,
+        "new_password2": password,
+    })
+    assert response.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_logged_user_change_password_with_no_equal_password_and_password2(logged_client):
+    pass1 = "newpassword123"
+    pass2 = "newpassword1234"
+    response = await logged_client.post(f"{USERS_ENDPOINT}/me/password", json={
+        "current_password": TEST_USER.get("password"),
+        "new_password": pass1,
+        "new_password2": pass2,
+    })
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_logged_user_change_display_role(logged_client):
+    users_service = await get_users_service()
+    roles_service = await get_roles_service()
+    user = await users_service.get_one(username=TEST_USER.get("username"), related=["roles", "display_role"])
+    old_display_role_id = user.display_role.id
+    role = await roles_service.get_one(id=ProtectedDefaultRolesEnum.ADMIN.value)
+    await user.roles.add(role)
+    response = await logged_client.post(f"{USERS_ENDPOINT}/me/display-role", json={
+        "role_id": role.id
+    })
+    assert response.status_code == 200
+    assert response.json()["display_role"]["id"] != old_display_role_id
+
+
+@pytest.mark.asyncio
+async def test_logged_user_change_display_role_with_invalid_role_id(logged_client):
+    response = await logged_client.post(f"{USERS_ENDPOINT}/me/display-role", json={
+        "role_id": 9999
+    })
+    assert response.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_logged_user_change_display_role_when_role_not_exists_in_user_roles(logged_client):
+    response = await logged_client.post(f"{USERS_ENDPOINT}/me/display-role", json={
+        "role_id": ProtectedDefaultRolesEnum.ADMIN.value
+    })
+    assert response.status_code == 400
 
 
 @pytest.mark.asyncio
 async def test_get_last_logged_users(client):
-    register_r = await client.post("/v1/auth/register", json=TEST_REGISTER_USER)
-    user = await User.objects.get(username=TEST_LOGIN_USER["username"])
-    await user.update(is_activated=True)
-    assert user.is_activated is True
-    token_r = await client.post("/v1/auth/token", data=TEST_LOGIN_USER)
+    response = await client.get(f"{USERS_ENDPOINT}/online")
+    assert response.status_code == 200
+    # 0 because nobody is logged in
+    assert response.json()["total"] == 0
+    # Now login user
+    auth_service = await _get_auth_service()
+    token, user = await auth_service.login(
+        form_data=OAuth2PasswordRequestForm(
+            username=TEST_ADMIN_USER.get("username"),
+            password=TEST_ADMIN_USER.get("password"),
+            scope="",
+        ),
+        jwt_access_token_service=await get_access_token_service(settings),
+        jwt_refresh_token_service=await get_refresh_token_service(settings),
+    )
+    response = await client.get(f"{USERS_ENDPOINT}/online")
+    assert response.status_code == 200
+    # 1 because now user is logged in
+    assert response.json()["total"] == 1
+    # Mock datetime to 16 minutes later, because this
+    with mock.patch('src.users.services.now_datetime',
+                    return_value=datetime.now() + timedelta(
+                        minutes=16)):
+        response = await client.get(f"{USERS_ENDPOINT}/online")
+        assert response.status_code == 200
+        # 0 because now user don't make any actions
+        assert response.json()["total"] == 0
 
-    online_users_r = await client.get("/v1/users/online")
-    assert online_users_r.status_code == status.HTTP_200_OK
-    assert online_users_r.json()["total"] == 1
+
+@pytest.mark.asyncio
+async def test_not_found_user(client):
+    response = await client.get(f"{USERS_ENDPOINT}/9999")
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_get_user_threads(logged_client):
+    users_service = await get_users_service()
+    author = await users_service.get_one(username=TEST_USER.get("username"))
+    threads = await create_fake_threads(1, author)
+    response = await logged_client.get(f"{USERS_ENDPOINT}/{author.id}/threads")
+    assert response.status_code == 200
+    assert response.json()["total"] == 1
+    assert response.json()["items"][0]["id"] == threads[0].id
+
+
+@pytest.mark.asyncio
+async def test_get_user_posts(logged_client):
+    users_service = await get_users_service()
+    author = await users_service.get_one(username=TEST_USER.get("username"))
+    posts = await create_fake_posts(1, author)
+    response = await logged_client.get(f"{USERS_ENDPOINT}/{author.id}/posts")
+    assert response.status_code == 200
+    assert response.json()["total"] == 1
+    assert response.json()["items"][0]["id"] == posts[0].id

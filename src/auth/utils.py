@@ -1,7 +1,7 @@
 import json
 import random
 import string
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 from sqlite3 import IntegrityError as SQLIntegrityError
 from urllib import parse
 
@@ -101,9 +101,9 @@ def create_refresh_token(settings: Settings = Depends(get_settings), data: dict 
 
 
 async def get_current_user(
-    security_scopes: SecurityScopes,
-    token: str = Depends(oauth2_scheme),
-    settings: Settings = Depends(get_settings),
+        security_scopes: SecurityScopes,
+        token: str = Depends(oauth2_scheme),
+        settings: Settings = Depends(get_settings),
 ):
     try:
         payload = jwt.decode(
@@ -133,7 +133,7 @@ async def get_current_user(
 
 
 async def get_current_active_user(
-    current_user: User = Security(get_current_user, scopes=["users:me"])
+        current_user: User = Security(get_current_user, scopes=["users:me"])
 ):
     if not current_user.is_activated:
         raise inactivate_user_exception
@@ -191,7 +191,7 @@ async def _login_user(form_data: OAuth2PasswordRequestForm, settings: Settings):
 
 
 async def _get_access_token_from_refresh_token(
-    token_data: RefreshTokenSchema, settings: Settings
+        token_data: RefreshTokenSchema, settings: Settings
 ):
     try:
         payload = jwt.decode(
@@ -360,3 +360,7 @@ async def get_user_agent(request: Request):
     if not user_agent:
         return None
     return user_agent
+
+
+def now_datetime() -> datetime:
+    return datetime.now()

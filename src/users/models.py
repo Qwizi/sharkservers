@@ -25,6 +25,7 @@ class User(ormar.Model, DateFieldsMixins):
         Role, related_name="user_display_role"
     )
     last_login: Optional[datetime.datetime] = ormar.DateTime(nullable=True)
+    last_online: Optional[datetime.datetime] = ormar.DateTime(nullable=True)
     secret_salt: Optional[str] = ormar.String(max_length=255, unique=True)
 
 

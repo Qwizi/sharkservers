@@ -25,6 +25,7 @@ def log_debug_event(event: Event):
 
 @local_handler.register(event_name="*")
 async def handle_all_events_and_debug_log(event: Event):
+    event_name, payload = event
     log_debug_event(event)
 
 
