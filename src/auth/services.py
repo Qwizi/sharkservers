@@ -33,7 +33,7 @@ from src.auth.schemas import (
     TokenDataSchema,
     TokenSchema,
     RefreshTokenSchema,
-    RegisterUserSchema, TokenDetailsSchema,
+    RegisterUserSchema,
 )
 from src.auth.utils import crypto_key, now_datetime
 from src.db import BaseService
@@ -42,6 +42,7 @@ from src.players.services import PlayerService
 from src.roles.enums import ProtectedDefaultRolesEnum
 from src.roles.services import RoleService
 from src.scopes.services import ScopeService
+from src.scopes.utils import get_scopesv3
 from src.services import EmailService
 from src.users.dependencies import get_users_service
 from src.users.exceptions import (
@@ -83,12 +84,12 @@ class JWTService:
         self.algorithm = algorithm
         self.expires_delta = expires_delta
 
-    def encode(self, data: dict) -> (str, datetime):
+    def encode(self, data: dict) -> str:
         to_encode = data.copy()
         expire = now_datetime() + self.expires_delta
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
-        return encoded_jwt, expire
+        return encoded_jwt
 
     def decode(self, token: str) -> dict:
         return jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
@@ -267,21 +268,18 @@ class AuthService:
         if not user:
             raise incorrect_username_password_exception
         scopes = await self.scopes_service.get_scopes_list(user.roles)
-        access_token, access_token_exp = jwt_access_token_service.encode(
+        access_token = jwt_access_token_service.encode(
             data={"sub": str(user.id), "scopes": scopes, "secret": user.secret_salt}
         )
-        refresh_token, refresh_toke_exp = jwt_refresh_token_service.encode(
+        refresh_token = jwt_refresh_token_service.encode(
             data={"sub": str(user.id), "secret": user.secret_salt}
         )
         await user.update(last_login=now_datetime(), last_online=now_datetime())
         return (
             TokenSchema(
-                access_token=TokenDetailsSchema(
-                    token=access_token, exp=access_token_exp, token_type="bearer"
-                ),
-                refresh_token=TokenDetailsSchema(
-                    token=refresh_token, exp=refresh_toke_exp, token_type="bearer"
-                ),
+                access_token=access_token,
+                token_type="bearer",
+                refresh_token=refresh_token,
             ),
             user,
         )
@@ -302,8 +300,8 @@ class AuthService:
         try:
 
             payload = jwt_refresh_token_service.decode(token_data.refresh_token)
-            refresh_token_exp = payload.get("exp", None)
-            if datetime.utcfromtimestamp(refresh_token_exp) < now_datetime():
+            exp = payload.get("exp", None)
+            if datetime.utcfromtimestamp(exp) < now_datetime():
                 raise token_expired_exception
             user_id = int(payload.get("sub"))
             secret: str = payload.get("secret")
@@ -313,18 +311,15 @@ class AuthService:
             if not user or user.secret_salt != secret:
                 raise invalid_credentials_exception
             scopes = await self.scopes_service.get_scopes_list(user.roles)
-            access_token, access_token_exp = jwt_access_token_service.encode(
+            access_token = jwt_access_token_service.encode(
                 data={"sub": str(user.id), "scopes": scopes, "secret": user.secret_salt}
             )
             await user.update(last_login=datetime.utcnow())
             return (
                 TokenSchema(
-                    access_token=TokenDetailsSchema(
-                        token=access_token, exp=access_token_exp, token_type="bearer"
-                    ),
-                    refresh_token=TokenDetailsSchema(
-                        token=token_data.refresh_token, exp=refresh_token_exp, token_type="bearer"
-                    ),
+                    access_token=access_token,
+                    refresh_token=token_data.refresh_token,
+                    token_type="bearer",
                 ),
                 user,
             )

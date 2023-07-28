@@ -1,5 +1,3 @@
-import datetime
-
 from pydantic import BaseModel, validator, Field, EmailStr
 
 
@@ -19,15 +17,10 @@ class RegisterUserSchema(UsernameRegex):
             raise ValueError("Passwords do not match")
 
 
-class TokenDetailsSchema(BaseModel):
-    token: str
-    token_type: str
-    exp: datetime.datetime
-
-
 class TokenSchema(BaseModel):
-    access_token: TokenDetailsSchema
-    refresh_token: TokenDetailsSchema
+    access_token: str
+    refresh_token: str
+    token_type: str
 
 
 class TokenDataSchema(BaseModel):
