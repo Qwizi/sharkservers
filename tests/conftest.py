@@ -127,7 +127,7 @@ async def auth_user_headers(username, password):
         jwt_refresh_token_service=await get_refresh_token_service(settings),
     )
     print(token)
-    return {"Authorization": f"Bearer {token.access_token}"}
+    return {"Authorization": f"Bearer {token.access_token.token}"}
 
 
 @pytest_asyncio.fixture(scope="function")
