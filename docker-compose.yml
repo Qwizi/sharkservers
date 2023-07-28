@@ -21,14 +21,7 @@ services:
       - REFRESH_TOKEN_EXPIRES=43829
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - TZ=Europe/Warsaw
-      - STEAM_API_KEY=randomSteamApiKey123
-      - MAIL_USERNAME=randomMailUsername123
-      - MAIL_PASSWORD=randomMailPassword123
-      - MAIL_FROM=test@webisite.pl
-      - MAIL_PORT=123
-      - MAIL_SERVER=test@webisite.pl
-      - MAIL_FROM_NAME=randomMailFromName123
+      - TZ="Europe/Warsaw"
     depends_on:
       db:
         condition: service_started

@@ -147,11 +147,7 @@ async def test_auth_create_access_token(client):
         "password": TEST_REGISTER_USER["password"],
     })
     assert r.status_code == 200
-    assert r.json()["access_token"]["token"] is not None
-    assert r.json()["access_token"]["exp"] is not None
-    assert r.json()["refresh_token"]["token"] is not None
-    assert r.json()["refresh_token"]["exp"] is not None
-    assert r.json()["refresh_token"]["exp"] != r.json()["access_token"]["exp"]
+    assert ["access_token", "refresh_token", "token_type"] == list(r.json().keys())
 
 
 @pytest.mark.asyncio
@@ -187,12 +183,12 @@ async def test_get_refresh_token(client):
     token_data = token_response.json()
     await asyncio.sleep(1)
     refresh_token_response = await client.post(
-        REFRESH_TOKEN_ENDPOINT, json={"refresh_token": token_data["refresh_token"]["token"]}
+        REFRESH_TOKEN_ENDPOINT, json={"refresh_token": token_data["refresh_token"]}
     )
     refresh_token_data = refresh_token_response.json()
     assert refresh_token_response.status_code == 200
     # refresh token should be different from access token
-    assert token_data["access_token"]["token"] != refresh_token_data["access_token"]["token"]
+    assert token_data["access_token"] != refresh_token_data["access_token"]
 
 
 @pytest.mark.asyncio
@@ -214,7 +210,7 @@ async def test_get_refresh_token_exception_when_refresh_token_is_expired(client)
                     return_value=now_datetime() + datetime.timedelta(
                         minutes=settings.REFRESH_TOKEN_EXPIRES + 5)):
         refresh_token_response = await client.post(
-            REFRESH_TOKEN_ENDPOINT, json={"refresh_token": token_data["refresh_token"]["token"]}
+            REFRESH_TOKEN_ENDPOINT, json={"refresh_token": token_data["refresh_token"]}
         )
         assert refresh_token_response.status_code == 401
         assert refresh_token_response.json() == {"detail": AuthExceptionsDetailEnum.TOKEN_EXPIRED.value}
