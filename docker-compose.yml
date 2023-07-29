@@ -14,10 +14,10 @@ services:
       - POSTGRES_USER=shark_user
       - POSTGRES_PASSWORD=shark_password
       - TESTING=False
-      - SECRET_KEY=myfuckingsecretke123
-      - REFRESH_SECRET_KEY=myrefreshsecret
+      - SECRET_KEY=Dn1D6gkT2E+ZuxGJXIOdkEgS7zpumQtHppDEYs5eINs=
+      - REFRESH_SECRET_KEY=Dn1D6gkT2E+ZuxGJXIOdkEgS7zpumQtHppDEYs5eINs=
       - ALGORITHM=HS512
-      - ACCESS_TOKEN_EXPIRES=30
+      - ACCESS_TOKEN_EXPIRES=2
       - REFRESH_TOKEN_EXPIRES=43829
       - REDIS_HOST=redis
       - REDIS_PORT=6379
