@@ -4,16 +4,19 @@ from fastapi import Depends
 from fastapi.security import SecurityScopes
 from jose import JWTError
 from ormar import Model
+from redis.client import Redis
 
 from src.apps.dependencies import get_app_service
 from src.apps.services import AppService
+from src.auth.enums import RedisAuthKeyEnum
 from src.auth.exceptions import (
     no_permissions_exception,
     invalid_credentials_exception,
     inactivate_user_exception,
     not_admin_user_exception,
 )
-from src.auth.services import JWTService, AuthService, BanService
+from src.auth.services import JWTService, AuthService, BanService, CodeService
+from src.db import get_redis
 from src.roles.dependencies import get_roles_service
 from src.roles.services import RoleService
 from src.scopes.dependencies import get_scopes_service
@@ -25,7 +28,7 @@ from src.users.services import UserService
 
 
 async def get_access_token_service(
-    settings: Settings = Depends(get_settings),
+        settings: Settings = Depends(get_settings),
 ) -> JWTService:
     """
     Get access token service
@@ -39,7 +42,7 @@ async def get_access_token_service(
 
 
 async def get_refresh_token_service(
-    settings: Settings = Depends(get_settings),
+        settings: Settings = Depends(get_settings),
 ) -> JWTService:
     """
     Get refresh token service
@@ -53,9 +56,9 @@ async def get_refresh_token_service(
 
 
 async def get_auth_service(
-    users_service: UserService = Depends(get_users_service),
-    roles_service: RoleService = Depends(get_roles_service),
-    scopes_service: ScopeService = Depends(get_scopes_service),
+        users_service: UserService = Depends(get_users_service),
+        roles_service: RoleService = Depends(get_roles_service),
+        scopes_service: ScopeService = Depends(get_scopes_service),
 ) -> AuthService:
     return AuthService(
         users_service=users_service,
@@ -65,10 +68,10 @@ async def get_auth_service(
 
 
 async def get_current_user(
-    security_scopes: SecurityScopes,
-    token: str = Depends(AuthService.oauth2_scheme),
-    access_token_service: JWTService = Depends(get_access_token_service),
-    users_service: UserService = Depends(get_users_service),
+        security_scopes: SecurityScopes,
+        token: str = Depends(AuthService.oauth2_scheme),
+        access_token_service: JWTService = Depends(get_access_token_service),
+        users_service: UserService = Depends(get_users_service),
 ) -> Model:
     """
     Get current user
@@ -92,7 +95,7 @@ async def get_current_user(
 
 
 async def get_current_active_user(
-    current_user: User = Depends(get_current_user),
+        current_user: User = Depends(get_current_user),
 ) -> User:
     """
     Get current active user
@@ -111,10 +114,10 @@ async def get_admin_user(user: User = Depends(get_current_active_user)):
 
 
 async def get_application(
-    security_scopes: SecurityScopes,
-    token: str = Depends(AuthService.oauth2_scheme),
-    access_token_service: JWTService = Depends(get_access_token_service),
-    apps_service: AppService = Depends(get_app_service),
+        security_scopes: SecurityScopes,
+        token: str = Depends(AuthService.oauth2_scheme),
+        access_token_service: JWTService = Depends(get_access_token_service),
+        apps_service: AppService = Depends(get_app_service),
 ) -> Model:
     """
     Get application
@@ -142,11 +145,20 @@ async def get_application(
 
 
 async def get_ban_service(
-    roles_service: RoleService = Depends(get_roles_service),
-    auth_service: AuthService = Depends(get_auth_service),
+        roles_service: RoleService = Depends(get_roles_service),
+        auth_service: AuthService = Depends(get_auth_service),
 ) -> BanService:
     """
     Get ban service
     :return ban_service:
     """
     return BanService(roles_service=roles_service, auth_service=auth_service)
+
+
+async def get_activation_account_code_service(redis: Redis = Depends(get_redis)) -> CodeService:
+    """
+    Get activation account code service
+    :param redis:
+    :return CodeService:
+    """
+    return CodeService(redis=redis, key=RedisAuthKeyEnum.ACTIVATE_USER)
