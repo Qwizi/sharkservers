@@ -26,7 +26,7 @@ from src.users.schemas import (
     ChangeUsernameSchema,
     ChangePasswordSchema,
     ChangeDisplayRoleSchema,
-    UserOut2Schema, SuccessChangeUsernameSchema, SuccessChangeDisplayRoleSchema,
+    SuccessChangeUsernameSchema, SuccessChangeDisplayRoleSchema,
 )
 from src.users.services import UserService
 
@@ -36,7 +36,7 @@ router = APIRouter()
 @router.get("")
 async def get_users(
         params: Params = Depends(), users_service: UserService = Depends(get_users_service)
-) -> Page[UserOut2Schema]:
+) -> Page[UserOut]:
     """
     Get users
     :param users_service:
@@ -61,6 +61,18 @@ async def get_staff_users(
     """
     return await roles_service.get_staff_roles(params)
 
+
+@router.get("/online")
+async def get_last_online_users(
+        params: Params = Depends(), users_service: UserService = Depends(get_users_service)
+) -> Page[UserOut]:
+    """
+    Get last logged users
+    :param users_service:
+    :param params:
+    :return Page[UserOut]:
+    """
+    return await users_service.get_last_online_users(params=params)
 
 @router.get(
     "/me",
@@ -231,22 +243,6 @@ async def create_user_app(
     for scope in scopes:
         await app.scopes.add(scope)
     return app
-
-
-@router.get("/online", response_model=Page[UserOut])
-async def get_last_logged_users(
-        params: Params = Depends(), users_service: UserService = Depends(get_users_service)
-) -> AbstractPage:
-    """
-    Get last logged users
-    :param users_service:
-    :param params:
-    :return Page[UserOut]:
-    """
-    dispatch(UsersEventsEnum.GET_LAST_LOGGED_PRE, payload={"data": params})
-    logged_users = await users_service.get_last_online_users(params=params)
-    dispatch(UsersEventsEnum.GET_LAST_LOGGED_POST, payload={"data": logged_users})
-    return logged_users
 
 
 @router.get("/{user_id}", response_model=UserOut)

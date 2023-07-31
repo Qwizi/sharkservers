@@ -1,34 +1,13 @@
-import datetime
-from typing import Optional, List
+from typing import Optional
 
 from pydantic import BaseModel, validator
 
 from src.auth.schemas import UsernameRegex
-from src.players.schemas import SteamPlayer
 from src.users.models import User
 
-UserOut = User.get_pydantic(exclude={"password", "email", "secret_salt", "apps", "players", "last_login"})
+UserOut = User.get_pydantic(
+    exclude={"password", "email", "secret_salt", "apps", "players", "banned_user", "banned_by", "roles"})
 UserOutWithEmail = User.get_pydantic(exclude={"password", "secret_salt", "apps", "players"})
-
-
-class UserInSchema(BaseModel):
-    username: str
-    email: str
-    password: str
-
-
-class UserOutRoleSchema(BaseModel):
-    id: int
-    name: Optional[str] = None
-    color: Optional[str] = None
-    is_staff: Optional[bool] = None
-
-
-class UserOut2Schema(BaseModel):
-    id: int
-    username: Optional[str] = None
-    avatar: Optional[str] = None
-    display_role: Optional[UserOutRoleSchema] = None
 
 
 class ChangeUsernameSchema(UsernameRegex):

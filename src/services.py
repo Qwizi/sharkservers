@@ -5,6 +5,7 @@ from pathlib import Path
 import httpx
 from fastapi import HTTPException
 from fastapi_mail import FastMail, ConnectionConfig, MessageSchema, MessageType
+from fastapi_mail.email_utils import DefaultChecker
 from pydantic import EmailStr
 
 from src.auth.schemas import RegisterUserSchema
@@ -15,9 +16,11 @@ from src.users.models import User
 
 class EmailService:
     mailer: FastMail
+    checker: DefaultChecker
 
-    def __init__(self, _mailer: FastMail):
+    def __init__(self, _mailer: FastMail, checker: DefaultChecker):
         self.mailer = _mailer
+        self.checker = checker
 
     @staticmethod
     def activation_email_template(code: str):
@@ -26,6 +29,9 @@ class EmailService:
         """
 
     async def send_activation_email(self, email: EmailStr, code: str):
+        if not await self.checker.check_mx_record(email.split("@")[1], False):
+            logger.info(f"Email {email} is invalid and will not be sent")
+            return
         await self.mailer.send_message(
             message=MessageSchema(
                 subject="Aktywacja konta",
@@ -34,6 +40,7 @@ class EmailService:
                 subtype=MessageType.html,
             )
         )
+        logger.info(f"Activation email sent to {email} with code {code}")
 
 
 class MainService:
@@ -108,22 +115,3 @@ class MainService:
                     operation["operationId"] = new_operation_id
                     print(new_operation_id)
             file_path.write_text(json.dumps(openapi_content))
-
-
-settings = get_settings()
-
-conf = ConnectionConfig(
-    MAIL_USERNAME=settings.MAIL_USERNAME,
-    MAIL_PASSWORD=settings.MAIL_PASSWORD,
-    MAIL_FROM=settings.MAIL_FROM,
-    MAIL_PORT=settings.MAIL_PORT,
-    MAIL_SERVER=settings.MAIL_SERVER,
-    MAIL_FROM_NAME=settings.MAIL_FROM_NAME,
-    MAIL_STARTTLS=settings.MAIL_STARTTLS,
-    MAIL_SSL_TLS=settings.MAIL_SSL_TLS,
-    USE_CREDENTIALS=settings.USE_CREDENTIALS,
-    VALIDATE_CERTS=settings.VALIDATE_CERTS,
-)
-
-mailer = FastMail(conf)
-email_service = EmailService(_mailer=mailer)

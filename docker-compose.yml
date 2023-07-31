@@ -8,27 +8,8 @@ services:
       - "80:80"
     volumes:
       - ./:/code/
-    environment:
-      - POSTGRES_HOST=db
-      - POSTGRES_DB=shark_db
-      - POSTGRES_USER=shark_user
-      - POSTGRES_PASSWORD=shark_password
-      - TESTING=False
-      - SECRET_KEY=Dn1D6gkT2E+ZuxGJXIOdkEgS7zpumQtHppDEYs5eINs=
-      - REFRESH_SECRET_KEY=Dn1D6gkT2E+ZuxGJXIOdkEgS7zpumQtHppDEYs5eINs=
-      - ALGORITHM=HS512
-      - ACCESS_TOKEN_EXPIRES=2
-      - REFRESH_TOKEN_EXPIRES=43829
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - TZ=Europe/Warsaw
-      - STEAM_API_KEY=randomSteamApiKey123
-      - MAIL_USERNAME=randomMailUsername123
-      - MAIL_PASSWORD=randomMailPassword123
-      - MAIL_FROM=test@webisite.pl
-      - MAIL_PORT=123
-      - MAIL_SERVER=test@webisite.pl
-      - MAIL_FROM_NAME=randomMailFromName123
+    env_file:
+      - .env
     depends_on:
       db:
         condition: service_started

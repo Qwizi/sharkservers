@@ -2,6 +2,7 @@ import datetime
 from typing import Optional, List
 
 import ormar
+from pydantic import EmailStr
 
 from src.db import BaseMeta, DateFieldsMixins
 from src.roles.models import Role
@@ -13,7 +14,7 @@ class User(ormar.Model, DateFieldsMixins):
 
     id: int = ormar.Integer(primary_key=True)
     username: Optional[str] = ormar.String(max_length=64, unique=True)
-    email: Optional[str] | None = ormar.String(max_length=255, unique=True)
+    email: Optional[EmailStr] | None = ormar.String(max_length=255, unique=True)
     password: Optional[str] = ormar.String(max_length=255)
     is_activated: Optional[bool] = ormar.Boolean(default=False)
     is_superuser: Optional[bool] = ormar.Boolean(default=False)
