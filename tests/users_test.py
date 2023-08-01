@@ -351,3 +351,11 @@ async def test_logged_user_upload_avatar_with_invalid_file_with_valid_content_ty
     response = await logged_client.post(f"{USERS_ENDPOINT}/me/avatar",
                                         files={"avatar": ("default_avatar.png", image_bytes, "image/png")})
     assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_logged_user_upload_avatar_with_invalid_file_size(logged_client):
+    image_bytes = create_fake_invalid_image(additional_bytes=1000)
+    response = await logged_client.post(f"{USERS_ENDPOINT}/me/avatar",
+                                            files={"avatar": ("default_avatar.png", image_bytes, "image/png")})
+    assert response.status_code == 422
