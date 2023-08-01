@@ -206,7 +206,7 @@ async def create_fake_roles(number: int = 50, scopes: list[Scope] = None, is_sta
         )
         if scopes:
             for scope in scopes:
-                role.scopes.add(scope)
+                await role.scopes.add(scope)
         roles_list.append(role)
     return roles_list
 
@@ -289,7 +289,11 @@ def create_fake_image(image_format="PNG"):
     return image, image_bytes.getvalue()
 
 
-def create_fake_invalid_image():
+def create_fake_invalid_image(additional_bytes: int = None):
     image, image_bytes = create_fake_image()
-    image_bytes = BytesIO(b"\x00\x00\x00" + image_bytes[3:])
+
+    if additional_bytes:
+        image_bytes = BytesIO(b"\x00\x00\x00" + image_bytes[3:] * additional_bytes)
+    else:
+        image_bytes = BytesIO(b"\x00\x00\x00" + image_bytes[3:])
     return image_bytes.getvalue()
