@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, EmailStr
 
 from src.auth.schemas import UsernameRegex
 from src.users.models import User
@@ -28,6 +28,10 @@ class ChangePasswordSchema(BaseModel):
     def passwords_match(cls, value, values, **kwargs):
         if "new_password" in values and value != values["new_password"]:
             raise ValueError("Passwords do not match")
+
+
+class ChangeEmailSchema(BaseModel):
+    email: EmailStr
 
 
 class ChangeDisplayRoleSchema(BaseModel):

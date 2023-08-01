@@ -1,24 +1,30 @@
-from fastapi import APIRouter, Depends, Security
+import json
+
+from fastapi import APIRouter, Depends, Security, BackgroundTasks
 from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
-from fastapi_pagination.bases import AbstractPage
 
 from src.apps.dependencies import get_app_service
 from src.apps.schemas import CreateAppSchema
 from src.apps.services import AppService
-from src.auth.dependencies import get_current_active_user, get_auth_service
-from src.auth.services import AuthService
+from src.auth.dependencies import get_current_active_user, get_auth_service, get_change_account_email_code_service
+from src.auth.schemas import ActivateUserCodeSchema
+from src.auth.services.auth import AuthService
+from src.auth.services.code import CodeService
+from src.dependencies import get_email_service
+from src.enums import ActivationEmailTypeEnum
 from src.forum.dependencies import get_posts_service, get_threads_service
 from src.forum.services import PostService, ThreadService
 from src.roles.dependencies import get_roles_service
 from src.roles.schemas import StaffRolesSchema
 from src.roles.services import RoleService
-from src.schemas import HTTPError401Schema
 from src.scopes.dependencies import get_scopes_service
 from src.scopes.services import ScopeService
+from src.services import EmailService
 from src.settings import Settings, get_settings
 from src.users.dependencies import get_valid_user, get_users_service
 from src.users.enums import UsersEventsEnum
+from src.users.exceptions import user_email_is_the_same_exception
 from src.users.models import User
 from src.users.schemas import (
     UserOut,
@@ -26,7 +32,7 @@ from src.users.schemas import (
     ChangeUsernameSchema,
     ChangePasswordSchema,
     ChangeDisplayRoleSchema,
-    SuccessChangeUsernameSchema, SuccessChangeDisplayRoleSchema,
+    SuccessChangeUsernameSchema, ChangeEmailSchema,
 )
 from src.users.services import UserService
 
@@ -73,6 +79,7 @@ async def get_last_online_users(
     :return Page[UserOut]:
     """
     return await users_service.get_last_online_users(params=params)
+
 
 @router.get(
     "/me",
@@ -142,11 +149,10 @@ async def get_user_apps(
 async def change_user_username(
         change_username_data: ChangeUsernameSchema,
         user: User = Security(get_current_active_user, scopes=["users:me:username"]),
-        auth_service: AuthService = Depends(get_auth_service),
+        users_service: UserService = Depends(get_users_service),
 ) -> SuccessChangeUsernameSchema:
     """
     Change user username
-    :param auth_service:
     :param change_username_data:
     :param user:
     :return UserOut:
@@ -155,7 +161,7 @@ async def change_user_username(
         UsersEventsEnum.CHANGE_USERNAME_PRE, payload={"data": change_username_data}
     )
     old_username = user.username
-    user = await auth_service.change_username(user, change_username_data)
+    user = await users_service.change_username(user, change_username_data)
     dispatch(UsersEventsEnum.CHANGE_USERNAME_POST, payload={"data": user})
     return SuccessChangeUsernameSchema(old_username=old_username, new_username=change_username_data.username)
 
@@ -164,7 +170,7 @@ async def change_user_username(
 async def change_user_password(
         change_password_data: ChangePasswordSchema,
         user: User = Security(get_current_active_user, scopes=["users:me:password"]),
-        auth_service: AuthService = Depends(get_auth_service),
+        users_service: UserService = Depends(get_users_service),
 ) -> dict:
     """
     Change user password
@@ -175,9 +181,51 @@ async def change_user_password(
     dispatch(
         UsersEventsEnum.CHANGE_PASSWORD_PRE, payload={"data": change_password_data}
     )
-    user = await auth_service.change_password(user, change_password_data)
+    user = await users_service.change_password(user, change_password_data)
     dispatch(UsersEventsEnum.CHANGE_PASSWORD_POST, payload={"data": user})
     return {"msg": "Successfully changed password"}
+
+
+@router.post("/me/email")
+async def request_change_user_email(
+        change_email_data: ChangeEmailSchema,
+        background_tasks: BackgroundTasks,
+        user: User = Security(get_current_active_user, scopes=["users:me"]),
+        email_service: EmailService = Depends(get_email_service),
+        code_service: CodeService = Depends(get_change_account_email_code_service),
+        users_service: UserService = Depends(get_users_service),
+):
+    """
+    Request change user email
+    :param email_service:
+    :param users_service:
+    :param background_tasks:
+    :param code_service:
+    :param change_email_data:
+    :param user:
+    :return dict:
+    """
+    confirm_code, _data = await users_service.create_confirm_email_code(code_service=code_service, user=user, new_email=change_email_data.email)
+    background_tasks.add_task(email_service.send_confirmation_email, ActivationEmailTypeEnum.EMAIL,
+                              change_email_data.email, confirm_code)
+    return {"msg": "Request for change email was sent"}
+
+
+@router.post("/me/email/confirm", dependencies=[Security(get_current_active_user, scopes=["users:me"])])
+async def confirm_change_user_email(
+        activate_code_data: ActivateUserCodeSchema,
+        code_service: CodeService = Depends(get_change_account_email_code_service),
+        users_service: UserService = Depends(get_users_service),
+) -> UserOutWithEmail:
+    """
+    Confirm change user email
+    :param users_service:
+    :param code_service:
+    :param activate_code_data:
+    :return dict:
+    """
+    updated_user = await users_service.confirm_change_email(code_service=code_service, code=activate_code_data.code)
+    return updated_user
 
 
 @router.post("/me/display-role")

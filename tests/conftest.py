@@ -13,7 +13,7 @@ from src.auth.dependencies import (
     get_refresh_token_service,
 )
 from src.auth.schemas import RegisterUserSchema
-from src.auth.services import AuthService
+from src.auth.services.auth import AuthService
 from src.db import metadata, create_redis_pool
 from src.forum.dependencies import get_categories_service, get_posts_service, get_threads_service
 from src.forum.enums import CategoryTypeEnum

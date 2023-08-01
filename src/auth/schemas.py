@@ -51,3 +51,9 @@ class ResendActivationCodeSchema(BaseModel):
 class UserActivatedSchema(BaseModel):
     id: int
     is_activated: bool
+
+
+class EmailConfirmSchema(BaseModel):
+    old_email: EmailStr
+    new_email: EmailStr
+    is_confirmed: bool

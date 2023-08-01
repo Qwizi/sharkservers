@@ -4,13 +4,13 @@ from pathlib import Path
 
 import httpx
 from fastapi import HTTPException
-from fastapi_mail import FastMail, ConnectionConfig, MessageSchema, MessageType
+from fastapi_mail import FastMail, MessageSchema, MessageType
 from fastapi_mail.email_utils import DefaultChecker
 from pydantic import EmailStr
 
 from src.auth.schemas import RegisterUserSchema
+from src.enums import ActivationEmailTypeEnum
 from src.logger import logger, logger_with_filename
-from src.settings import get_settings
 from src.users.models import User
 
 
@@ -25,21 +25,63 @@ class EmailService:
     @staticmethod
     def activation_email_template(code: str):
         return f"""
-        Witaj twój kod aktywacyjny to: {code}
+        Drogi(a) Użytkowniku, <br>
+
+Dziękujemy za dołączenie do naszej społeczności! Jesteśmy podekscytowani, że jesteś z nami.<br>
+
+Aby dokończyć proces rejestracji i aktywować swoje konto, proszę skorzystać z poniższego kodu aktywacyjnego: <br>
+
+Kod aktywacyjny: {code} <br>
+
+Pamiętaj, że kod aktywacyjny może wygasnąć po pewnym czasie, więc zalecamy, abyś aktywował/a swoje konto jak najszybciej. <br>
+
+Pozdrawiamy, <br>
+Administracja SharkServers.pl
         """
 
-    async def send_activation_email(self, email: EmailStr, code: str):
-        if not await self.checker.check_mx_record(email.split("@")[1], False):
-            logger.info(f"Email {email} is invalid and will not be sent")
+    @staticmethod
+    def change_email_template(code: str):
+        return f"""
+Drogi(a) Użytkowniku,<br>
+
+Otrzymujesz tę wiadomość, ponieważ zażądałeś/aś zmiany adresu e-mail powiązanego z Twoim kontem na SharkServers.pl.<br>
+
+Proszę skorzystać z poniższego kodu weryfikacyjnego, aby potwierdzić tę zmianę:<br>
+
+Kod weryfikacyjny: {code}<br>
+
+Prosimy o wprowadzenie powyższego kodu w odpowiednie pole na naszej stronie w celu potwierdzenia zmiany adresu e-mail. Jeśli nie żądałeś/aś tej zmiany, prosimy o natychmiastowy kontakt z naszym zespołem wsparcia pod adresem [Adres e-mail zespołu wsparcia] lub za pośrednictwem formularza kontaktowego na naszej stronie.<br>
+
+Pamiętaj, że ten kod weryfikacyjny wygaśnie po pewnym czasie w celu zabezpieczenia Twojego konta. Prosimy o jego użycie jak najszybciej.<br>
+
+Jeśli potrzebujesz pomocy lub masz pytania, zawsze możesz skontaktować się z naszym zespołem obsługi klienta.<br>
+
+Z poważaniem,<br>
+Administracja SharkServers.pl
+
+        """
+
+    async def _send_message(self, subject: str, recipients: list, body: str):
+        if not await self.checker.check_mx_record(recipients[0].split("@")[1], False):
+            logger.info(f"Email {recipients[0]} is invalid")
             return
-        await self.mailer.send_message(
-            message=MessageSchema(
-                subject="Aktywacja konta",
-                recipients=[email],
-                body=self.activation_email_template(code),
-                subtype=MessageType.html,
-            )
-        )
+        await self.mailer.send_message(message=MessageSchema(
+            subject=subject,
+            recipients=recipients,
+            body=body,
+            subtype=MessageType.html,
+        ))
+
+    async def send_confirmation_email(self, activation_type: ActivationEmailTypeEnum, email: EmailStr, code: str):
+        subject = None
+        body = None
+        if activation_type == ActivationEmailTypeEnum.ACCOUNT:
+            subject = "Twój kod aktywacyjny - Witamy na naszej stronie!"
+            body = self.activation_email_template(code)
+        elif activation_type == ActivationEmailTypeEnum.EMAIL:
+            subject = "Twój kod weryfikacyjny - Zmiana adresu e-mail"
+            body = self.change_email_template(code)
+        await self._send_message(subject, [email], body)
         logger.info(f"Activation email sent to {email} with code {code}")
 
 

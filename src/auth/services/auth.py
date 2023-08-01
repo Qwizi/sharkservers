@@ -1,43 +1,31 @@
-import json
-import logging
 import random
 import string
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta, timezone
+from sqlite3 import IntegrityError
 from sqlite3 import IntegrityError as SQLIntegrityError
 from typing import Optional
 from urllib import parse
-import pytz
+from zoneinfo import ZoneInfo
+
 import httpx
-import ormar
-from redis import asyncio as aioredis
 from asyncpg import UniqueViolationError
 from cryptography.fernet import Fernet
 from fastapi import HTTPException, Form
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jose import jwt, JWTError
+from jose import JWTError
 from ormar import NoMatch
 from passlib.context import CryptContext
 from pydantic import EmailStr
-from sqlalchemy.exc import IntegrityError
-from starlette.authentication import AuthenticationBackend
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
 from src.apps.services import AppService
-from src.auth.exceptions import (
-    invalid_credentials_exception,
-    incorrect_username_password_exception,
-    user_exists_exception,
-    user_activated_exception, inactivate_user_exception, token_expired_exception, invalid_activation_code_exception,
-)
-from src.auth.schemas import (
-    TokenDataSchema,
-    TokenSchema,
-    RefreshTokenSchema,
-    RegisterUserSchema, TokenDetailsSchema, ActivateUserCodeSchema,
-)
-from src.auth.utils import crypto_key, now_datetime
-from src.db import BaseService
+from src.auth.exceptions import inactivate_user_exception, user_exists_exception, incorrect_username_password_exception, \
+    token_expired_exception, invalid_credentials_exception, user_activated_exception, invalid_activation_code_exception
+from src.auth.schemas import RegisterUserSchema, TokenSchema, TokenDetailsSchema, RefreshTokenSchema
+from src.auth.services.code import CodeService
+from src.auth.services.jwt import JWTService
+from src.auth.utils import now_datetime, pwd_context, verify_password, get_password_hash
 from src.enums import ActivationEmailTypeEnum
 from src.logger import logger
 from src.players.services import PlayerService
@@ -45,22 +33,10 @@ from src.roles.enums import ProtectedDefaultRolesEnum
 from src.roles.services import RoleService
 from src.scopes.services import ScopeService
 from src.services import EmailService
-from src.users.dependencies import get_users_service
-from src.users.exceptions import (
-    cannot_change_display_role_exception,
-    invalid_current_password_exception,
-    username_not_available_exception,
-    user_not_found_exception,
-    user_not_banned_exception,
-    user_already_banned_exception, user_email_is_the_same_exception,
-)
-from src.users.models import User, Ban
-from src.users.schemas import (
-    ChangeDisplayRoleSchema,
-    ChangePasswordSchema,
-    ChangeUsernameSchema,
-    BanUserSchema, ChangeEmailSchema,
-)
+from src.users.exceptions import username_not_available_exception, invalid_current_password_exception, \
+    cannot_change_display_role_exception
+from src.users.models import User
+from src.users.schemas import ChangeUsernameSchema, ChangePasswordSchema, ChangeDisplayRoleSchema
 from src.users.services import UserService
 
 
@@ -72,86 +48,6 @@ class OAuth2ClientSecretRequestForm:
     ):
         self.client_id = client_id
         self.client_secret = client_secret
-
-
-class JWTService:
-    def __init__(
-            self,
-            secret_key: str,
-            algorithm: str = "HS512",
-            expires_delta: timedelta = timedelta(minutes=15),
-    ):
-        self.secret_key = secret_key
-        self.algorithm = algorithm
-        self.expires_delta = expires_delta
-
-    def encode(self, data: dict) -> (str, datetime):
-        to_encode = data.copy()
-        expire = now_datetime() + self.expires_delta
-        to_encode.update({"exp": expire})
-        encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
-        return encoded_jwt, expire
-
-    def decode(self, token: str) -> dict:
-        return jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
-
-    def decode_token(self, token: str) -> TokenDataSchema:
-        try:
-            payload = self.decode(token)
-            user_id: str = payload.get("sub")
-            if user_id is None:
-                raise invalid_credentials_exception
-            token_scopes = payload.get("scopes", [])
-            secret = payload.get("secret")
-
-            return TokenDataSchema(
-                user_id=int(user_id), scopes=token_scopes, secret=secret
-            )
-        except JWTError as e:
-            raise invalid_credentials_exception
-
-
-class CodeService:
-    redis: aioredis.Redis
-    key: str
-
-    def __init__(self, redis: aioredis.Redis, key: str):
-        self.redis = redis
-        self.key = key
-
-    @staticmethod
-    def generate(number: int = 8):
-        """
-        Generate code
-        :param number:
-        :return:
-        """
-        return "".join(random.choice(string.digits) for _ in range(number))
-
-    def get_redis_key(self, code: str):
-        return f"{self.key}:{code}"
-
-    async def create(self, data: any, code_len: int = 8, expire: int = 60 * 60):
-        """
-        Create code
-        :param code_len:
-        :param data:
-        :param expire:
-        :return:
-        """
-        code = self.generate(number=code_len)
-        redis_key = self.get_redis_key(code)
-        if await self.redis.exists(redis_key):
-            await self.redis.delete(redis_key)
-        await self.redis.set(redis_key, data)
-        await self.redis.expire(redis_key, expire)
-        return redis_key.split(":")[1], await self.redis.get(redis_key)
-
-    async def get(self, code: str):
-        return await self.redis.get(self.get_redis_key(code))
-
-    async def delete(self, code: str):
-        return await self.redis.delete(self.get_redis_key(code))
 
 
 class AuthService:
@@ -166,26 +62,6 @@ class AuthService:
         self.users_service = users_service
         self.roles_service = roles_service
         self.scopes_service = scopes_service
-        self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-        self.crypto_key = Fernet.generate_key()
-        self.fernet = Fernet(crypto_key)
-
-    def verify_password(self, plain_password, hashed_password):
-        """
-
-        :param plain_password:
-        :param hashed_password:
-        :return:
-        """
-        return self.pwd_context.verify(plain_password, hashed_password)
-
-    def get_password_hash(self, password):
-        """
-        Hash password
-        :param password:
-        :return:
-        """
-        return self.pwd_context.hash(password)
 
     async def authenticate_user(self, username: str, password: str):
         """
@@ -202,7 +78,7 @@ class AuthService:
             await user.update(secret_salt=secret_salt)
             if not user.is_activated:
                 raise inactivate_user_exception
-            if not self.verify_password(password, user.password) or not user.is_activated:
+            if not verify_password(password, user.password) or not user.is_activated:
                 return False
         except NoMatch:
             return False
@@ -221,7 +97,7 @@ class AuthService:
         :param user_data:
         :return:
         """
-        password = self.get_password_hash(user_data.password)
+        password = get_password_hash(user_data.password)
         try:
             secret_salt = self.generate_secret_salt()
 
@@ -305,7 +181,8 @@ class AuthService:
 
             payload = jwt_refresh_token_service.decode(token_data.refresh_token)
             refresh_token_exp = payload.get("exp", None)
-            if datetime.utcfromtimestamp(refresh_token_exp) < now_datetime():
+            utc_dt = datetime.fromtimestamp(refresh_token_exp, tz=ZoneInfo("Europe/Warsaw"))
+            if utc_dt < now_datetime():
                 raise token_expired_exception
             user_id = int(payload.get("sub"))
             secret: str = payload.get("secret")
@@ -574,84 +451,3 @@ class AuthService:
         if not data:
             raise invalid_activation_code_exception
         return user
-
-class BanService(BaseService):
-    class Meta:
-        model = Ban
-        not_found_exception = user_not_found_exception
-
-    def __init__(self, roles_service: RoleService, auth_service: AuthService):
-        self.roles_service = roles_service
-        self.auth_service = auth_service
-
-    async def ban_user(
-            self, user: User, ban_data: BanUserSchema, banned_by: User
-    ) -> Ban:
-        already_banned = await self.Meta.model.objects.filter(user=user).exists()
-        if already_banned:
-            raise user_already_banned_exception
-        reason, ban_time = ban_data.reason, ban_data.ban_time
-        ban_time = datetime.utcnow() + timedelta(minutes=ban_time)
-        banned_role = await self.roles_service.get_one(
-            id=ProtectedDefaultRolesEnum.BANNED.value
-        )
-        await user.roles.add(banned_role)
-        await AuthService.change_display_role(
-            user=user,
-            change_display_role_data=ChangeDisplayRoleSchema(role_id=banned_role.id),
-        )
-        await self.auth_service.logout(user=user)
-        return await self.create(
-            user=user,
-            reason=ban_data.reason,
-            ban_time=ban_time,
-            banned_by=banned_by,
-        )
-
-    async def unban_user(self, user: User):
-        try:
-            banned_role = await self.roles_service.Meta.model.objects.get(
-                id=ProtectedDefaultRolesEnum.BANNED.value
-            )
-            logger.info(banned_role)
-            await self.Meta.model.objects.filter(user=user).delete()
-            if banned_role not in user.roles or banned_role.id != user.display_role.id:
-                raise user_not_banned_exception
-            await AuthService.change_display_role(
-                user=user,
-                change_display_role_data=ChangeDisplayRoleSchema(
-                    role_id=ProtectedDefaultRolesEnum.USER.value
-                ),
-            )
-            await user.roles.remove(banned_role)
-            return user
-        except ormar.NoMatch:
-            raise user_not_banned_exception
-
-
-class BearerTokenAuthBackend(AuthenticationBackend):
-    async def authenticate(self, request):
-        """
-        Authenticate user
-        :param request:
-        :return:
-        """
-        if "Authorization" not in request.headers:
-            return
-        auth = request.headers["Authorization"]
-        try:
-            token = auth[1]
-            jwt_access_token_service = JWTService(
-                secret_key=crypto_key, expires_delta=timedelta(minutes=15)
-            )
-            token_data = jwt_access_token_service.decode_token(token)
-            users_service = await get_users_service()
-            user = await users_service.get_one(id=token_data.user_id)
-            if not user:
-                raise user_not_found_exception
-            return auth, user
-        except KeyError:
-            logging.debug("Invalid token")
-        except (JWTError, HTTPException):
-            logging.debug("Invalid token")
-            return None

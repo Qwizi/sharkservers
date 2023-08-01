@@ -39,3 +39,8 @@ user_not_banned_exception = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail=UsersExceptionsDetailEnum.USER_NOT_BANNED,
 )
+
+user_email_is_the_same_exception = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail=UsersExceptionsDetailEnum.USER_EMAIL_IS_THE_SAME,
+)
