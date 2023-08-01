@@ -211,7 +211,7 @@ async def test_get_refresh_token_exception_when_refresh_token_is_expired(client)
     token_data = token_response.json()
     await asyncio.sleep(1)
     with mock.patch('src.auth.services.auth.now_datetime',
-                    return_value=datetime.datetime.now(tz=ZoneInfo("Europe/Warsaw")) + datetime.timedelta(
+                    return_value=datetime.datetime.now() + datetime.timedelta(
                         minutes=settings.REFRESH_TOKEN_EXPIRES + 5)):
         refresh_token_response = await client.post(
             REFRESH_TOKEN_ENDPOINT, json={"refresh_token": token_data["refresh_token"]["token"]}

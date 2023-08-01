@@ -23,4 +23,4 @@ def get_password_hash(plain_password):
 
 
 def now_datetime() -> datetime:
-    return datetime.now()
+    return datetime.now(tz=ZoneInfo("Europe/Warsaw")).replace(tzinfo=None)
