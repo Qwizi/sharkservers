@@ -14,7 +14,7 @@ from src.auth.dependencies import get_current_active_user, get_auth_service, get
 from src.auth.schemas import ActivateUserCodeSchema
 from src.auth.services.auth import AuthService
 from src.auth.services.code import CodeService
-from src.dependencies import get_email_service
+from src.dependencies import get_email_service, get_upload_service
 from src.enums import ActivationEmailTypeEnum
 from src.forum.dependencies import get_posts_service, get_threads_service
 from src.forum.services import PostService, ThreadService
@@ -23,7 +23,7 @@ from src.roles.schemas import StaffRolesSchema
 from src.roles.services import RoleService
 from src.scopes.dependencies import get_scopes_service
 from src.scopes.services import ScopeService
-from src.services import EmailService
+from src.services import EmailService, UploadService
 from src.settings import Settings, get_settings
 from src.users.dependencies import get_valid_user, get_users_service
 from src.users.enums import UsersEventsEnum
@@ -257,13 +257,15 @@ async def upload_user_avatar(
         avatar: UploadFile = File(...),
         user: User = Security(get_current_active_user, scopes=["users:me"]),
         users_service: UserService = Depends(get_users_service),
+        upload_service: UploadService = Depends(get_upload_service),
+        settings: Settings = Depends(get_settings),
 
 ):
     """
     Upload user avatar
     :return:
     """
-    data = await users_service.upload_avatar(user, avatar, request)
+    data = await users_service.upload_avatar(user, avatar, request, upload_service, settings)
     print(data)
     return {"msg": "Avatar was uploaded"}
 

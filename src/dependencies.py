@@ -2,8 +2,8 @@ from fastapi import Depends
 from fastapi_mail import ConnectionConfig, FastMail
 from fastapi_mail.email_utils import DefaultChecker
 
-from src.services import EmailService
-from src.settings import get_settings
+from src.services import EmailService, UploadService
+from src.settings import get_settings, Settings
 
 settings = get_settings()
 
@@ -30,3 +30,7 @@ async def get_email_checker() -> DefaultChecker:
 async def get_email_service(checker: DefaultChecker = Depends(get_email_checker)) -> EmailService:
     mailer = FastMail(conf)
     return EmailService(_mailer=mailer, checker=checker)
+
+
+async def get_upload_service(settings: Settings = Depends(get_settings)) -> UploadService:
+    return UploadService(settings=settings)

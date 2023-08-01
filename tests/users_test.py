@@ -1,8 +1,6 @@
-import asyncio
-import time
 from datetime import datetime, timedelta
+from pathlib import Path
 from unittest import mock
-from zoneinfo import ZoneInfo
 
 import pytest
 from fastapi.security import OAuth2PasswordRequestForm
@@ -10,7 +8,6 @@ from fastapi.security import OAuth2PasswordRequestForm
 from src.auth.dependencies import get_access_token_service, get_refresh_token_service
 from src.roles.dependencies import get_roles_service
 from src.roles.enums import ProtectedDefaultRolesEnum
-from src.settings import get_settings
 from src.users.dependencies import get_users_service
 from tests.conftest import create_fake_users, TEST_USER, TEST_ADMIN_USER, create_fake_posts, create_fake_threads, \
     _get_auth_service, settings
@@ -70,10 +67,18 @@ async def test_unauthorized_get_logged_user(endpoint, client):
 @pytest.mark.parametrize("endpoint", [
     f"{USERS_ENDPOINT}/me/username",
     f"{USERS_ENDPOINT}/me/password",
-    f"{USERS_ENDPOINT}/me/display-role"
+    f"{USERS_ENDPOINT}/me/display-role",
+    f"{USERS_ENDPOINT}/me/email",
+    f"{USERS_ENDPOINT}/me/email/confirm",
 ])
 async def test_unauthorized_change_user_data(endpoint, client):
     response = await client.post(endpoint)
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_unauthorized_upload_logged_user_avatar(client):
+    response = await client.post(f"{USERS_ENDPOINT}/me/avatar")
     assert response.status_code == 401
 
 
@@ -279,3 +284,21 @@ async def test_get_user_posts(logged_client):
     assert response.status_code == 200
     assert response.json()["total"] == 1
     assert response.json()["items"][0]["id"] == posts[0].id
+
+
+@pytest.mark.asyncio
+async def test_logged_user_upload_avatar(logged_client):
+    # get path to static/images/default_avatar.png
+    image_path = Path(__file__).parent.parent / "static/images/default_avatar.png"
+    response = await logged_client.get(f"{USERS_ENDPOINT}/me")
+    assert response.status_code == 200
+
+    old_avatar_url = response.json()["avatar"]
+
+    with open(image_path, "rb") as image_file:
+        response = await logged_client.post(f"{USERS_ENDPOINT}/me/avatar", files={"avatar": ("default_avatar.png", image_file, "image/png")})
+        assert response.status_code == 200
+
+    response = await logged_client.get(f"{USERS_ENDPOINT}/me")
+    assert response.status_code == 200
+    assert response.json()["avatar"] != old_avatar_url
