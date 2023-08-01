@@ -1,4 +1,5 @@
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
+from zoneinfo import ZoneInfo
 
 from jose import jwt, JWTError
 
@@ -21,7 +22,8 @@ class JWTService:
     def encode(self, data: dict) -> (str, datetime):
         to_encode = data.copy()
         expire = now_datetime() + self.expires_delta
-        to_encode.update({"exp": expire})
+        expire_with_timezone = expire.replace(tzinfo=ZoneInfo("Europe/Warsaw"))
+        to_encode.update({"exp": expire_with_timezone})
         encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
         return encoded_jwt, expire
 

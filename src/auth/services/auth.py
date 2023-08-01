@@ -117,7 +117,7 @@ class AuthService:
                 email=user_data.email,
                 password=password,
                 display_role=role,
-                avatar=avatar_url,
+                avatar=str(avatar_url),
                 secret_salt=secret_salt,
                 is_activated=is_activated,
                 is_superuser=is_superuser,
@@ -184,8 +184,7 @@ class AuthService:
 
             payload = jwt_refresh_token_service.decode(token_data.refresh_token)
             refresh_token_exp = payload.get("exp", None)
-            utc_dt = datetime.fromtimestamp(refresh_token_exp, tz=ZoneInfo("Europe/Warsaw"))
-            if utc_dt < now_datetime():
+            if datetime.fromtimestamp(refresh_token_exp) < now_datetime():
                 raise token_expired_exception
             user_id = int(payload.get("sub"))
             secret: str = payload.get("secret")
