@@ -15,7 +15,9 @@ from src.auth.exceptions import (
     inactivate_user_exception,
     not_admin_user_exception,
 )
-from src.auth.services import JWTService, AuthService, BanService, CodeService
+from src.auth.services.auth import AuthService
+from src.auth.services.code import CodeService
+from src.auth.services.jwt import JWTService
 from src.db import get_redis
 from src.roles.dependencies import get_roles_service
 from src.roles.services import RoleService
@@ -143,22 +145,19 @@ async def get_application(
     except JWTError as e:
         raise invalid_credentials_exception
 
-
-async def get_ban_service(
-        roles_service: RoleService = Depends(get_roles_service),
-        auth_service: AuthService = Depends(get_auth_service),
-) -> BanService:
-    """
-    Get ban service
-    :return ban_service:
-    """
-    return BanService(roles_service=roles_service, auth_service=auth_service)
-
-
 async def get_activation_account_code_service(redis: Redis = Depends(get_redis)) -> CodeService:
     """
     Get activation account code service
     :param redis:
     :return CodeService:
     """
-    return CodeService(redis=redis, key=RedisAuthKeyEnum.ACTIVATE_USER)
+    return CodeService(redis=redis, key=RedisAuthKeyEnum.ACTIVATE_USER.value)
+
+
+async def get_change_account_email_code_service(redis: Redis = Depends(get_redis)) -> CodeService:
+    """
+    Get change account email code service
+    :param redis:
+    :return CodeService:
+    """
+    return CodeService(redis=redis, key=RedisAuthKeyEnum.CHANGE_EMAIL.value)

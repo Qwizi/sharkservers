@@ -10,6 +10,7 @@ class UsersExceptionsDetailEnum(str, Enum):
     )
     USER_NOT_BANNED = "User not banned"
     USER_ALREADY_BANNED = "User already banned"
+    USER_EMAIL_IS_THE_SAME = "Email is the same"
 
 
 class UsersEventsEnum(str, Enum):

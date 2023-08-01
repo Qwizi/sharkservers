@@ -1,17 +1,22 @@
-from datetime import datetime, timedelta
+import json
+from datetime import timedelta
+from sqlite3 import IntegrityError as SQLIntegrityError
 
+from asyncpg import UniqueViolationError
 from fastapi_pagination import Params, Page
-from fastapi_pagination.bases import AbstractPage
-from fastapi_pagination.ext.ormar import paginate
+from psycopg2 import IntegrityError
+from pydantic import EmailStr
 
-from src.auth.utils import now_datetime
+from src.auth.exceptions import invalid_activation_code_exception
+from src.auth.services.code import CodeService
+from src.auth.utils import now_datetime, verify_password, get_password_hash
 from src.db import BaseService
-from src.forum.services import PostService
 from src.users.exceptions import (
-    user_not_found_exception,
+    user_not_found_exception, username_not_available_exception, invalid_current_password_exception,
+    cannot_change_display_role_exception, user_email_is_the_same_exception,
 )
 from src.users.models import User
-from src.users.schemas import UserOut
+from src.users.schemas import UserOut, ChangeUsernameSchema, ChangePasswordSchema, ChangeDisplayRoleSchema
 
 
 class UserService(BaseService):
@@ -22,3 +27,78 @@ class UserService(BaseService):
     async def get_last_online_users(self, params: Params) -> Page[UserOut]:
         filter_after = now_datetime() - timedelta(minutes=15)
         return await self.get_all(params=params, related=["display_role"], last_online__gt=filter_after)
+
+    @staticmethod
+    async def change_username(user: User, change_username_data: ChangeUsernameSchema):
+        """
+        Change username
+        :param user:
+        :param change_username_data:
+        :return:
+        """
+        try:
+            await user.update(
+                username=change_username_data.username, updated_date=now_datetime()
+            )
+            return user
+        except (UniqueViolationError, IntegrityError, SQLIntegrityError):
+            raise username_not_available_exception
+
+    @staticmethod
+    async def change_password(user: User, change_password_data: ChangePasswordSchema):
+        """
+                Change user password
+                :param user:
+                :param change_password_data:
+                :return:
+                """
+        if not verify_password(
+                change_password_data.current_password, user.password
+        ):
+            raise invalid_current_password_exception
+        new_password = get_password_hash(change_password_data.new_password)
+        await user.update(password=new_password, updated_date=now_datetime())
+        return user
+
+    @staticmethod
+    async def change_display_role(
+            user: User, change_display_role_data: ChangeDisplayRoleSchema
+    ) -> (User, int):
+        display_role_exists_in_user_roles = False
+        old_user_display_role = user.display_role.id
+        for role in user.roles:
+            if role.id == change_display_role_data.role_id:
+                display_role_exists_in_user_roles = True
+                break
+        if not display_role_exists_in_user_roles:
+            raise cannot_change_display_role_exception
+        await user.update(
+            display_role=change_display_role_data.role_id,
+            updated_date=now_datetime(),
+        )
+        return user, old_user_display_role
+
+    @staticmethod
+    async def create_confirm_email_code(code_service: CodeService, user: User, new_email: EmailStr):
+        if user.email == new_email:
+            raise user_email_is_the_same_exception
+        redis_data = {
+            "user_id": user.id,
+            "new_email": new_email,
+        }
+        confirm_code, _data = await code_service.create(data=json.dumps(redis_data), code_len=5, expire=900)
+        return confirm_code, new_email
+
+    async def confirm_change_email(self, code_service: CodeService, code: str):
+        user_data = await code_service.get(code)
+        if user_data is None:
+            raise invalid_activation_code_exception
+        user_data = json.loads(user_data)
+        user_id = user_data.get("user_id", None)
+        new_email = user_data.get("new_email", None)
+        user_id = int(user_id)
+
+        user = await self.get_one(id=user_id, related=["display_role", "roles"])
+        await user.update(email=new_email, updated_date=now_datetime())
+        await code_service.delete(code)
+        return user

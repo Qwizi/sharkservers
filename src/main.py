@@ -19,10 +19,10 @@ from starlette.responses import Response
 from starlette.staticfiles import StaticFiles
 
 from src.__version import VERSION
-from src.auth.dependencies import get_auth_service, get_application, get_ban_service, get_current_active_user, \
+from src.auth.dependencies import get_auth_service, get_application, get_current_active_user, \
     get_current_user, get_access_token_service
 from src.auth.schemas import RegisterUserSchema
-from src.auth.services import AuthService, BearerTokenAuthBackend
+from src.auth.services.auth import AuthService
 
 # Events
 from src.auth.views import router as auth_router_v1
@@ -121,6 +121,8 @@ def init_routes(_app: FastAPI):
     return _app
 
 
+"""
+
 async def unban_users_cron():
     # This is an async cron job that runs every minute
     logger.info("Cron job ran")
@@ -148,7 +150,7 @@ async def unban_users_cron():
             await ban_service.unban_user(ban.user)
 
     logger.info(active_bans)
-
+"""
 
 @crontab("* * * * *")
 async def my_cron_job():
@@ -164,7 +166,6 @@ def create_app():
         debug=True,
         generate_unique_id_function=custom_generate_unique_id,
     )
-    _app.add_middleware(AuthenticationMiddleware, backend=BearerTokenAuthBackend())
     _app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -208,8 +209,6 @@ def create_app():
         dispatch(post_event_name, payload={"request": request, "response": response, "body": response_body[0].decode()},
                  middleware_id=event_handler_id)
         return response
-        """
-
     @_app.middleware("http")
     async def update_user_last_online_time(request: Request, call_next):
         response = await call_next(request)
@@ -225,6 +224,7 @@ def create_app():
             return response
         except (JWTError, HTTPException):
             return response
+    """
 
     @_app.post("/install", tags=["root"])
     async def install(

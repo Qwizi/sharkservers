@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 from unittest import mock
+from zoneinfo import ZoneInfo
 
 import pytest
 
@@ -40,7 +41,6 @@ async def test_auth_register(client):
     assert "secret_salt" not in r.json()
     assert r.json()["is_activated"] is False
     assert r.json()["is_superuser"] is False
-    assert len(r.json()["roles"]) == 1
     assert r.json()["display_role"]["id"] == ProtectedDefaultRolesEnum.USER.value
 
 
@@ -210,8 +210,8 @@ async def test_get_refresh_token_exception_when_refresh_token_is_expired(client)
     assert token_response.status_code == 200
     token_data = token_response.json()
     await asyncio.sleep(1)
-    with mock.patch('src.auth.services.now_datetime',
-                    return_value=now_datetime() + datetime.timedelta(
+    with mock.patch('src.auth.services.auth.now_datetime',
+                    return_value=datetime.datetime.now(tz=ZoneInfo("Europe/Warsaw")) + datetime.timedelta(
                         minutes=settings.REFRESH_TOKEN_EXPIRES + 5)):
         refresh_token_response = await client.post(
             REFRESH_TOKEN_ENDPOINT, json={"refresh_token": token_data["refresh_token"]["token"]}

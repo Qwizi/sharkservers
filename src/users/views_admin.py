@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, Security
 from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
 
-from src.auth.dependencies import get_admin_user, get_ban_service, get_auth_service
+from src.auth.dependencies import get_admin_user, get_auth_service
 from src.auth.schemas import RegisterUserSchema
-from src.auth.services import BanService, AuthService
+from src.auth.services.auth import AuthService
 from src.roles.dependencies import get_roles_service
 from src.roles.services import RoleService
 from src.users.dependencies import get_valid_user, get_users_service
@@ -49,39 +49,6 @@ async def admin_get_user(
     dispatch(UsersAdminEventsEnum.GET_ONE, payload={"data": user})
     return user
 
-
-@router.post("/{user_id}/ban")
-async def admin_ban_user(
-        ban_data: BanUserSchema,
-        ban_service: BanService = Depends(get_ban_service),
-        user: User = Depends(get_valid_user),
-        banned_by_user: User = Security(get_admin_user, scopes=["users:me"]),
-):
-    """
-    Admin ban user
-    :param ban_data:
-    :param ban_service:
-    :param user:
-    :return dict:
-    """
-    return await ban_service.ban_user(
-        user=user, banned_by=banned_by_user, ban_data=ban_data
-    )
-
-
-@router.post("/{user_id}/unban")
-async def admin_unban_user(
-        ban_service: BanService = Depends(get_ban_service),
-        user: User = Depends(get_valid_user),
-        banned_by_user: User = Security(get_admin_user, scopes=["users:me"]),
-):
-    """
-    Admin unban user
-    :param ban_service:
-    :param user:
-    :return dict:
-    """
-    return await ban_service.unban_user(user=user)
 
 
 @router.post("", response_model=UserOutWithEmail)

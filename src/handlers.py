@@ -5,7 +5,7 @@ from fastapi_events.typing import Event
 
 from src.auth.dependencies import get_auth_service
 from src.auth.schemas import RegisterUserSchema
-from src.auth.services import AuthService
+from src.auth.services.auth import AuthService
 from src.enums import MainEventEnum
 from src.logger import logger
 from src.roles.dependencies import get_roles_service
