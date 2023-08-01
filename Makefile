@@ -53,8 +53,12 @@ generate:
 
 
 migration:
-	alembic revision --autogenerate
+	docker-compose exec app alembic revision --autogenerate
 
 
 upgrade:
-	alembic upgrade head
+	docker-compose exec app alembic upgrade head
+
+
+clear-avatars:
+	find static/uploads/avatars  -maxdepth 1 -type f ! -name 'index.html' -exec rm -rf {} +

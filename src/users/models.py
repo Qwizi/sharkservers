@@ -19,7 +19,7 @@ class User(ormar.Model, DateFieldsMixins):
     is_activated: Optional[bool] = ormar.Boolean(default=False)
     is_superuser: Optional[bool] = ormar.Boolean(default=False)
     avatar: Optional[str] = ormar.String(
-        max_length=255, default="/static/images/avatars/default_avatar.png"
+        max_length=255, default="/static/avatars/avatars/default_avatar.png"
     )
     roles: Optional[List[Role]] = ormar.ManyToMany(Role, related_name="user_roles")
     display_role: Optional[Role] = ormar.ForeignKey(

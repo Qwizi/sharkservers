@@ -1,18 +1,19 @@
 import datetime
 from sqlite3 import IntegrityError as SQLIntegrityError
 
-import redis
-from redis import asyncio as aioredis
 import databases
 import ormar
 import sqlalchemy
 from asyncpg import UniqueViolationError
+from fakeredis import aioredis as fake_aioredis
 from fastapi import HTTPException
 from fastapi_pagination import Params
 from fastapi_pagination.ext.ormar import paginate
 from psycopg2 import IntegrityError
+from redis import asyncio as aioredis
 from starlette.requests import Request
-from fakeredis import aioredis as fake_aioredis
+
+from src.auth.utils import now_datetime
 from src.settings import get_settings
 
 settings = get_settings()
@@ -39,8 +40,8 @@ class BaseMeta(ormar.ModelMeta):
 
 
 class DateFieldsMixins:
-    created_date: datetime.datetime = ormar.DateTime(default=datetime.datetime.now)
-    updated_date: datetime.datetime = ormar.DateTime(default=datetime.datetime.now)
+    created_date: datetime.datetime = ormar.DateTime(default=now_datetime().replace(tzinfo=None), timezone=False)
+    updated_date: datetime.datetime = ormar.DateTime(default=now_datetime().replace(tzinfo=None), timezone=False)
 
 
 class BaseService:

@@ -238,7 +238,7 @@ class AuthService:
                 email=user_data.email,
                 password=password,
                 display_role=role,
-                avatar="/static/images/default_avatar.png",
+                avatar="/static/avatars/default_avatar.png",
                 secret_salt=secret_salt,
                 is_activated=is_activated,
                 is_superuser=is_superuser,

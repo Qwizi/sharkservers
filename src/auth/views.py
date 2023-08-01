@@ -1,24 +1,22 @@
 import json
 
-from fastapi import APIRouter, Depends, BackgroundTasks
+from fastapi import APIRouter, Depends, BackgroundTasks, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_events.dispatcher import dispatch
 from fastapi_mail.email_utils import DefaultChecker
 from pydantic import EmailStr
-from starlette.requests import Request
 
 from src.apps.dependencies import get_app_service
 from src.apps.services import AppService
 from src.auth.dependencies import (get_access_token_service, get_refresh_token_service, get_current_active_user,
                                    get_auth_service, get_activation_account_code_service, )
-from src.auth.enums import AuthEventsEnum, RedisAuthKeyEnum
+from src.auth.enums import AuthEventsEnum
 from src.auth.exceptions import invalid_activation_code_exception
 from src.auth.schemas import (RegisterUserSchema, TokenSchema, RefreshTokenSchema, ActivateUserCodeSchema,
                               ResendActivationCodeSchema, UserActivatedSchema, )
 from src.auth.services.auth import AuthService, OAuth2ClientSecretRequestForm
 from src.auth.services.code import CodeService
 from src.auth.services.jwt import JWTService
-from src.db import get_redis
 from src.dependencies import get_email_service, get_email_checker
 from src.enums import ActivationEmailTypeEnum
 from src.logger import logger
@@ -33,16 +31,19 @@ router = APIRouter()
 
 
 @router.post("/register")
-async def register(user_data: RegisterUserSchema, background_tasks: BackgroundTasks,
-                   auth_service: AuthService = Depends(get_auth_service),
-                   code_service: CodeService = Depends(get_activation_account_code_service),
-                   email_service: EmailService = Depends(get_email_service),
-                   settings: Settings = Depends(get_settings),
-                   ) -> UserOut:
+async def register(
+        user_data: RegisterUserSchema,
+        background_tasks: BackgroundTasks,
+        request: Request,
+        auth_service: AuthService = Depends(get_auth_service),
+        code_service: CodeService = Depends(get_activation_account_code_service),
+        email_service: EmailService = Depends(get_email_service),
+        settings: Settings = Depends(get_settings),
+) -> UserOut:
     """
     Register a new user
+    :param request:
     :param settings:
-    :param email_checker:
     :param email_service:
     :param code_service:
     :param background_tasks:
@@ -51,7 +52,8 @@ async def register(user_data: RegisterUserSchema, background_tasks: BackgroundTa
     :return UserOut:
     """
     # dispatch(AuthEventsEnum.REGISTERED_PRE, payload={"user_data": user_data})
-    registered_user: User = await auth_service.register(user_data=user_data)
+
+    registered_user: User = await auth_service.register(user_data=user_data, request=request)
     activation_code, _user_id = await code_service.create(data=registered_user.id, code_len=5, expire=900)
     # registered_user_dict: dict = json.loads(registered_user.json())
     # registered_user_dict.update({"redis": redis})
@@ -59,7 +61,8 @@ async def register(user_data: RegisterUserSchema, background_tasks: BackgroundTa
     logger.info(f"Activation code: {activation_code}")
     # Send activation email only if not testing
     if not settings.TESTING:
-        background_tasks.add_task(email_service.send_confirmation_email, ActivationEmailTypeEnum.ACCOUNT, registered_user.email, activation_code)
+        background_tasks.add_task(email_service.send_confirmation_email, ActivationEmailTypeEnum.ACCOUNT,
+                                  registered_user.email, activation_code)
     return registered_user
 
 
@@ -131,7 +134,8 @@ async def activate_user(
     :return bool:
     """
     dispatch(AuthEventsEnum.ACTIVATED_PRE, payload={"activate_code": activate_code_data})
-    user_activated, user = await auth_service.activate_user(code=activate_code_data.code, code_service=activate_code_service)
+    user_activated, user = await auth_service.activate_user(code=activate_code_data.code,
+                                                            code_service=activate_code_service)
     if not user_activated:
         raise invalid_activation_code_exception
     dispatch(AuthEventsEnum.ACTIVATED_POST, payload={"activated": user_activated, "user": user}, )
@@ -155,7 +159,8 @@ async def resend_activate_code(
     :param data:
     :return bool:
     """
-    background_tasks.add_task(auth_service.resend_activation_code, data.email, code_service=code_service, email_service=email_service)
+    background_tasks.add_task(auth_service.resend_activation_code, data.email, code_service=code_service,
+                              email_service=email_service)
     return {"msg": "If email is correct, you will receive an email with activation code"}
 
 
