@@ -1,9 +1,11 @@
 import asyncio
+from io import BytesIO
 from unittest import mock
 
 import pytest
 import pytest_asyncio
 import sqlalchemy
+from PIL import ImageDraw, Image
 from faker import Faker
 from fastapi import File
 from fastapi.security import OAuth2PasswordRequestForm
@@ -267,3 +269,27 @@ async def create_fake_threads(number: int = 50, author: User = None, category: C
         )
         threads_list.append(thread)
     return threads_list
+
+
+def create_fake_image(image_format="PNG"):
+    # Create a new image with a white background
+    image = Image.new("RGB", (200, 200), "white")
+
+    # Get the drawing context
+    draw = ImageDraw.Draw(image)
+
+    # Draw a red rectangle on the image
+    rect_color = (255, 0, 0)  # Red color
+    rect_position = (50, 50, 150, 150)  # Left, Upper, Right, Lower
+    draw.rectangle(rect_position, fill=rect_color)
+
+    # Save the image to a bytes-like object
+    image_bytes = BytesIO()
+    image.save(image_bytes, format=image_format)
+    return image, image_bytes.getvalue()
+
+
+def create_fake_invalid_image():
+    image, image_bytes = create_fake_image()
+    image_bytes = BytesIO(b"\x00\x00\x00" + image_bytes[3:])
+    return image_bytes.getvalue()

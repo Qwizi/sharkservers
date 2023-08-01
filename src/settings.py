@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     USE_CREDENTIALS: bool = True
     VALIDATE_CERTS: bool = True
     IMAGE_ALLOWED_EXTENSIONS: list = [".png", ".jpg", ".jpeg"]
+    IMAGE_ALLOWED_CONTENT_TYPES: list = ["image/png", "image/jpeg"]
     AVATAR_MAX_SIZE: int = 1024 * 1024 * 2 # 2MB
     AVATAR_HEIGHT: int = 100
     AVATAR_WIDTH: int = 100
