@@ -89,9 +89,11 @@ class AuthService:
             user_data: RegisterUserSchema,
             is_activated: bool = False,
             is_superuser: bool = False,
+            request: Request = None,
     ) -> User:
         """
         Register new user
+        :param server_url:
         :param is_superuser:
         :param is_activated:
         :param user_data:
@@ -109,12 +111,13 @@ class AuthService:
                 role = await self.roles_service.get_one(
                     id=ProtectedDefaultRolesEnum.ADMIN.value
                 )
+            avatar_url = request.url_for("static", path=f"images/avatars/default_avatar.png") if request else "http://localhost/static/images/default_avatar.png"
             registered_user = await self.users_service.create(
                 username=user_data.username,
                 email=user_data.email,
                 password=password,
                 display_role=role,
-                avatar="/static/images/default_avatar.png",
+                avatar=avatar_url,
                 secret_salt=secret_salt,
                 is_activated=is_activated,
                 is_superuser=is_superuser,
@@ -151,7 +154,7 @@ class AuthService:
         refresh_token, refresh_toke_exp = jwt_refresh_token_service.encode(
             data={"sub": str(user.id), "secret": user.secret_salt}
         )
-        await user.update(last_login=now_datetime(), last_online=now_datetime())
+        await user.update(last_login=now_datetime().replace(tzinfo=None), last_online=now_datetime().replace(tzinfo=None))
         return (
             TokenSchema(
                 access_token=TokenDetailsSchema(

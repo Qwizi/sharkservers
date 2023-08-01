@@ -1,11 +1,16 @@
 import json
+import uuid
 from datetime import timedelta
+from pathlib import Path
 from sqlite3 import IntegrityError as SQLIntegrityError
 
+from PIL import Image
 from asyncpg import UniqueViolationError
+from fastapi import File, Request, HTTPException
 from fastapi_pagination import Params, Page
 from psycopg2 import IntegrityError
 from pydantic import EmailStr
+from starlette import status
 
 from src.auth.exceptions import invalid_activation_code_exception
 from src.auth.services.code import CodeService
@@ -102,3 +107,35 @@ class UserService(BaseService):
         await user.update(email=new_email, updated_date=now_datetime())
         await code_service.delete(code)
         return user
+
+    async def upload_avatar(self, user: User, avatar: File, request: Request):
+        uploads_files_path = "static/uploads/avatars"
+        available_extensions = [".jpg", ".jpeg", ".png"]
+        file_suffix = Path(avatar.filename).suffix
+        if file_suffix not in available_extensions:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File extension is not allowed", )
+        file_name = f"{uuid.uuid4()}{file_suffix}"
+        full_path = Path.joinpath(Path(__file__).parent.parent.parent, uploads_files_path, file_name)
+        file_content = await avatar.read()
+        with open(full_path, "wb") as f:
+            f.write(file_content)
+
+        # resize image
+        resized_avatar = Image.open(full_path)
+        resized_avatar.thumbnail((100, 100))
+        resized_avatar.save(full_path)
+        default_avatar_url = request.url_for("static", path="images/default_avatar.png")
+        avatar_url = request.url_for("static", path=f"uploads/avatars/{file_name}")
+        old_avatar_url = user.avatar
+        await user.update(avatar=str(avatar_url))
+        # delete old avatar if it is not default
+        if old_avatar_url != default_avatar_url:
+            old_avatar_filename = old_avatar_url.split("/")[-1]
+            old_avatar_path = Path.joinpath(Path(__file__).parent.parent.parent, uploads_files_path,
+                                            old_avatar_filename)
+            if old_avatar_path.exists():
+                old_avatar_path.unlink()
+        return {
+            "old_avatar_url": old_avatar_url,
+            "avatar_url": avatar_url,
+        }

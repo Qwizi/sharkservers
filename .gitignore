@@ -217,3 +217,4 @@ fabric.properties
 test.db
 installed
 openapi.json
+static/uploads/*
