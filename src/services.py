@@ -5,7 +5,7 @@ from io import BytesIO
 from pathlib import Path
 
 import httpx
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from fastapi import HTTPException, UploadFile, Request
 from fastapi_mail import FastMail, MessageSchema, MessageType
 from fastapi_mail.email_utils import DefaultChecker
@@ -173,6 +173,9 @@ class UploadService:
         self.avatars_upload_folder = Path.joinpath(Path(__file__).parent.parent, self.ROOT_FOLDER,
                                                    self.AVATAR_FOLDER)
 
+    def is_valid_content_type(self, file: UploadFile):
+        return file.content_type in self.settings.IMAGE_ALLOWED_CONTENT_TYPES
+
     def is_valid_image_extension(self, file: UploadFile):
         file_suffix = Path(file.filename).suffix
         if file_suffix not in self.settings.IMAGE_ALLOWED_EXTENSIONS:
@@ -195,20 +198,25 @@ class UploadService:
             f.write(file_content)
 
     def resize_image(self, file_path: Path, width: int = None, height: int = None):
-        if not width:
-            width = self.settings.AVATAR_WIDTH
-        if not height:
-            height = self.settings.AVATAR_HEIGHT
-        resized_avatar = Image.open(file_path)
-        resized_avatar.thumbnail((width, height))
-        resized_avatar.save(file_path)
+        try:
+            if not width:
+                width = self.settings.AVATAR_WIDTH
+            if not height:
+                height = self.settings.AVATAR_HEIGHT
+            resized_avatar = Image.open(file_path)
+            resized_avatar.thumbnail((width, height))
+            resized_avatar.save(file_path)
+        except UnidentifiedImageError:
+            if file_path.exists():
+                file_path.unlink()
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="File is not an image")
 
     async def upload_avatar(self, file: UploadFile):
         file_content = await file.read()
-        if not self.is_valid_image_extension(file):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File extension is not allowed")
+        if not self.is_valid_content_type(file):
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="File extension is not allowed")
         if not self.is_valid_avatar_size(file_content):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File size is too big")
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="File size is too big")
         file_name = self.create_avatar_file_name(Path(file.filename).suffix)
         avatar_full_path = self.get_avatar_path(file_name)
         # create avatar file

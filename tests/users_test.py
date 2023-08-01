@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from pathlib import Path
 from unittest import mock
 
 import pytest
@@ -10,7 +9,7 @@ from src.roles.dependencies import get_roles_service
 from src.roles.enums import ProtectedDefaultRolesEnum
 from src.users.dependencies import get_users_service
 from tests.conftest import create_fake_users, TEST_USER, TEST_ADMIN_USER, create_fake_posts, create_fake_threads, \
-    _get_auth_service, settings
+    _get_auth_service, settings, create_fake_image, create_fake_invalid_image
 
 USERS_ENDPOINT = "/v1/users"
 
@@ -287,18 +286,68 @@ async def test_get_user_posts(logged_client):
 
 
 @pytest.mark.asyncio
-async def test_logged_user_upload_avatar(logged_client):
+@pytest.mark.parametrize("filename", ["default_avatar.png", "default_avatar.jpg", "default_avatar.jpeg"])
+async def test_logged_user_upload_avatar(filename, logged_client):
     # get path to static/images/default_avatar.png
-    image_path = Path(__file__).parent.parent / "static/images/default_avatar.png"
+    image_file, image_bytes = create_fake_image()
     response = await logged_client.get(f"{USERS_ENDPOINT}/me")
     assert response.status_code == 200
 
     old_avatar_url = response.json()["avatar"]
 
-    with open(image_path, "rb") as image_file:
-        response = await logged_client.post(f"{USERS_ENDPOINT}/me/avatar", files={"avatar": ("default_avatar.png", image_file, "image/png")})
-        assert response.status_code == 200
+    response = await logged_client.post(f"{USERS_ENDPOINT}/me/avatar",
+                                        files={"avatar": (filename, image_bytes, "image/png")})
+    assert response.status_code == 200
 
     response = await logged_client.get(f"{USERS_ENDPOINT}/me")
     assert response.status_code == 200
     assert response.json()["avatar"] != old_avatar_url
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("content_type", [
+    # Invalid: Missing "image/"
+    "gif",
+    "jpeg",
+    "png",
+
+    # Invalid: Incorrect content type for images
+    "application/octet-stream",
+
+    # Invalid: Invalid characters
+    "image/gif; charset=utf-8",
+    "image/jpeg; boundary=something",
+    "image/png; encoding=base64",
+
+    # Invalid: Content type with extra spaces
+    "  image/gif  ",
+    "image/png  ",
+
+    # Invalid: Unsupported content types
+    "image/bmp",
+    "image/tiff",
+    "image/svg+xml",
+
+    # Invalid: Empty content type
+    "",
+
+    # Invalid: Content type with invalid characters
+    "image/gif<",
+    "image/jpeg;",
+    "image/png?",
+])
+async def test_logged_user_upload_avatar_with_invalid_content_type(content_type, logged_client):
+    image_file, image_bytes = create_fake_image()
+
+    response = await logged_client.post(f"{USERS_ENDPOINT}/me/avatar",
+                                        files={"avatar": ("default_avatar", image_bytes, content_type)})
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_logged_user_upload_avatar_with_invalid_file_with_valid_content_type(logged_client):
+    image_bytes = create_fake_invalid_image()
+
+    response = await logged_client.post(f"{USERS_ENDPOINT}/me/avatar",
+                                        files={"avatar": ("default_avatar.png", image_bytes, "image/png")})
+    assert response.status_code == 422
