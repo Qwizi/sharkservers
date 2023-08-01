@@ -5,8 +5,9 @@ from pathlib import Path
 from sqlite3 import IntegrityError as SQLIntegrityError
 
 from PIL import Image
+
 from asyncpg import UniqueViolationError
-from fastapi import File, Request, HTTPException
+from fastapi import File, Request, HTTPException, UploadFile
 from fastapi_pagination import Params, Page
 from psycopg2 import IntegrityError
 from pydantic import EmailStr
@@ -16,10 +17,11 @@ from src.auth.exceptions import invalid_activation_code_exception
 from src.auth.services.code import CodeService
 from src.auth.utils import now_datetime, verify_password, get_password_hash
 from src.db import BaseService
-from src.users.exceptions import (
-    user_not_found_exception, username_not_available_exception, invalid_current_password_exception,
-    cannot_change_display_role_exception, user_email_is_the_same_exception,
-)
+from src.services import UploadService
+from src.settings import Settings
+from src.users.exceptions import (user_not_found_exception, username_not_available_exception,
+                                  invalid_current_password_exception, cannot_change_display_role_exception,
+                                  user_email_is_the_same_exception, )
 from src.users.models import User
 from src.users.schemas import UserOut, ChangeUsernameSchema, ChangePasswordSchema, ChangeDisplayRoleSchema
 
@@ -42,9 +44,7 @@ class UserService(BaseService):
         :return:
         """
         try:
-            await user.update(
-                username=change_username_data.username, updated_date=now_datetime()
-            )
+            await user.update(username=change_username_data.username, updated_date=now_datetime())
             return user
         except (UniqueViolationError, IntegrityError, SQLIntegrityError):
             raise username_not_available_exception
@@ -57,18 +57,14 @@ class UserService(BaseService):
                 :param change_password_data:
                 :return:
                 """
-        if not verify_password(
-                change_password_data.current_password, user.password
-        ):
+        if not verify_password(change_password_data.current_password, user.password):
             raise invalid_current_password_exception
         new_password = get_password_hash(change_password_data.new_password)
         await user.update(password=new_password, updated_date=now_datetime())
         return user
 
     @staticmethod
-    async def change_display_role(
-            user: User, change_display_role_data: ChangeDisplayRoleSchema
-    ) -> (User, int):
+    async def change_display_role(user: User, change_display_role_data: ChangeDisplayRoleSchema) -> (User, int):
         display_role_exists_in_user_roles = False
         old_user_display_role = user.display_role.id
         for role in user.roles:
@@ -77,20 +73,14 @@ class UserService(BaseService):
                 break
         if not display_role_exists_in_user_roles:
             raise cannot_change_display_role_exception
-        await user.update(
-            display_role=change_display_role_data.role_id,
-            updated_date=now_datetime(),
-        )
+        await user.update(display_role=change_display_role_data.role_id, updated_date=now_datetime(), )
         return user, old_user_display_role
 
     @staticmethod
     async def create_confirm_email_code(code_service: CodeService, user: User, new_email: EmailStr):
         if user.email == new_email:
             raise user_email_is_the_same_exception
-        redis_data = {
-            "user_id": user.id,
-            "new_email": new_email,
-        }
+        redis_data = {"user_id": user.id, "new_email": new_email, }
         confirm_code, _data = await code_service.create(data=json.dumps(redis_data), code_len=5, expire=900)
         return confirm_code, new_email
 
@@ -108,34 +98,23 @@ class UserService(BaseService):
         await code_service.delete(code)
         return user
 
-    async def upload_avatar(self, user: User, avatar: File, request: Request):
-        uploads_files_path = "static/uploads/avatars"
-        available_extensions = [".jpg", ".jpeg", ".png"]
-        file_suffix = Path(avatar.filename).suffix
-        if file_suffix not in available_extensions:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File extension is not allowed", )
-        file_name = f"{uuid.uuid4()}{file_suffix}"
-        full_path = Path.joinpath(Path(__file__).parent.parent.parent, uploads_files_path, file_name)
-        file_content = await avatar.read()
-        with open(full_path, "wb") as f:
-            f.write(file_content)
+    async def upload_avatar(self, user: User, avatar: UploadFile, request: Request, upload_service: UploadService, settings: Settings) -> dict:
+        try:
+            file_data = await upload_service.upload_avatar(file=avatar)
+            file_name = file_data.get("file_name")
+            default_avatar_url = request.url_for("static", path="images/default_avatar.png")
+            avatar_url = request.url_for("static", path=f"uploads/avatars/{file_name}")
+            old_avatar_url = user.avatar
+            await user.update(avatar=str(avatar_url))
+            if old_avatar_url != default_avatar_url:
+                old_avatar_filename = old_avatar_url.split("/")[-1]
+                upload_service.delete_avatar(old_avatar_filename)
 
-        # resize image
-        resized_avatar = Image.open(full_path)
-        resized_avatar.thumbnail((100, 100))
-        resized_avatar.save(full_path)
-        default_avatar_url = request.url_for("static", path="images/default_avatar.png")
-        avatar_url = request.url_for("static", path=f"uploads/avatars/{file_name}")
-        old_avatar_url = user.avatar
-        await user.update(avatar=str(avatar_url))
-        # delete old avatar if it is not default
-        if old_avatar_url != default_avatar_url:
-            old_avatar_filename = old_avatar_url.split("/")[-1]
-            old_avatar_path = Path.joinpath(Path(__file__).parent.parent.parent, uploads_files_path,
-                                            old_avatar_filename)
-            if old_avatar_path.exists():
-                old_avatar_path.unlink()
-        return {
-            "old_avatar_url": old_avatar_url,
-            "avatar_url": avatar_url,
-        }
+            if settings.TESTING:
+                upload_service.delete_avatar(file_name)
+            return {
+                "old_avatar_url": old_avatar_url,
+                "avatar_url": avatar_url,
+            }
+        except HTTPException as e:
+            raise e

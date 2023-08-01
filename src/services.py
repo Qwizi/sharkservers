@@ -1,16 +1,21 @@
 import json
 import os
+import uuid
+from io import BytesIO
 from pathlib import Path
 
 import httpx
-from fastapi import HTTPException
+from PIL import Image
+from fastapi import HTTPException, UploadFile, Request
 from fastapi_mail import FastMail, MessageSchema, MessageType
 from fastapi_mail.email_utils import DefaultChecker
 from pydantic import EmailStr
+from starlette import status
 
 from src.auth.schemas import RegisterUserSchema
 from src.enums import ActivationEmailTypeEnum
 from src.logger import logger, logger_with_filename
+from src.settings import Settings
 from src.users.models import User
 
 
@@ -157,3 +162,67 @@ class MainService:
                     operation["operationId"] = new_operation_id
                     print(new_operation_id)
             file_path.write_text(json.dumps(openapi_content))
+
+
+class UploadService:
+    ROOT_FOLDER = "static/uploads"
+    AVATAR_FOLDER = "avatars"
+
+    def __init__(self, settings: Settings):
+        self.settings = settings
+        self.avatars_upload_folder = Path.joinpath(Path(__file__).parent.parent, self.ROOT_FOLDER,
+                                                   self.AVATAR_FOLDER)
+
+    def is_valid_image_extension(self, file: UploadFile):
+        file_suffix = Path(file.filename).suffix
+        if file_suffix not in self.settings.IMAGE_ALLOWED_EXTENSIONS:
+            return False
+        return True
+
+    def is_valid_avatar_size(self, file_bytes: bytes):
+        return len(file_bytes) <= self.settings.AVATAR_MAX_SIZE
+
+    def get_avatar_path(self, file_name: str) -> Path:
+        return Path.joinpath(self.avatars_upload_folder, file_name)
+
+    @staticmethod
+    def create_avatar_file_name(suffix: str):
+        return f"{uuid.uuid4()}{suffix}"
+
+    @staticmethod
+    def create_file(file_path: Path, file_content):
+        with open(file_path, "wb") as f:
+            f.write(file_content)
+
+    def resize_image(self, file_path: Path, width: int = None, height: int = None):
+        if not width:
+            width = self.settings.AVATAR_WIDTH
+        if not height:
+            height = self.settings.AVATAR_HEIGHT
+        resized_avatar = Image.open(file_path)
+        resized_avatar.thumbnail((width, height))
+        resized_avatar.save(file_path)
+
+    async def upload_avatar(self, file: UploadFile):
+        file_content = await file.read()
+        if not self.is_valid_image_extension(file):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File extension is not allowed")
+        if not self.is_valid_avatar_size(file_content):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File size is too big")
+        file_name = self.create_avatar_file_name(Path(file.filename).suffix)
+        avatar_full_path = self.get_avatar_path(file_name)
+        # create avatar file
+        self.create_file(avatar_full_path, file_content)
+        # resize avatar
+        self.resize_image(avatar_full_path)
+        return {
+            "file_name": file_name,
+            "avatar_full_path": str(avatar_full_path),
+        }
+
+    def delete_avatar(self, file_name: str):
+        avatar_full_path = self.get_avatar_path(file_name)
+        if avatar_full_path.exists():
+            avatar_full_path.unlink()
+            return True
+        return False

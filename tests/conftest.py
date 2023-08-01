@@ -1,9 +1,11 @@
 import asyncio
+from unittest import mock
 
 import pytest
 import pytest_asyncio
 import sqlalchemy
 from faker import Faker
+from fastapi import File
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_events.dispatcher import dispatch
 from httpx import AsyncClient
@@ -68,6 +70,9 @@ TEST_THREAD = {
     "title": "Test Title",
     "content": "Test Content",
 }
+
+test_avatar_image_file = mock.MagicMock(file=File)
+test_avatar_image_file.filename = "test_avatar.jpg"
 
 settings = get_settings()
 
