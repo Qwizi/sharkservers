@@ -41,6 +41,7 @@ async def generate_random_data(event: Event):
     auth_service = payload.get("auth_service")
     categories_service = payload.get("categories_service")
     threads_service = payload.get("threads_service")
+    posts_service = payload.get("posts_service")
     users_list = []
     for i in range(100):
         new_user = await auth_service.register(
@@ -74,3 +75,15 @@ async def generate_random_data(event: Event):
         )
         threads_list.append(new_thread)
         logger.info(f"Created thread {new_thread.title}")
+
+    for i in range(1000):
+        user = random.choice(list(users_list))
+        thread = random.choice(list(threads_list))
+        new_post = await posts_service.create(
+            author=user,
+            content=f"Test post {i}",
+        )
+        await thread.posts.add(new_post)
+        logger.info(f"Created post {new_post.content}")
+
+    logger.info("Finished generating random data")

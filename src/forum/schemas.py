@@ -1,22 +1,46 @@
-from typing import Optional, List
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
 from src.forum.enums import CategoryTypeEnum
-from src.forum.models import Category, Tag, Thread
+from src.forum.models import Category, Tag, Thread, Post, Like
 from src.roles.models import Role
 
-category_out = Category.get_pydantic()
+author_exclude = {
+    "author__password",
+    "author__email",
+    "author__display_role__scopes",
+    "author__secret_salt",
+    "author__roles",
+    "author__apps",
+    "author__banned_by",
+    "author__banned_user",
+    "author__players",
+}
+
+category_out = Category.get_pydantic(exclude={"threads"})
 tags_out = Tag.get_pydantic()
 thread_out = Thread.get_pydantic(
-    exclude={
-        "author__password",
-        "author__email",
-        "author__display_role__scopes",
-        "author__secret_salt",
-        "author__roles",
-    }
+    exclude=author_exclude | {"posts", "server", "tags"},
 )
+post_out = Post.get_pydantic(exclude=author_exclude | {"likes", "thread_post"})
+like_out = Like.get_pydantic(exclude=author_exclude | {"post_likes"})
+
+
+class CategoryOut(category_out):
+    pass
+
+
+class ThreadOut(thread_out):
+    pass
+
+
+class PostOut(post_out):
+    pass
+
+
+class LikeOut(like_out):
+    pass
 
 
 class ThreadTag(BaseModel):
@@ -42,16 +66,6 @@ class ThreadPostSchema(BaseModel):
     author: ThreadAuthor
 
 
-class ThreadOut(BaseModel):
-    id: int
-    title: str
-    is_closed: bool
-    content: str
-    category: ThreadCategory
-    author: ThreadAuthor
-    tags: Optional[List[ThreadTag]] = None
-
-
 class CreateThreadSchema(BaseModel):
     title: str = Field(max_length=64, min_length=3)
     content: str = Field(min_length=2)
@@ -73,12 +87,6 @@ class UpdateThreadSchema(BaseModel):
 class AdminUpdateThreadSchema(UpdateThreadSchema):
     author_id: Optional[int]
     category_id: Optional[int]
-
-
-class PostOut(BaseModel):
-    id: int
-    content: str
-    author: ThreadAuthor
 
 
 class CreatePostSchema(BaseModel):

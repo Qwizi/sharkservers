@@ -57,8 +57,8 @@ from src.users.views_admin import (
 )
 from .apps.models import App
 from .auth.utils import now_datetime
-from .forum.dependencies import get_categories_service, get_threads_service
-from .forum.services import CategoryService, ThreadService
+from .forum.dependencies import get_categories_service, get_threads_service, get_posts_service
+from .forum.services import CategoryService, ThreadService, PostService
 
 # import admin posts router
 
@@ -256,6 +256,7 @@ def create_app():
             roles_service: RoleService = Depends(get_roles_service),
             categories_service: CategoryService = Depends(get_categories_service),
             threads_service: ThreadService = Depends(get_threads_service),
+            posts_service: PostService = Depends(get_posts_service),
     ):
         dispatch(
             event_name="GENERATE_RANDOM_DATA",
@@ -264,6 +265,7 @@ def create_app():
                 "roles_service": roles_service,
                 "categories_service": categories_service,
                 "threads_service": threads_service,
+                "posts_service": posts_service,
             },
         )
         return {"msg": "Done"}
