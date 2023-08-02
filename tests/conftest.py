@@ -10,6 +10,8 @@ from faker import Faker
 from fastapi import File
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_events.dispatcher import dispatch
+from fastapi_limiter import FastAPILimiter
+from fastapi_limiter.depends import RateLimiter
 from httpx import AsyncClient
 
 from src.auth.dependencies import (
@@ -18,6 +20,7 @@ from src.auth.dependencies import (
 )
 from src.auth.schemas import RegisterUserSchema
 from src.auth.services.auth import AuthService
+from src.auth.views import limiter
 from src.db import metadata, create_redis_pool
 from src.forum.dependencies import get_categories_service, get_posts_service, get_threads_service
 from src.forum.enums import CategoryTypeEnum
@@ -118,8 +121,15 @@ async def create_test_database():
 @pytest_asyncio.fixture(scope="module")
 async def client():
     app.state.redis = await create_redis_pool()
+    await FastAPILimiter.init(app.state.redis)
+
+    override_limiter = RateLimiter(times=999, seconds=1)
+
+    app.dependency_overrides[limiter] = override_limiter
     async with AsyncClient(app=app, base_url="http://localhost") as c:
         yield c
+
+    app.dependency_overrides = {}
 
 
 async def auth_user_headers(username, password):
@@ -143,6 +153,7 @@ async def admin_client():
         TEST_ADMIN_USER.get("username"), TEST_ADMIN_USER.get("password")
     )
     app.state.redis = await create_redis_pool()
+    await FastAPILimiter.init(app.state.redis)
     async with AsyncClient(app=app, base_url="http://localhost", headers=headers) as c:
         yield c
 
@@ -162,6 +173,7 @@ async def logged_client():
     headers = await auth_user_headers(user.username, TEST_USER.get("password"))
     logger.info(headers)
     app.state.redis = await create_redis_pool()
+    await FastAPILimiter.init(app.state.redis)
     async with AsyncClient(app=app, base_url="http://localhost", headers=headers) as c:
         yield c
 

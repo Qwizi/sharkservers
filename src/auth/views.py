@@ -3,21 +3,21 @@ import json
 from fastapi import APIRouter, Depends, BackgroundTasks, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_events.dispatcher import dispatch
-from fastapi_mail.email_utils import DefaultChecker
-from pydantic import EmailStr
+from fastapi_limiter.depends import RateLimiter
 
 from src.apps.dependencies import get_app_service
 from src.apps.services import AppService
 from src.auth.dependencies import (get_access_token_service, get_refresh_token_service, get_current_active_user,
-                                   get_auth_service, get_activation_account_code_service, )
+                                   get_auth_service, get_activation_account_code_service,
+                                   get_reset_account_password_code_service, )
 from src.auth.enums import AuthEventsEnum
 from src.auth.exceptions import invalid_activation_code_exception
 from src.auth.schemas import (RegisterUserSchema, TokenSchema, RefreshTokenSchema, ActivateUserCodeSchema,
-                              ResendActivationCodeSchema, UserActivatedSchema, )
+                              ResendActivationCodeSchema, UserActivatedSchema, ResetPasswordSchema, )
 from src.auth.services.auth import AuthService, OAuth2ClientSecretRequestForm
 from src.auth.services.code import CodeService
 from src.auth.services.jwt import JWTService
-from src.dependencies import get_email_service, get_email_checker
+from src.dependencies import get_email_service, get_limiter
 from src.enums import ActivationEmailTypeEnum
 from src.logger import logger
 from src.players.dependencies import get_players_service
@@ -29,8 +29,10 @@ from src.users.schemas import UserOut
 
 router = APIRouter()
 
+limiter = RateLimiter(times=2, seconds=60)
 
-@router.post("/register")
+
+@router.post("/register", dependencies=[Depends(limiter)])
 async def register(
         user_data: RegisterUserSchema,
         background_tasks: BackgroundTasks,
@@ -40,6 +42,7 @@ async def register(
         email_service: EmailService = Depends(get_email_service),
         settings: Settings = Depends(get_settings),
 ) -> UserOut:
+    print(router.dependencies)
     """
     Register a new user
     :param request:
@@ -194,22 +197,40 @@ async def get_app_token(form_data: OAuth2ClientSecretRequestForm = Depends(),
                                             apps_service=apps_service, )
 
 
-async def default_checker():
-    checker = DefaultChecker()  # you can pass source argument for your own email domains
-    await checker.fetch_temp_email_domains()  # require to fetch temporary email domains
-    return checker
-
-
-@router.post("/email")
-async def test_email_send(background_tasks: BackgroundTasks, email_service: EmailService = Depends(get_email_service),
-                          code_service: CodeService = Depends(get_activation_account_code_service),
-                          email_checker: DefaultChecker = Depends(get_email_checker)):
+@router.post("/forgot-password")
+async def forgot_password_request(
+        data: ResendActivationCodeSchema,
+        background_tasks: BackgroundTasks,
+        auth_service: AuthService = Depends(get_auth_service),
+        email_service: EmailService = Depends(get_email_service),
+        code_service: CodeService = Depends(get_reset_account_password_code_service),
+) -> dict[str, str]:
     """
-    Test email send
+    Forgot password request
     :param code_service:
+    :param background_tasks:
     :param email_service:
-    :return:
+    :param auth_service:
+    :param data:
+    :return bool:
     """
-    # code, _user_id = await code_service.create(data="test", expire=60, code_len=5)
-    await email_service.send_confirmation_email(EmailStr("ciolek.adrian@protonmail.com"), "12345")
-    return {}
+    code, _data = await code_service.create(data.email, code_len=5, expire=900)
+    background_tasks.add_task(email_service.send_confirmation_email, ActivationEmailTypeEnum.PASSWORD, data.email, code)
+    return {"msg": "If email is correct, you will receive an email with reset code"}
+
+
+@router.post("/reset-password")
+async def reset_password(
+        data: ResetPasswordSchema,
+        auth_service: AuthService = Depends(get_auth_service),
+        code_service: CodeService = Depends(get_reset_account_password_code_service),
+) -> dict:
+    """
+    Reset password
+    :param code_service:
+    :param auth_service:
+    :param data:
+    :return bool:
+    """
+    password_reset = await auth_service.reset_password(reset_password_data=data, code_service=code_service)
+    return {"msg": "Password has been reset"}

@@ -25,6 +25,8 @@ redis = "^4.5.5"
 cryptography = "^41.0.1"
 python-multipart = "^0.0.6"
 pillow = "^10.0.0"
+fastapi-limiter = "^0.1.5"
+fakeredis = {extras = ["lua"], version = "^2.17.0"}
 
 
 [tool.poetry.group.dev.dependencies]

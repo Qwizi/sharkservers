@@ -1,11 +1,7 @@
-import uuid
-from pathlib import Path
-
-from PIL import Image
-from fastapi import APIRouter, Depends, Security, BackgroundTasks, UploadFile, File, HTTPException, Request
+from fastapi import APIRouter, Depends, Security, BackgroundTasks, UploadFile, File, Request
 from fastapi_events.dispatcher import dispatch
+from fastapi_limiter.depends import RateLimiter
 from fastapi_pagination import Page, Params
-from starlette import status
 
 from src.apps.dependencies import get_app_service
 from src.apps.schemas import CreateAppSchema
@@ -34,6 +30,7 @@ from src.users.services import UserService
 
 router = APIRouter()
 
+limiter = RateLimiter(times=1, seconds=60)
 
 @router.get("")
 async def get_users(params: Params = Depends(), users_service: UserService = Depends(get_users_service)) -> Page[
@@ -161,7 +158,7 @@ async def change_user_password(change_password_data: ChangePasswordSchema,
     return {"msg": "Successfully changed password"}
 
 
-@router.post("/me/email")
+@router.post("/me/email", dependencies=[Depends(limiter)])
 async def request_change_user_email(change_email_data: ChangeEmailSchema, background_tasks: BackgroundTasks,
                                     user: User = Security(get_current_active_user, scopes=["users:me"]),
                                     email_service: EmailService = Depends(get_email_service),
