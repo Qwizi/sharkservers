@@ -15,7 +15,7 @@ from src.forum.exceptions import (
     thread_is_closed_exception,
 )
 from src.forum.models import Post
-from src.forum.schemas import PostOut, CreatePostSchema, UpdatePostSchema
+from src.forum.schemas import PostOut, CreatePostSchema, UpdatePostSchema, LikeOut
 from src.forum.services import PostService, ThreadService, LikeService
 from src.users.models import User
 
@@ -55,8 +55,8 @@ async def get_posts(
     return posts
 
 
-@router.get("/{post_id}")
-async def get_post_by_id(post: Post = Depends(get_valid_post)) -> Post:
+@router.get("/{post_id}", response_model=PostOut)
+async def get_post_by_id(post: Post = Depends(get_valid_post)):
     """
     Get post by id.
     :param post:
@@ -106,7 +106,7 @@ async def get_post_likes(
         post: Post = Depends(get_valid_post),
         likes_service: LikeService = Depends(get_likes_service),
         params: Params = Depends(),
-):
+) -> Page[LikeOut]:
     """
     Get all post likes.
     :param post:

@@ -32,9 +32,9 @@ router = APIRouter()
 
 limiter = RateLimiter(times=1, seconds=60)
 
-@router.get("")
-async def get_users(params: Params = Depends(), users_service: UserService = Depends(get_users_service)) -> Page[
-    UserOut]:
+
+@router.get("", response_model=Page[UserOut])
+async def get_users(params: Params = Depends(), users_service: UserService = Depends(get_users_service)) -> Page[UserOut]:
     """
     Get users
     :param users_service:

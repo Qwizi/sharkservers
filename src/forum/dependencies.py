@@ -84,7 +84,7 @@ async def get_valid_thread_with_author(
 
 async def get_valid_post(
         post_id: int, posts_service: PostService = Depends(get_posts_service)
-) -> Model:
+) :
     """
     Get valid post
     :param posts_service:
