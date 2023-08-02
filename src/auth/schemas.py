@@ -8,8 +8,7 @@ class UsernameRegex(BaseModel):
                           default="username")
 
 
-class RegisterUserSchema(UsernameRegex):
-    email: EmailStr
+class PasswordSchema(BaseModel):
     password: str = Field(min_length=8, max_length=255)
     password2: str = Field(min_length=8, max_length=255)
 
@@ -17,6 +16,10 @@ class RegisterUserSchema(UsernameRegex):
     def passwords_match(cls, value, values, **kwargs):
         if "password" in values and value != values["password"]:
             raise ValueError("Passwords do not match")
+
+
+class RegisterUserSchema(UsernameRegex, PasswordSchema):
+    email: EmailStr
 
 
 class TokenDetailsSchema(BaseModel):
@@ -57,3 +60,7 @@ class EmailConfirmSchema(BaseModel):
     old_email: EmailStr
     new_email: EmailStr
     is_confirmed: bool
+
+
+class ResetPasswordSchema(ActivateUserCodeSchema, PasswordSchema):
+    pass

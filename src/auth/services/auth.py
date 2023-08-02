@@ -22,7 +22,7 @@ from starlette.responses import RedirectResponse
 from src.apps.services import AppService
 from src.auth.exceptions import inactivate_user_exception, user_exists_exception, incorrect_username_password_exception, \
     token_expired_exception, invalid_credentials_exception, user_activated_exception, invalid_activation_code_exception
-from src.auth.schemas import RegisterUserSchema, TokenSchema, TokenDetailsSchema, RefreshTokenSchema
+from src.auth.schemas import RegisterUserSchema, TokenSchema, TokenDetailsSchema, RefreshTokenSchema, ResetPasswordSchema
 from src.auth.services.code import CodeService
 from src.auth.services.jwt import JWTService
 from src.auth.utils import now_datetime, pwd_context, verify_password, get_password_hash
@@ -111,7 +111,8 @@ class AuthService:
                 role = await self.roles_service.get_one(
                     id=ProtectedDefaultRolesEnum.ADMIN.value
                 )
-            avatar_url = request.url_for("static", path=f"images/avatars/default_avatar.png") if request else "http://localhost/static/images/default_avatar.png"
+            avatar_url = request.url_for("static",
+                                         path=f"images/avatars/default_avatar.png") if request else "http://localhost/static/images/default_avatar.png"
             registered_user = await self.users_service.create(
                 username=user_data.username,
                 email=user_data.email,
@@ -154,7 +155,8 @@ class AuthService:
         refresh_token, refresh_toke_exp = jwt_refresh_token_service.encode(
             data={"sub": str(user.id), "secret": user.secret_salt}
         )
-        await user.update(last_login=now_datetime().replace(tzinfo=None), last_online=now_datetime().replace(tzinfo=None))
+        await user.update(last_login=now_datetime().replace(tzinfo=None),
+                          last_online=now_datetime().replace(tzinfo=None))
         return (
             TokenSchema(
                 access_token=TokenDetailsSchema(
@@ -453,3 +455,19 @@ class AuthService:
         if not data:
             raise invalid_activation_code_exception
         return user
+
+    async def reset_password(self, reset_password_data: ResetPasswordSchema, code_service: CodeService):
+        """
+        Confirm change password
+        :param reset_password_data:
+        :param code_service:
+        :return:
+        """
+        email = await code_service.get(reset_password_data.code)
+        if not email:
+            raise invalid_activation_code_exception
+        user = await self.users_service.get_one(email=email)
+        new_password = get_password_hash(reset_password_data.password)
+        await user.update(password=new_password, updated_date=now_datetime(), secret_salt=self.generate_secret_salt())
+        await code_service.delete(reset_password_data.code)
+        return True

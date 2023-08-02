@@ -9,6 +9,7 @@ from fastapi.security import SecurityScopes
 from fastapi_events.dispatcher import dispatch
 from fastapi_events.handlers.local import local_handler
 from fastapi_events.middleware import EventHandlerASGIMiddleware
+from fastapi_limiter import FastAPILimiter
 from fastapi_pagination import add_pagination
 from jose import JWTError
 from starlette.concurrency import iterate_in_threadpool
@@ -84,6 +85,7 @@ async def connect_db(_app: FastAPI):
     if not database_.is_connected:
         await database.connect()
     _app.state.redis = await create_redis_pool()
+    await FastAPILimiter.init(_app.state.redis)
     return _app
 
 
@@ -187,6 +189,7 @@ def create_app():
     @_app.on_event("shutdown")
     async def shutdown():
         await disconnect_db(_app)
+        await FastAPILimiter.close()
 
     """
     

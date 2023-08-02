@@ -6,8 +6,8 @@ from src.auth.schemas import UsernameRegex
 from src.users.models import User
 
 UserOut = User.get_pydantic(
-    exclude={"password", "email", "secret_salt", "apps", "players", "banned_user", "banned_by", "roles"})
-UserOutWithEmail = User.get_pydantic(exclude={"password", "secret_salt", "apps", "players"})
+    exclude={"password", "email", "secret_salt", "apps", "players", "banned_user", "banned_by", "roles", "password_reset_token"})
+UserOutWithEmail = User.get_pydantic(exclude={"password", "secret_salt", "apps", "players", "password_reset_token"})
 
 
 class ChangeUsernameSchema(UsernameRegex):

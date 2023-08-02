@@ -145,6 +145,7 @@ async def get_application(
     except JWTError as e:
         raise invalid_credentials_exception
 
+
 async def get_activation_account_code_service(redis: Redis = Depends(get_redis)) -> CodeService:
     """
     Get activation account code service
@@ -161,3 +162,12 @@ async def get_change_account_email_code_service(redis: Redis = Depends(get_redis
     :return CodeService:
     """
     return CodeService(redis=redis, key=RedisAuthKeyEnum.CHANGE_EMAIL.value)
+
+
+async def get_reset_account_password_code_service(redis: Redis = Depends(get_redis)) -> CodeService:
+    """
+    Get reset account password code service
+    :param redis:
+    :return CodeService:
+    """
+    return CodeService(redis=redis, key=RedisAuthKeyEnum.RESET_PASSWORD.value)

@@ -1,4 +1,5 @@
 from fastapi import Depends
+from fastapi_limiter.depends import RateLimiter
 from fastapi_mail import ConnectionConfig, FastMail
 from fastapi_mail.email_utils import DefaultChecker
 
@@ -34,3 +35,9 @@ async def get_email_service(checker: DefaultChecker = Depends(get_email_checker)
 
 async def get_upload_service(settings: Settings = Depends(get_settings)) -> UploadService:
     return UploadService(settings=settings)
+
+
+def get_limiter(settings_: Settings = Depends(get_settings), limitter: RateLimiter = Depends(RateLimiter(times=2, seconds=60))):
+    if settings_.TESTING:
+        return None
+    return limitter

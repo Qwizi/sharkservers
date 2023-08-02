@@ -66,16 +66,33 @@ Administracja SharkServers.pl
 
         """
 
+    @staticmethod
+    def password_reset_email_template(code: str):
+        return f"""
+        Drogi(a) Użytkowniku,<br><br>
+
+Otrzymujesz tę wiadomość, ponieważ zażądałeś/aś zresetowania hasła powiązanego z Twoim kontem na SharkServers.pl.<br><br>
+
+Proszę skorzystać z poniższego kodu weryfikacyjnego, aby zresetować hasło:<br><br>
+
+Kod weryfikacyjny: {code}<br><br>
+
+Proszę wprowadzić powyższy kod w odpowiednie pole na naszej stronie w celu zresetowania hasła. Jeśli to nie Ty zażądałeś/aś resetowania hasła, zignoruj tę wiadomość.<br><br>
+
+Kod weryfikacyjny wygasa po ograniczonym czasie w celu zabezpieczenia Twojego konta. Proszę o użycie go jak najszybciej.<br><br>
+
+Jeśli potrzebujesz pomocy lub masz pytania, zawsze możesz skontaktować się z naszym zespołem obsługi klienta.<br><br>
+
+Z poważaniem,<br>
+Administracja SharkServers.pl
+        """
+
     async def _send_message(self, subject: str, recipients: list, body: str):
         if not await self.checker.check_mx_record(recipients[0].split("@")[1], False):
             logger.info(f"Email {recipients[0]} is invalid")
             return
-        await self.mailer.send_message(message=MessageSchema(
-            subject=subject,
-            recipients=recipients,
-            body=body,
-            subtype=MessageType.html,
-        ))
+        await self.mailer.send_message(
+            message=MessageSchema(subject=subject, recipients=recipients, body=body, subtype=MessageType.html, ))
 
     async def send_confirmation_email(self, activation_type: ActivationEmailTypeEnum, email: EmailStr, code: str):
         subject = None
@@ -86,6 +103,9 @@ Administracja SharkServers.pl
         elif activation_type == ActivationEmailTypeEnum.EMAIL:
             subject = "Twój kod weryfikacyjny - Zmiana adresu e-mail"
             body = self.change_email_template(code)
+        elif activation_type == ActivationEmailTypeEnum.PASSWORD:
+            subject = "Twój kod weryfikacyjny - Reset hasła"
+            body = self.password_reset_email_template(code)
         await self._send_message(subject, [email], body)
         logger.info(f"Activation email sent to {email} with code {code}")
 
@@ -94,36 +114,14 @@ class MainService:
     @staticmethod
     async def create_default_scopes(scopes_service):
         await scopes_service.create_default_scopes(
-            applications=[
-                "users",
-                "roles",
-                "scopes",
-                "players",
-                "categories",
-                "tags",
-                "threads",
-                "posts",
-                "apps",
-            ],
-            additional=[
-                ("users", "me", "Get my profile"),
-                ("users", "me:username", "Update my username"),
-                ("users", "me:password", "Update my password"),
-                ("users", "me:display-role", "Update my display role"),
-                ("threads", "open", "Open a thread"),
-                ("threads", "close", "Close a thread"),
-            ],
-        )
+            applications=["users", "roles", "scopes", "players", "categories", "tags", "threads", "posts", "apps", ],
+            additional=[("users", "me", "Get my profile"), ("users", "me:username", "Update my username"),
+                ("users", "me:password", "Update my password"), ("users", "me:display-role", "Update my display role"),
+                ("threads", "open", "Open a thread"), ("threads", "close", "Close a thread"), ], )
 
     @staticmethod
-    async def install(
-            file_path,
-            admin_user_data: RegisterUserSchema,
-            scopes_service,
-            roles_service,
-            auth_service,
-            create_file: bool = True,
-    ):
+    async def install(file_path, admin_user_data: RegisterUserSchema, scopes_service, roles_service, auth_service,
+            create_file: bool = True, ):
         logger_with_filename(filename=MainService.__name__, data="Step 0 - Install started")
         if create_file:
             if os.path.exists(file_path):
@@ -134,9 +132,7 @@ class MainService:
         await roles_service.create_default_roles(scopes_service=scopes_service)
         logger_with_filename(filename=MainService.__name__, data="Step 2 - Default roles created")
         logger_with_filename(filename=MainService.__name__, data="Step 3 - Create admin user")
-        admin_user: User = await auth_service.register(
-            admin_user_data, is_activated=True, is_superuser=True
-        )
+        admin_user: User = await auth_service.register(admin_user_data, is_activated=True, is_superuser=True)
         logger_with_filename(filename=MainService.__name__,
                              data=f"Step 3 - {admin_user.get_pydantic(exclude={'password', })} created")
         if create_file:
@@ -170,8 +166,7 @@ class UploadService:
 
     def __init__(self, settings: Settings):
         self.settings = settings
-        self.avatars_upload_folder = Path.joinpath(Path(__file__).parent.parent, self.ROOT_FOLDER,
-                                                   self.AVATAR_FOLDER)
+        self.avatars_upload_folder = Path.joinpath(Path(__file__).parent.parent, self.ROOT_FOLDER, self.AVATAR_FOLDER)
 
     def is_valid_content_type(self, file: UploadFile):
         return file.content_type in self.settings.IMAGE_ALLOWED_CONTENT_TYPES
@@ -214,7 +209,8 @@ class UploadService:
     async def upload_avatar(self, file: UploadFile):
         file_content = await file.read()
         if not self.is_valid_content_type(file):
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="File extension is not allowed")
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                detail="File extension is not allowed")
         if not self.is_valid_avatar_size(file_content):
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="File size is too big")
         file_name = self.create_avatar_file_name(Path(file.filename).suffix)
@@ -223,10 +219,7 @@ class UploadService:
         self.create_file(avatar_full_path, file_content)
         # resize avatar
         self.resize_image(avatar_full_path)
-        return {
-            "file_name": file_name,
-            "avatar_full_path": str(avatar_full_path),
-        }
+        return {"file_name": file_name, "avatar_full_path": str(avatar_full_path), }
 
     def delete_avatar(self, file_name: str):
         avatar_full_path = self.get_avatar_path(file_name)
