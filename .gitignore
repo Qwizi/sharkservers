@@ -218,3 +218,4 @@ test.db
 installed
 openapi.json
 static/uploads/*
+.idea/*
