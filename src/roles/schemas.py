@@ -4,9 +4,21 @@ from pydantic import BaseModel
 
 from src.roles.models import Role
 
-RoleOut = Role.get_pydantic(exclude={"roles"})
-RoleOutWithScopes = Role.get_pydantic()
-RoleOutWithoutScopesAndUserRoles = Role.get_pydantic(exclude={"roles", "scopes"})
+role_out = Role.get_pydantic(exclude={"scopes", "user_roles", "user_display_role"})
+role_out_with_scopes = Role.get_pydantic(exclude={"user_roles", "user_display_role"})
+role_out_without_scopes_and_user_roles = Role.get_pydantic(exclude={"roles", "scopes"})
+
+
+class RoleOut(role_out):
+    pass
+
+
+class RoleOutWithScopes(role_out_with_scopes):
+    pass
+
+
+class RoleOutWithoutScopesAndUserRoles(role_out_without_scopes_and_user_roles):
+    pass
 
 
 class StaffUserInRolesSchema(BaseModel):

@@ -66,7 +66,7 @@ class ThreadPostSchema(BaseModel):
     author: ThreadAuthor
 
 
-class CreateThreadSchema(BaseModel):
+class AdminCreateCategorySchema(BaseModel):
     title: str = Field(max_length=64, min_length=3)
     content: str = Field(min_length=2)
     category: int
@@ -74,7 +74,7 @@ class CreateThreadSchema(BaseModel):
 
 
 # generate AdminCreateThreadSchema
-class AdminCreateThreadSchema(CreateThreadSchema):
+class AdminCreateThreadSchema(AdminCreateCategorySchema):
     author_id: int
 
 

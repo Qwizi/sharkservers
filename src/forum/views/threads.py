@@ -13,7 +13,7 @@ from src.forum.enums import ThreadEventEnum
 from src.forum.models import Thread
 from src.forum.schemas import (
     thread_out,
-    CreateThreadSchema,
+    AdminCreateCategorySchema,
     ThreadOut,
     UpdateThreadSchema,
 )
@@ -56,7 +56,7 @@ async def get_threads(
 
 @router.post("")
 async def create_thread(
-        thread_data: CreateThreadSchema,
+        thread_data: AdminCreateCategorySchema,
         user: User = Security(get_current_active_user, scopes=["threads:create"]),
         threads_service: ThreadService = Depends(get_threads_service),
         categories_service: CategoryService = Depends(get_categories_service),
