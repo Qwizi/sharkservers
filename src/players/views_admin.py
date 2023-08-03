@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends, Security, BackgroundTasks
 from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Params
 from ormar import NoMatch
@@ -40,12 +40,12 @@ async def admin_get_steam_profile(
 @router.post("")
 async def admin_create_player(
     profile_data: CreatePlayerSchema,
+    background_tasks: BackgroundTasks,
     user: User = Security(get_admin_user, scopes=["players:create"]),
+    players_service: PlayerService = Depends(get_players_service),
 ):
-    dispatch(
-        event_name=PlayerEventEnum.CREATE, payload={"steamid64": profile_data.steamid64}
-    )
-    return True
+    background_tasks.add_task(players_service.create_player, profile_data.dict()["steamid64"])
+    return {"msg": "Player created"}
 
 
 @router.delete("/{profile_id}", response_model=steam_profile_out)

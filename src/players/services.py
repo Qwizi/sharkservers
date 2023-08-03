@@ -1,5 +1,6 @@
 import httpx
 from fastapi import HTTPException
+from requests import HTTPError
 from steam.steamid import SteamID
 from steam.webapi import WebAPI
 
@@ -69,50 +70,57 @@ class PlayerService(BaseService):
         self.steamrep_service = steamrep_service
 
     def get_steam_player_info(self, steamid64: str) -> SteamPlayer:
-        steam_api = WebAPI(self.steam_api_key)
-        results = steam_api.call("ISteamUser.GetPlayerSummaries", steamids=steamid64)
-        if not len(results["response"]["players"]):
-            raise Exception("Invalid steamid64")
+        try:
+            steam_api = WebAPI(self.steam_api_key)
+            results = steam_api.call("ISteamUser.GetPlayerSummaries", steamids=steamid64)
+            if not len(results["response"]["players"]):
+                raise Exception("Invalid steamid64")
 
-        player = results["response"]["players"][0]
+            player = results["response"]["players"][0]
 
-        profile_url = player["profileurl"]
-        avatar = player["avatar"]
-        loccountrycode = player.get("loccountrycode", "N/A")
+            profile_url = player["profileurl"]
+            avatar = player["avatar"]
+            loccountrycode = player.get("loccountrycode", "N/A")
 
-        steamid64_from_player = player["steamid"]
-        steamid32 = SteamID(steamid64_from_player).as_steam2
-        steamid3 = SteamID(steamid64_from_player).as_steam3
-        return SteamPlayer(
-            username=player["personaname"],
-            steamid64=steamid64_from_player,
-            steamid32=steamid32,
-            steamid3=steamid3,
-            profile_url=profile_url,
-            avatar=avatar,
-            country_code=loccountrycode,
-        )
+            steamid64_from_player = player["steamid"]
+            steamid32 = SteamID(steamid64_from_player).as_steam2
+            steamid3 = SteamID(steamid64_from_player).as_steam3
+            return SteamPlayer(
+                username=player["personaname"],
+                steamid64=steamid64_from_player,
+                steamid32=steamid32,
+                steamid3=steamid3,
+                profile_url=profile_url,
+                avatar=avatar,
+                country_code=loccountrycode,
+            )
+        except HTTPError as e:
+            logger.error(e)
+            raise HTTPException(detail="Invalid steam api key", status_code=401)
 
     async def create_player(self, steamid64: str) -> Player:
         if await self.Meta.model.objects.filter(steamid64=steamid64).exists():
             raise HTTPException(detail="Player already exists", status_code=401)
-        player_info = self.get_steam_player_info(steamid64)
-        steamrep_profile = await self.steamrep_service.create_profile(steamid64)
-        reputation = 1000
-        if steamrep_profile.is_scammer:
-            reputation = 800
-        player = await self.create(
-            username=player_info.username,
-            steamid64=player_info.steamid64,
-            steamid32=player_info.steamid32,
-            steamid3=player_info.steamid3,
-            profile_url=player_info.profile_url,
-            avatar=player_info.avatar,
-            country_code=player_info.country_code,
-            steamrep_profile=steamrep_profile,
-            reputation=reputation,
-        )
-        return player
+        try:
+            player_info = self.get_steam_player_info(steamid64)
+            steamrep_profile = await self.steamrep_service.create_profile(steamid64)
+            reputation = 1000
+            if steamrep_profile.is_scammer:
+                reputation = 800
+            player = await self.create(
+                username=player_info.username,
+                steamid64=player_info.steamid64,
+                steamid32=player_info.steamid32,
+                steamid3=player_info.steamid3,
+                profile_url=player_info.profile_url,
+                avatar=player_info.avatar,
+                country_code=player_info.country_code,
+                steamrep_profile=steamrep_profile,
+                reputation=reputation,
+            )
+            return player
+        except HTTPError as e:
+            raise e
 
 
 class PlayerStatsService(BaseService):
