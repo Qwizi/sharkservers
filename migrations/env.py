@@ -26,7 +26,7 @@ from src.users.models import User, Ban
 from src.scopes.models import Scope
 from src.roles.models import Role
 from src.players.models import SteamRepProfile, Player, PlayerStats
-from src.forum.models import Category, Tag, Post, Thread, Like
+from src.forum.models import Category, Tag, Post, Thread, Like, ThreadMeta
 from src.servers.models import Server, ServerPlayerStats, ChatColorModule
 from src.apps.models import App
 from src.chat.models import Chat

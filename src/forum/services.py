@@ -1,10 +1,8 @@
 from src.db import BaseService
-from src.forum.exceptions import (
-    category_not_found_exception,
-    thread_not_found_exception,
-    post_not_found_exception, like_not_found_exception, like_already_exists_exception,
-)
-from src.forum.models import Category, Thread, Post, Like
+from src.forum.exceptions import (category_not_found_exception, thread_not_found_exception, post_not_found_exception,
+                                  like_not_found_exception, like_already_exists_exception,
+                                  thread_meta_not_found_exception, )
+from src.forum.models import Category, Thread, Post, Like, ThreadMeta
 from src.users.models import User
 
 
@@ -68,3 +66,9 @@ class LikeService(BaseService):
         if not like_exists:
             raise like_not_found_exception
         return {"message": "Like removed"}
+
+
+class ThreadMetaService(BaseService):
+    class Meta:
+        model = ThreadMeta
+        not_found_exception = thread_meta_not_found_exception

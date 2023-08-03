@@ -62,3 +62,6 @@ upgrade:
 
 clear-avatars:
 	find static/uploads/avatars  -maxdepth 1 -type f ! -name 'index.html' -exec rm -rf {} +
+
+random-data:
+	@curl -X GET http://localhost/generate-random-data

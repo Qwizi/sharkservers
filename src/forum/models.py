@@ -52,6 +52,16 @@ class Post(ormar.Model, DateFieldsMixins):
     likes_count = ormar.Integer(default=0)
 
 
+class ThreadMeta(ormar.Model, DateFieldsMixins):
+    class Meta(BaseMeta):
+        tablename = "forum_threads_meta"
+
+    id: int = ormar.Integer(primary_key=True)
+    name: str = ormar.String(max_length=64)
+    value: Optional[str] = ormar.Text(nullable=True)
+    description: Optional[str] = ormar.Text(nullable=True)
+
+
 class Thread(ormar.Model, DateFieldsMixins):
     class Meta(BaseMeta):
         tablename = "forum_threads"
@@ -66,18 +76,43 @@ class Thread(ormar.Model, DateFieldsMixins):
     category: Optional[Category] = ormar.ForeignKey(Category)
     author: Optional[User] = ormar.ForeignKey(User, relaed_name="user_threads")
     posts: Optional[List[Post]] = ormar.ManyToMany(Post, related_name="thread_post")
-    tags: Optional[List[Tag]] = ormar.ManyToMany(Tag, related_name="thread_tag")
-    server: Optional[Server] = ormar.ForeignKey(
-        Server, related_name="server_threads", nullable=True
-    )
+    meta_fields: Optional[List[ThreadMeta]] = ormar.ManyToMany(ThreadMeta, related_name="thread_meta")
     post_count: int = ormar.Integer(default=0)
 
 
 @post_save(Thread)
-async def update_category_thread_counter_after_save(sender, instance, **kwargs):
+async def on_thread_save(sender, instance, **kwargs):
+    # Update category thread counter
     category = await Category.objects.get(id=instance.category.id)
     await category.update(threads_count=category.threads_count + 1)
 
+    # Check category type
+    if category.type == CategoryTypeEnum.APPLICATION:
+        # create thread server_id meta field
+        server_id = await ThreadMeta.objects.create(
+            name="server_id",
+            description="Serwer na który aplikujesz",
+        )
+        experience = await ThreadMeta.objects.create(
+            name="question_experience",
+            description="Twoje doświadczenie",
+        )
+        age = await ThreadMeta.objects.create(
+            name="question_age",
+            description="Twój wiek",
+        )
+        reason = await ThreadMeta.objects.create(
+            name="question_reason",
+            description="Dlaczego chcesz zostac administratorem?",
+        )
+        meta_fields = [
+            server_id,
+            experience,
+            age,
+            reason,
+        ]
+        for meta_field in meta_fields:
+            await instance.meta_fields.add(meta_field)
 
 @post_delete(Thread)
 async def update_category_thread_counter_after_delete(sender, instance, **kwargs):
@@ -85,11 +120,12 @@ async def update_category_thread_counter_after_delete(sender, instance, **kwargs
     await category.update(threads_count=category.threads_count - 1 if category.threads_count > 0 else 0)
 
 
-@post_relation_add(Thread)
+"""@post_relation_add(Thread)
 async def update_thread_post_counter_after_relation_add(sender, instance, child, **kwargs):
-    thread = await Thread.objects.get(id=instance.id)
-    await thread.update(post_count=thread.post_count + 1)
-    logger.info(f"Thread {thread.title} post count updated to {thread.post_count}")
+    if child == Post:
+        thread = await Thread.objects.get(id=instance.id)
+        await thread.update(post_count=thread.post_count + 1)
+        logger.info(f"Thread {thread.title} post count updated to {thread.post_count}")"""
 
 
 @post_relation_remove(Thread)

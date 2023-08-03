@@ -53,3 +53,8 @@ like_already_exists_exception = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail=LikeExceptionsEnum.ALREADY_EXISTS,
 )
+
+thread_meta_not_found_exception = HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND,
+    detail=ThreadExceptionEnum.NOT_FOUND,
+)
