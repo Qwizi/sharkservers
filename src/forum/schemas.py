@@ -21,7 +21,7 @@ author_exclude = {
 category_out = Category.get_pydantic(exclude={"threads"})
 tags_out = Tag.get_pydantic()
 thread_out = Thread.get_pydantic(
-    exclude=author_exclude | {"posts", "server", "tags"},
+    exclude=author_exclude | {"posts", "server"},
 )
 post_out = Post.get_pydantic(exclude=author_exclude | {"likes", "thread_post"})
 like_out = Like.get_pydantic(exclude=author_exclude | {"post_likes"})
@@ -32,8 +32,8 @@ class CategoryOut(category_out):
 
 
 class ThreadOut(thread_out):
-    pass
-
+    class Config:
+        orm_mode = True
 
 class PostOut(post_out):
     pass
@@ -102,6 +102,16 @@ class CreateCategorySchema(BaseModel):
     name: str
     description: Optional[str]
     type: CategoryTypeEnum = CategoryTypeEnum.PUBLIC
+
+
+class CreateThreadSchema(BaseModel):
+    title: str = Field(max_length=64, min_length=3)
+    content: str = Field(min_length=2)
+    category: int
+    server_id: Optional[int] = None
+    question_experience: Optional[str] = None
+    question_age: Optional[int] = None
+    question_reason: Optional[str] = None
 
 
 class AdminCreatePostSchema(CreatePostSchema):

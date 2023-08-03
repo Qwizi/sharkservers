@@ -48,7 +48,7 @@ class ChatColorModule(ormar.Model, DateFieldsMixins):
     name_color: Color = ormar.String(max_length=8)
     text_color: Color = ormar.String(max_length=8)
 
-
+"""
 @post_save(Server)
 async def create_roles_after_server_creation(sender, instance, **kwargs):
     logger.info("Creating roles for server %s", instance.name)
@@ -118,3 +118,4 @@ async def create_default_chat_tags(sender, instance, **kwargs):
 
     for tag in tags:
         await tag.save()
+"""

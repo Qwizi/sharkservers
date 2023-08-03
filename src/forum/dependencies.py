@@ -6,11 +6,10 @@ from src.auth.dependencies import get_current_active_user
 from src.forum.enums import ThreadEventEnum, CategoryEventEnum, PostEventEnum
 from src.forum.exceptions import (
     thread_is_closed_exception,
-    thread_not_found_exception,
-    post_not_found_exception, thread_not_valid_author_exception, post_not_valid_author_exception,
+    thread_not_valid_author_exception, post_not_valid_author_exception,
 )
-from src.forum.models import Category, Thread, Post
-from src.forum.services import CategoryService, ThreadService, PostService, LikeService
+from src.forum.models import Thread, Post
+from src.forum.services import CategoryService, ThreadService, PostService, LikeService, ThreadMetaService
 from src.users.models import User
 
 
@@ -84,7 +83,7 @@ async def get_valid_thread_with_author(
 
 async def get_valid_post(
         post_id: int, posts_service: PostService = Depends(get_posts_service)
-) :
+):
     """
     Get valid post
     :param posts_service:
@@ -108,3 +107,7 @@ async def get_valid_post_author(
 
 async def get_likes_service() -> LikeService:
     return LikeService()
+
+
+async def get_thread_meta_service() -> ThreadMetaService:
+    return ThreadMetaService()

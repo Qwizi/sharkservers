@@ -7,6 +7,7 @@ from src.auth.dependencies import get_auth_service
 from src.auth.schemas import RegisterUserSchema
 from src.auth.services.auth import AuthService
 from src.enums import MainEventEnum
+from src.forum.enums import CategoryTypeEnum
 from src.logger import logger
 from src.roles.dependencies import get_roles_service
 from src.roles.services import RoleService
@@ -42,6 +43,8 @@ async def generate_random_data(event: Event):
     categories_service = payload.get("categories_service")
     threads_service = payload.get("threads_service")
     posts_service = payload.get("posts_service")
+    servers_service = payload.get("servers_service")
+
     users_list = []
     for i in range(100):
         new_user = await auth_service.register(
@@ -55,16 +58,28 @@ async def generate_random_data(event: Event):
         users_list.append(new_user)
         logger.info(f"Created user {new_user.username}")
 
-    categories_list = []
-    for i in range(100):
+    categories_list = [await categories_service.create(
+        name="Rekrutacja", description="Rekrutacja do ekipy",
+        type=CategoryTypeEnum.APPLICATION
+    )]
+    for i in range(10):
         new_category = await categories_service.create(
             name=f"TestCategory{i}", description=f"Test description {i}"
         )
         categories_list.append(new_category)
         logger.info(f"Created category {new_category.name}")
 
-    threads_list = []
-    for i in range(1000):
+    user = users_list[0]
+    category = categories_list[0]
+    threads_list = [
+        await threads_service.create(
+            category=category,
+            title=f"Podanie na administratora",
+            author=user,
+            content="Test content {i}"
+        )
+    ]
+    for i in range(100):
         user = random.choice(list(users_list))
         category = random.choice(list(categories_list))
         new_thread = await threads_service.create(
@@ -76,7 +91,7 @@ async def generate_random_data(event: Event):
         threads_list.append(new_thread)
         logger.info(f"Created thread {new_thread.title}")
 
-    for i in range(1000):
+    for i in range(100):
         user = random.choice(list(users_list))
         thread = random.choice(list(threads_list))
         new_post = await posts_service.create(
@@ -85,5 +100,6 @@ async def generate_random_data(event: Event):
         )
         await thread.posts.add(new_post)
         logger.info(f"Created post {new_post.content}")
+
 
     logger.info("Finished generating random data")
