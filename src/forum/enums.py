@@ -189,3 +189,5 @@ class ThreadActionEnum(str, Enum):
     APPROVE = "approve"
     REJECT = "reject"
     MOVE = "move"
+    PIN = "pin"
+    UNPIN = "unpin"

@@ -43,6 +43,16 @@ class ThreadService(BaseService):
         await self.close_thread(thread)
         return thread
 
+    @staticmethod
+    async def pin_thread(thread: Thread):
+        await thread.update(is_pinned=True)
+        return thread
+
+    @staticmethod
+    async def unpin_thread(thread: Thread):
+        await thread.update(is_pinned=False)
+        return thread
+
     async def run_action(self, thread: Thread, action: ThreadActionEnum):
         if action == ThreadActionEnum.APPROVE:
             return await self.approve(thread)
@@ -52,6 +62,12 @@ class ThreadService(BaseService):
             return await self.close_thread(thread)
         elif action == ThreadActionEnum.OPEN:
             return await self.open_thread(thread)
+        elif action == ThreadActionEnum.PIN:
+            return await self.pin_thread(thread)
+        elif action == ThreadActionEnum.UNPIN:
+            return await self.unpin_thread(thread)
+
+
 
 
 class PostService(BaseService):

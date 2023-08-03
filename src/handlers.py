@@ -3,17 +3,11 @@ import random
 from fastapi_events.handlers.local import local_handler
 from fastapi_events.typing import Event
 
-from src.auth.dependencies import get_auth_service
 from src.auth.schemas import RegisterUserSchema
-from src.auth.services.auth import AuthService
 from src.enums import MainEventEnum
-from src.forum.enums import CategoryTypeEnum
+from src.forum.enums import CategoryTypeEnum, ThreadStatusEnum
 from src.logger import logger
-from src.roles.dependencies import get_roles_service
-from src.roles.services import RoleService
 from src.settings import get_settings
-from src.users.dependencies import get_users_service
-from src.users.services import UserService
 
 settings = get_settings()
 
@@ -46,7 +40,7 @@ async def generate_random_data(event: Event):
     servers_service = payload.get("servers_service")
 
     users_list = []
-    for i in range(100):
+    for i in range(10):
         new_user = await auth_service.register(
             user_data=RegisterUserSchema(
                 username=f"TestUser{i}",
@@ -76,7 +70,7 @@ async def generate_random_data(event: Event):
             category=category,
             title=f"Podanie na administratora",
             author=user,
-            content="Test content {i}"
+            content="Test content {i}",
         )
     ]
     for i in range(100):
@@ -91,6 +85,59 @@ async def generate_random_data(event: Event):
         threads_list.append(new_thread)
         logger.info(f"Created thread {new_thread.title}")
 
+    for i in range(2):
+        user = random.choice(list(users_list))
+        category = random.choice(list(categories_list))
+        new_thread = await threads_service.create(
+            category=category,
+            title=f"Test thread {i}",
+            author=user,
+            content="Test content {i}",
+            is_pinned=True,
+        )
+        threads_list.append(new_thread)
+        logger.info(f"Created thread {new_thread.title}")
+
+    for i in range(3):
+        user = random.choice(list(users_list))
+        category = random.choice(list(categories_list))
+        new_thread = await threads_service.create(
+            category=category,
+            title=f"Test thread {i}",
+            author=user,
+            content="Test content {i}",
+            is_closed=True,
+        )
+        threads_list.append(new_thread)
+        logger.info(f"Created thread {new_thread.title}")
+
+
+    for i in range(4):
+        user = random.choice(list(users_list))
+        category = random.choice(list(categories_list))
+        new_thread = await threads_service.create(
+            category=category,
+            title=f"Test thread {i}",
+            author=user,
+            content="Test content {i}",
+            status=ThreadStatusEnum.REJECTED,
+        )
+        threads_list.append(new_thread)
+        logger.info(f"Created thread {new_thread.title}")
+
+    for i in range(5):
+        user = random.choice(list(users_list))
+        category = random.choice(list(categories_list))
+        new_thread = await threads_service.create(
+            category=category,
+            title=f"Test thread {i}",
+            author=user,
+            content="Test content {i}",
+            status=ThreadStatusEnum.APPROVED,
+        )
+        threads_list.append(new_thread)
+        logger.info(f"Created thread {new_thread.title}")
+
     for i in range(100):
         user = random.choice(list(users_list))
         thread = random.choice(list(threads_list))
@@ -100,6 +147,5 @@ async def generate_random_data(event: Event):
         )
         await thread.posts.add(new_post)
         logger.info(f"Created post {new_post.content}")
-
 
     logger.info("Finished generating random data")
