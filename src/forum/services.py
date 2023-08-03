@@ -1,4 +1,5 @@
 from src.db import BaseService
+from src.forum.enums import ThreadStatusEnum, ThreadActionEnum
 from src.forum.exceptions import (category_not_found_exception, thread_not_found_exception, post_not_found_exception,
                                   like_not_found_exception, like_already_exists_exception,
                                   thread_meta_not_found_exception, )
@@ -26,6 +27,31 @@ class ThreadService(BaseService):
     async def open_thread(thread: Thread):
         await thread.update(is_closed=False)
         return thread
+
+    @staticmethod
+    async def change_status(thread: Thread, status: ThreadStatusEnum):
+        await thread.update(status=status)
+        return thread
+
+    async def approve(self, thread: Thread):
+        await self.change_status(thread, ThreadStatusEnum.APPROVED)
+        await self.close_thread(thread)
+        return thread
+
+    async def reject(self, thread: Thread):
+        await self.change_status(thread, ThreadStatusEnum.REJECTED)
+        await self.close_thread(thread)
+        return thread
+
+    async def run_action(self, thread: Thread, action: ThreadActionEnum):
+        if action == ThreadActionEnum.APPROVE:
+            return await self.approve(thread)
+        elif action == ThreadActionEnum.REJECT:
+            return await self.reject(thread)
+        elif action == ThreadActionEnum.CLOSE:
+            return await self.close_thread(thread)
+        elif action == ThreadActionEnum.OPEN:
+            return await self.open_thread(thread)
 
 
 class PostService(BaseService):

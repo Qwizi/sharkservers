@@ -10,15 +10,13 @@ from src.forum.dependencies import (
     get_threads_service,
     get_categories_service, get_thread_meta_service,
 )
-from src.forum.enums import ThreadEventEnum, CategoryTypeEnum
+from src.forum.enums import ThreadEventEnum, CategoryTypeEnum, ThreadStatusEnum
 from src.forum.models import Thread
 from src.forum.schemas import (
-    thread_out,
     ThreadOut,
-    UpdateThreadSchema, CreateThreadSchema,
+    UpdateThreadSchema, CreateThreadSchema, ThreadQuery,
 )
 from src.forum.services import CategoryService, ThreadService, ThreadMetaService
-from src.logger import logger
 from src.servers.dependencies import get_servers_service
 from src.servers.services import ServerService
 from src.users.models import User
@@ -29,7 +27,7 @@ router = APIRouter()
 @router.get("")
 async def get_threads(
         params: Params = Depends(),
-        category_id: int = None,
+        queries: ThreadQuery = Depends(),
         threads_service: ThreadService = Depends(get_threads_service),
 ) -> Page[ThreadOut]:
     """
@@ -40,21 +38,24 @@ async def get_threads(
     :return:
     """
     dispatch(ThreadEventEnum.GET_ALL_PRE, payload={"data": params})
-    if category_id:
-        threads = await threads_service.get_all(
-            params=params,
-            related=["category", "author", "author__display_role", "meta_fields"],
-            category__id=category_id,
-            order_by=["-created_at"],
-        )
-    else:
-        threads = await threads_service.get_all(
-            params=params,
-            related=["category", "author", "author__display_role", "meta_fields"],
-            order_by=["-created_at"],
-        )
-    dispatch(ThreadEventEnum.GET_ALL_POST, payload={"data": threads})
-    return threads
+    kwargs = {}
+    if queries.category:
+        kwargs["category__id"] = queries.category
+    if queries.order_by:
+        kwargs["order_by"] = queries.order_by
+    if queries.server:
+        kwargs["meta_fields__name"] = "server_id"
+        kwargs["meta_fields__value"] = str(queries.server)
+    if queries.status:
+        kwargs["status"] = queries.status
+    if queries.closed:
+        kwargs["is_closed"] = queries.closed
+
+    return await threads_service.get_all(
+        params=params,
+        related=["category", "author", "author__display_role", "meta_fields"],
+        **kwargs
+    )
 
 
 @router.post("")
@@ -83,7 +84,8 @@ async def create_thread(
         if not thread_data.server_id:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="server_id is required")
         if not thread_data.question_experience:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="question_experience is required")
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                detail="question_experience is required")
         if not thread_data.question_age:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="question_age is required")
         if not thread_data.question_reason:
@@ -97,7 +99,8 @@ async def create_thread(
             title=thread_data.title,
             content=thread_data.content,
             category=category,
-            author=user
+            author=user,
+            status=ThreadStatusEnum.PENDING.value
         )
 
         # get thread meta by server_id
@@ -105,15 +108,18 @@ async def create_thread(
         # update server_id_meta_field value
         await server_id_meta_field.update(value=server.id)
         # get thread meta by question_experience
-        question_experience_meta_field = await thread_meta_service.get_one(name="question_experience", thread_meta__id=new_thread.id)
+        question_experience_meta_field = await thread_meta_service.get_one(name="question_experience",
+                                                                           thread_meta__id=new_thread.id)
         await question_experience_meta_field.update(value=thread_data.question_experience)
         # get thread meta by question_age
         question_age_meta_field = await thread_meta_service.get_one(name="question_age", thread_meta__id=new_thread.id)
         await question_age_meta_field.update(value=thread_data.question_age)
         # get thread meta by question_reason
-        question_reason_meta_field = await thread_meta_service.get_one(name="question_reason", thread_meta__id=new_thread.id)
+        question_reason_meta_field = await thread_meta_service.get_one(name="question_reason",
+                                                                       thread_meta__id=new_thread.id)
         await question_reason_meta_field.update(value=thread_data.question_reason)
-        return await threads_service.get_one(id=new_thread.id, related=["category", "author", "author__display_role", "meta_fields"])
+        return await threads_service.get_one(id=new_thread.id,
+                                             related=["category", "author", "author__display_role", "meta_fields"])
     else:
         # Create normal thread
         new_thread = await threads_service.create(
@@ -151,3 +157,5 @@ async def update_thread(
     updated_thread = await thread.update(**thread_data.dict(exclude_unset=True))
     dispatch(ThreadEventEnum.UPDATE_POST, payload={"data": updated_thread})
     return updated_thread
+
+
