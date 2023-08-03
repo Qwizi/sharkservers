@@ -40,8 +40,8 @@ class BaseMeta(ormar.ModelMeta):
 
 
 class DateFieldsMixins:
-    created_date: datetime.datetime = ormar.DateTime(default=now_datetime().replace(tzinfo=None), timezone=False)
-    updated_date: datetime.datetime = ormar.DateTime(default=now_datetime().replace(tzinfo=None), timezone=False)
+    created_at: datetime.datetime = ormar.DateTime(default=now_datetime().replace(tzinfo=None), timezone=False)
+    updated_at: datetime.datetime = ormar.DateTime(default=now_datetime().replace(tzinfo=None), timezone=False)
 
 
 class BaseService:

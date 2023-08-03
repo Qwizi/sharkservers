@@ -1,10 +1,10 @@
 import ormar
 from typing import Optional, List
-from src.db import BaseMeta
+from src.db import BaseMeta, DateFieldsMixins
 from src.scopes.models import Scope
 
 
-class Role(ormar.Model):
+class Role(ormar.Model, DateFieldsMixins):
     class Meta(BaseMeta):
         tablename = "roles"
 

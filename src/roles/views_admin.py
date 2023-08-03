@@ -25,7 +25,7 @@ async def admin_get_roles(
         params: Params = Depends(),
         admin_user: User = Security(get_admin_user, scopes=["roles:all"]),
         roles_service: RoleService = Depends(get_roles_service),
-) -> AbstractPage[RoleOut]:
+) -> Page[RoleOut]:
     """
     Admin get all roles.
     :param roles_service:

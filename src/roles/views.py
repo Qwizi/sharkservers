@@ -14,7 +14,7 @@ from src.roles.services import RoleService
 router = APIRouter()
 
 
-@router.get("", response_model_exclude_none=True)
+@router.get("")
 async def get_roles(
         params: Params = Depends(), roles_service: RoleService = Depends(get_roles_service)
 ) -> Page[RoleOut]:
@@ -31,7 +31,7 @@ async def get_roles(
 
 
 @router.get("/{role_id}", response_model=RoleOutWithScopes)
-async def get_role(role: Role = Depends(get_valid_role)) -> RoleOutWithScopes:
+async def get_role(role: Role = Depends(get_valid_role)):
     """
     Get role by id
     :param role:
