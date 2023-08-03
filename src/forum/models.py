@@ -70,6 +70,7 @@ class Thread(ormar.Model, DateFieldsMixins):
     title: str = ormar.String(max_length=64)
     content: str = ormar.Text()
     is_closed: bool = ormar.Boolean(default=False)
+    is_pinned: bool = ormar.Boolean(default=False)
     status: Optional[str] = ormar.String(
         max_length=64, choices=list(ThreadStatusEnum), default=None, nullable=True
     )

@@ -42,7 +42,7 @@ async def get_threads(
     if queries.category:
         kwargs["category__id"] = queries.category
     if queries.order_by:
-        kwargs["order_by"] = queries.order_by
+        kwargs["order_by"] = ["-is_pinned", queries.order_by]
     if queries.server:
         kwargs["meta_fields__name"] = "server_id"
         kwargs["meta_fields__value"] = str(queries.server)
