@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends, Security, HTTPException
 from fastapi_events.dispatcher import dispatch
 
 from src.auth.dependencies import get_admin_user
@@ -6,7 +6,7 @@ from src.forum.dependencies import (
     get_valid_thread,
     get_threads_service, get_categories_service,
 )
-from src.forum.enums import ThreadAdminEventEnum
+from src.forum.enums import ThreadAdminEventEnum, ThreadActionEnum
 from src.forum.models import Thread
 from src.forum.schemas import AdminUpdateThreadSchema, AdminThreadActionSchema
 from src.forum.services import ThreadService, CategoryService
@@ -79,9 +79,16 @@ async def run_thread_action(
         data: AdminThreadActionSchema,
         thread: Thread = Depends(get_valid_thread),
         threads_service: ThreadService = Depends(get_threads_service),
+        categories_service: CategoryService = Depends(get_categories_service),
 ):
     """
     Run thread action
     :return:
     """
+
+    if data.action == ThreadActionEnum.MOVE:
+        if not data.category:
+            raise HTTPException(status_code=400, detail="Category is required for move action")
+        category = await categories_service.get_one(id=data.category)
+        return await threads_service.run_action(thread=thread, action=data.action, new_category=category)
     return await threads_service.run_action(thread=thread, action=data.action)

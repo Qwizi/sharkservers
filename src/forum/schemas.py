@@ -133,6 +133,6 @@ class ThreadQuery(BaseModel):
     closed: Optional[bool] = Query(None, description="Is thread closed")
 
 
-
 class AdminThreadActionSchema(BaseModel):
     action: ThreadActionEnum = ThreadActionEnum.CLOSE.value
+    category: Optional[int] = None
