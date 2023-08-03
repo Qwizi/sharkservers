@@ -4,14 +4,13 @@ from fastapi_events.dispatcher import dispatch
 from src.auth.dependencies import get_admin_user
 from src.forum.dependencies import (
     get_valid_thread,
-    get_valid_category,
     get_threads_service, get_categories_service,
 )
 from src.forum.enums import ThreadAdminEventEnum
 from src.forum.models import Thread
-from src.forum.schemas import AdminUpdateThreadSchema
+from src.forum.schemas import AdminUpdateThreadSchema, AdminThreadActionSchema
 from src.forum.services import ThreadService, CategoryService
-from src.users.dependencies import get_valid_user, get_users_service
+from src.users.dependencies import get_users_service
 from src.users.models import User
 from src.users.services import UserService
 
@@ -73,3 +72,16 @@ async def admin_open_thread(
 ):
     thread = await threads_service.open_thread(thread)
     return thread
+
+
+@router.post("/{thread_id}/action", dependencies=[Security(get_admin_user, scopes=["threads:close"])])
+async def run_thread_action(
+        data: AdminThreadActionSchema,
+        thread: Thread = Depends(get_valid_thread),
+        threads_service: ThreadService = Depends(get_threads_service),
+):
+    """
+    Run thread action
+    :return:
+    """
+    return await threads_service.run_action(thread=thread, action=data.action)

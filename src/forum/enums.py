@@ -174,3 +174,18 @@ class ThreadStatusEnum(str, Enum):
     APPROVED = "approved"
     PENDING = "pending"
     REJECTED = "rejected"
+
+
+class ThreadOrderEnum(str, Enum):
+    """Enum for thread order."""
+    CREATED_DESC = "-created_at"
+    CREATED_ASC = "created_at"
+
+
+class ThreadActionEnum(str, Enum):
+    """Enum for thread actions."""
+    CLOSE = "close"
+    OPEN = "open"
+    APPROVE = "approve"
+    REJECT = "reject"
+    MOVE = "move"
