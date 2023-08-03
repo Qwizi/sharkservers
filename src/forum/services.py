@@ -53,7 +53,12 @@ class ThreadService(BaseService):
         await thread.update(is_pinned=False)
         return thread
 
-    async def run_action(self, thread: Thread, action: ThreadActionEnum):
+    @staticmethod
+    async def change_category(thread: Thread, new_category: Category):
+        await thread.update(category=new_category)
+        return thread
+
+    async def run_action(self, thread: Thread, action: ThreadActionEnum, new_category: Category = None):
         if action == ThreadActionEnum.APPROVE:
             return await self.approve(thread)
         elif action == ThreadActionEnum.REJECT:
@@ -66,6 +71,8 @@ class ThreadService(BaseService):
             return await self.pin_thread(thread)
         elif action == ThreadActionEnum.UNPIN:
             return await self.unpin_thread(thread)
+        elif action == ThreadActionEnum.MOVE:
+            return await self.change_category(thread, new_category)
 
 
 
