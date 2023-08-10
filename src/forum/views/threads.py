@@ -78,57 +78,15 @@ async def create_thread(
     """
     # Get category by id
     category = await categories_service.get_one(id=thread_data.category)
-    # Check category type
-    if category.type == CategoryTypeEnum.APPLICATION:
-        # check if server_id is in thread_data
-        if not thread_data.server_id:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="server_id is required")
-        if not thread_data.question_experience:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                                detail="question_experience is required")
-        if not thread_data.question_age:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="question_age is required")
-        if not thread_data.question_reason:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="question_reason is required")
-
-        # check if server_id is valid
-        server = await servers_service.get_one(id=thread_data.server_id)
-
-        # create new thread
-        new_thread = await threads_service.create(
-            title=thread_data.title,
-            content=thread_data.content,
-            category=category,
-            author=user,
-            status=ThreadStatusEnum.PENDING.value
-        )
-
-        # get thread meta by server_id
-        server_id_meta_field = await thread_meta_service.get_one(name="server_id", thread_meta__id=new_thread.id)
-        # update server_id_meta_field value
-        await server_id_meta_field.update(value=server.id)
-        # get thread meta by question_experience
-        question_experience_meta_field = await thread_meta_service.get_one(name="question_experience",
-                                                                           thread_meta__id=new_thread.id)
-        await question_experience_meta_field.update(value=thread_data.question_experience)
-        # get thread meta by question_age
-        question_age_meta_field = await thread_meta_service.get_one(name="question_age", thread_meta__id=new_thread.id)
-        await question_age_meta_field.update(value=thread_data.question_age)
-        # get thread meta by question_reason
-        question_reason_meta_field = await thread_meta_service.get_one(name="question_reason",
-                                                                       thread_meta__id=new_thread.id)
-        await question_reason_meta_field.update(value=thread_data.question_reason)
-        return await threads_service.get_one(id=new_thread.id,
-                                             related=["category", "author", "author__display_role", "meta_fields"])
-    else:
-        # Create normal thread
-        new_thread = await threads_service.create(
-            title=thread_data.title,
-            content=thread_data.content,
-            category=category,
-            author=user
-        )
-        return new_thread
+    new_thread = await threads_service.create_thread(
+        data=thread_data,
+        author=user,
+        category=category,
+        status=ThreadStatusEnum.PENDING.value,
+        thread_meta_service=thread_meta_service,
+        servers_service=servers_service
+    )
+    return new_thread
 
 
 @router.get("/{thread_id}", response_model=ThreadOut)
