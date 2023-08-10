@@ -1,8 +1,13 @@
 import pytest
 
 from src.auth.schemas import RegisterUserSchema
+from src.forum.dependencies import get_threads_service, get_thread_meta_service
+from src.forum.enums import CategoryTypeEnum
+from src.forum.schemas import CreateThreadSchema
+from src.servers.dependencies import get_servers_service
 from src.users.dependencies import get_users_service
-from tests.conftest import create_fake_threads, TEST_USER, create_fake_categories, TEST_THREAD, _get_auth_service
+from tests.conftest import create_fake_threads, TEST_USER, create_fake_categories, TEST_THREAD, _get_auth_service, \
+    create_fake_users, create_fake_servers
 
 THREADS_ENDPOINT = "/v1/forum/threads"
 
@@ -157,3 +162,63 @@ async def test_update_thread_where_author_is_not_same_like_logged_user(logged_cl
     })
 
     assert r.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_save_thread_signal():
+    users = await create_fake_users(1)
+    categories = await create_fake_categories(1, category_type=CategoryTypeEnum.APPLICATION.value)
+    threads_service = await get_threads_service()
+    threads_meta_service = await get_thread_meta_service()
+    thread = await threads_service.create(
+        title="Test title",
+        content="Test content",
+        category=categories[0],
+        author=users[0]
+    )
+    server_id_name = "server_id"
+    question_experience_name = "question_experience"
+    question_age_name = "question_age"
+    question_reason_name = "question_reason"
+
+    meta_names = [server_id_name, question_experience_name, question_age_name, question_reason_name]
+    for meta_name in meta_names:
+        meta_field = await threads_meta_service.get_one(name=meta_name, thread_meta__id=thread.id)
+        assert meta_field is not None
+        assert meta_field.name == meta_name
+        assert meta_field.value is None
+
+
+@pytest.mark.asyncio
+async def test_create_application_thread(logged_client):
+    categories = await create_fake_categories(1, category_type=CategoryTypeEnum.APPLICATION.value)
+    servers = await create_fake_servers(1)
+    server_id = servers[0].id
+    question_experience = "Test experience"
+    question_age = 18
+    question_reason = "Test reason"
+
+    r = await logged_client.post(THREADS_ENDPOINT, json={
+        "title": TEST_THREAD.get("title"),
+        "content": TEST_THREAD.get("content"),
+        "category": categories[0].id,
+        "server_id": server_id,
+        "question_experience": question_experience,
+        "question_age": question_age,
+        "question_reason": question_reason,
+    })
+    assert r.status_code == 200
+    assert r.json()["title"] == TEST_THREAD.get("title")
+    assert r.json()["content"] == TEST_THREAD.get("content")
+    assert r.json()["category"]["id"] == categories[0].id
+    for meta in r.json()["meta_fields"]:
+        if meta["name"] == "server_id":
+            assert meta["value"] == str(server_id)
+        elif meta["name"] == "question_experience":
+            assert meta["value"] == question_experience
+        elif meta["name"] == "question_age":
+            assert meta["value"] == str(question_age)
+        elif meta["name"] == "question_reason":
+            assert meta["value"] == question_reason
+        else:
+            assert False

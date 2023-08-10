@@ -86,7 +86,6 @@ async def create_thread(
         thread_meta_service=thread_meta_service,
         servers_service=servers_service
     )
-    print(new_thread)
     return new_thread
 
 
