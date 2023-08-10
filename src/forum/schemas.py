@@ -4,7 +4,7 @@ from fastapi import Query
 from pydantic import BaseModel, Field
 
 from src.forum.enums import CategoryTypeEnum, ThreadOrderEnum, ThreadStatusEnum, ThreadActionEnum
-from src.forum.models import Category, Tag, Thread, Post, Like
+from src.forum.models import Category, Tag, Thread, Post, Like, ThreadMeta
 from src.roles.models import Role
 
 author_exclude = {
@@ -26,10 +26,17 @@ thread_out = Thread.get_pydantic(
 )
 post_out = Post.get_pydantic(exclude=author_exclude | {"likes", "thread_post"})
 like_out = Like.get_pydantic(exclude=author_exclude | {"post_likes"})
+thread_meta_out = ThreadMeta.get_pydantic()
 
 
 class CategoryOut(category_out):
-    pass
+    class Config:
+        orm_mode = True
+
+
+class ThreadMetaOut(BaseModel):
+    class Config:
+        orm_mode = True
 
 
 class ThreadOut(thread_out):
@@ -38,11 +45,13 @@ class ThreadOut(thread_out):
 
 
 class PostOut(post_out):
-    pass
+    class Config:
+        orm_mode = True
 
 
 class LikeOut(like_out):
-    pass
+    class Config:
+        orm_mode = True
 
 
 class ThreadTag(BaseModel):

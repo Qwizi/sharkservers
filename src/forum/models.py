@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional, List
 
 import ormar
@@ -56,8 +57,8 @@ class ThreadMeta(ormar.Model, DateFieldsMixins):
     class Meta(BaseMeta):
         tablename = "forum_threads_meta"
 
-    id: int = ormar.Integer(primary_key=True)
-    name: str = ormar.String(max_length=64)
+    id: str = ormar.UUID(primary_key=True, default=uuid.uuid4)
+    name: Optional[str] = ormar.String(max_length=64)
     value: Optional[str] = ormar.Text(nullable=True)
     description: Optional[str] = ormar.Text(nullable=True)
 
@@ -67,10 +68,10 @@ class Thread(ormar.Model, DateFieldsMixins):
         tablename = "forum_threads"
 
     id: int = ormar.Integer(primary_key=True)
-    title: str = ormar.String(max_length=64)
-    content: str = ormar.Text()
-    is_closed: bool = ormar.Boolean(default=False)
-    is_pinned: bool = ormar.Boolean(default=False)
+    title: Optional[str] = ormar.String(max_length=64)
+    content: Optional[str] = ormar.Text()
+    is_closed: Optional[bool] = ormar.Boolean(default=False)
+    is_pinned: Optional[bool] = ormar.Boolean(default=False)
     status: Optional[str] = ormar.String(
         max_length=64, choices=list(ThreadStatusEnum), default=None, nullable=True
     )

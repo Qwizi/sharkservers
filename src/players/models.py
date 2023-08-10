@@ -35,7 +35,7 @@ class Player(ormar.Model, DateFieldsMixins):
     country_code: str = ormar.String(max_length=15)
     reputation: int = ormar.Integer(default=1000)
 
-
+"""
 class PlayerStats(ormar.Model, DateFieldsMixins):
     class Meta(BaseMeta):
         tablename = "player_stats"
@@ -65,3 +65,4 @@ class PlayerStats(ormar.Model, DateFieldsMixins):
     time_played: int = ormar.Integer(default=0)
     last_time_played: datetime.datetime = ormar.DateTime(default=datetime.datetime.now)
     date: datetime.date = ormar.Date(default=datetime.date.today)
+    """

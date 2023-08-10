@@ -33,9 +33,9 @@ uninstall:
 
 install:
 	@echo "Staring database container"
-	docker-compose up -d
+	docker compose up -d
 	sleep 2
-	docker-compose exec app alembic upgrade head
+	docker compose exec app alembic upgrade head
 	sleep 2
 	@curl -X POST http://localhost/install \
    		-H 'Content-Type: application/json' \
@@ -45,7 +45,7 @@ install:
    		-H 'Content-Type: application/json' \
    		-d '{"steamid64":"76561198190469450"}'
 test:
-	docker-compose exec app pytest -vv
+	docker compose exec app pytest -vv
 
 
 generate:
@@ -53,11 +53,11 @@ generate:
 
 
 migration:
-	docker-compose exec app alembic revision --autogenerate
+	docker compose exec app alembic revision --autogenerate
 
 
 upgrade:
-	docker-compose exec app alembic upgrade head
+	docker compose exec app alembic upgrade head
 
 
 clear-avatars:

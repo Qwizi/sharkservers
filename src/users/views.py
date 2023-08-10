@@ -199,7 +199,7 @@ async def confirm_change_user_email(activate_code_data: ActivateUserCodeSchema,
 @router.post("/me/display-role")
 async def change_user_display_role(change_display_role_data: ChangeDisplayRoleSchema,
                                    user: User = Security(get_current_active_user, scopes=["users:me:display-role"]),
-                                   auth_service: AuthService = Depends(get_auth_service), ):
+                                   users_service: UserService = Depends(get_users_service)):
     """
     Change user display role
     :param auth_service:
@@ -207,7 +207,7 @@ async def change_user_display_role(change_display_role_data: ChangeDisplayRoleSc
     :param user:
     :return dict:
     """
-    user, old_user_display_role = await auth_service.change_display_role(user, change_display_role_data)
+    user, old_user_display_role = await users_service.change_display_role(user, change_display_role_data)
     return user
 
 

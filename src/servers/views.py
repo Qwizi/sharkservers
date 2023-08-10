@@ -8,17 +8,14 @@ from ormar import Model
 from src.logger import logger
 from src.players.dependencies import (
     get_valid_player_by_steamid,
-    get_player_stats_service,
     get_players_service,
 )
 from src.players.models import Player
 from src.players.schemas import UpdatePlayerStatsSchema
-from src.players.services import PlayerStatsService, PlayerService
+from src.players.services import  PlayerService
 from src.servers.dependencies import (
     get_servers_service,
     get_valid_server,
-    get_server_player_stats_service,
-    get_valid_server_player_stats,
     get_chat_color_module_service,
 )
 from src.servers.models import Server
@@ -29,7 +26,6 @@ from src.servers.schemas import (
 )
 from src.servers.services import (
     ServerService,
-    ServerPlayerStatsService,
     ChatColorModuleService,
 )
 
@@ -75,6 +71,8 @@ async def get_server(server: Model = Depends(get_valid_server)):
     return server
 
 
+"""
+
 @router.get("/{server_id}/player-stats")
 async def get_players_stats(
     params: Params = Depends(),
@@ -83,12 +81,6 @@ async def get_players_stats(
         get_server_player_stats_service
     ),
 ):
-    """
-    Get server player stats
-    :param server_player_stats_service:
-    :param server:
-    :return:
-    """
 
     players_stats_from_db = await server_player_stats_service.get_all(
         params=params,
@@ -136,14 +128,6 @@ async def get_server_player_stats(
     ),
     server_player_stats: Model = Depends(get_valid_server_player_stats),
 ):
-    """
-    Get server player stats
-    :param server_player_stats:
-    :param player:
-    :param server_player_stats_service:
-    :param server:
-    :return:
-    """
     stats = await server_player_stats.stats.sum(
         [
             "kills",
@@ -184,13 +168,6 @@ async def create_server_player_stats(
         get_server_player_stats_service
     ),
 ):
-    """
-    Create server player stats
-    :param player:
-    :param server_player_stats_service:
-    :param server:
-    :return:
-    """
     if await server_player_stats_service.Meta.model.objects.filter(
         server=server, player=player
     ).exists():
@@ -204,12 +181,6 @@ async def update_server_player_stats(
     server_player_stats: Model = Depends(get_valid_server_player_stats),
     player_stats_service: PlayerStatsService = Depends(get_player_stats_service),
 ):
-    """
-    Update server player stats
-    :param player_stats_service:
-    :param server_player_stats:
-    :return:
-    """
     today = datetime.date.today()
     player_stats, created = await server_player_stats.stats.get_or_create(date=today)
     if created:
@@ -244,7 +215,7 @@ async def update_server_player_stats(
             await server_player_stats.update(points=points_to_remove)
         await player_stats.update(**{key: old_value + value})
     return player_stats
-
+"""
 
 @router.post("/{server_id}/modules/chat-colors/")
 async def create_player_chat_color(

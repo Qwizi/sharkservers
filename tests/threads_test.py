@@ -35,11 +35,11 @@ async def test_get_threads_with_category(logged_client):
     # Create 5 threads in second category
     await create_fake_threads(5, author, category[1])
 
-    r = await logged_client.get(f"{THREADS_ENDPOINT}?category_id={category[0].id}")
+    r = await logged_client.get(f"{THREADS_ENDPOINT}?category={category[0].id}")
     assert r.status_code == 200
     assert r.json()["total"] == 10
 
-    r2 = await logged_client.get(f"{THREADS_ENDPOINT}?category_id={category[1].id}")
+    r2 = await logged_client.get(f"{THREADS_ENDPOINT}?category={category[1].id}")
     assert r2.status_code == 200
     assert r2.json()["total"] == 5
 

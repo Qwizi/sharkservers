@@ -6,7 +6,7 @@ from pydantic.color import Color
 
 from src.db import BaseMeta, DateFieldsMixins
 from src.logger import logger
-from src.players.models import Player, PlayerStats
+from src.players.models import Player
 from src.roles.dependencies import get_roles_service
 from src.roles.enums import ProtectedDefaultRolesEnum
 from src.scopes.dependencies import get_scopes_service
@@ -22,6 +22,7 @@ class Server(ormar.Model, DateFieldsMixins):
     port: int = ormar.Integer()
 
 
+"""
 class ServerPlayerStats(ormar.Model, DateFieldsMixins):
     class Meta(BaseMeta):
         tablename = "server_stats"
@@ -31,7 +32,7 @@ class ServerPlayerStats(ormar.Model, DateFieldsMixins):
     player: Player = ormar.ForeignKey(Player, related_name="player_stats")
     stats: list[PlayerStats] = ormar.ManyToMany(PlayerStats, related_name="stats")
     points: int = ormar.Integer(default=1000)
-
+"""
 
 class ChatColorModule(ormar.Model, DateFieldsMixins):
     class Meta(BaseMeta):

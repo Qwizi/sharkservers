@@ -37,7 +37,7 @@ async def get_posts(
     """
     dispatch(PostEventEnum.GET_ALL_PRE, payload={"data": params})
     related = ["author", "author__display_role", "thread_post"]
-    order_by = ["-created_date"]
+    order_by = ["-created_at"]
     if thread_id:
         posts = await posts_service.get_all(
             params=params,
@@ -114,7 +114,7 @@ async def get_post_likes(
     :return:
     """
     return await paginate(
-        likes_service.Meta.model.objects.select_related(["user", "post_likes"]).filter(post_likes__id=post.id),
+        likes_service.Meta.model.objects.select_related(["author", "post_likes", "author__display_role"]).filter(post_likes__id=post.id),
         params)
 
 
@@ -131,7 +131,7 @@ async def like_post(
     :param likes_service:
     :return:
     """
-    new_like, likes = await likes_service.add_like_to_post(post=post, user=user)
+    new_like, likes = await likes_service.add_like_to_post(post=post, author=user)
     return {"message": "Post liked successfully", "data": {"new_like": new_like, "likes": likes}}
 
 
@@ -148,4 +148,4 @@ async def dislike_post(
     :param likes_service:
     :return:
     """
-    return await likes_service.remove_like_from_post(post=post, user=user)
+    return await likes_service.remove_like_from_post(post=post, author=user)

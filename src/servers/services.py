@@ -6,7 +6,7 @@ from src.servers.exceptions import (
     server_not_found_exception,
     chat_color_not_found_exception,
 )
-from src.servers.models import Server, ServerPlayerStats, ChatColorModule
+from src.servers.models import Server, ChatColorModule
 from src.servers.schemas import ServerStatusSchema
 
 
@@ -53,11 +53,13 @@ class ServerService(BaseService):
         return servers_with_status
 
 
+"""
+
 class ServerPlayerStatsService(BaseService):
     class Meta:
         model = ServerPlayerStats
         not_found_exception = player_server_stats_not_found_exception
-
+"""
 
 class ChatColorModuleService(BaseService):
     class Meta:
