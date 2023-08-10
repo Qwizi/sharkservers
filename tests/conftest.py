@@ -1,4 +1,5 @@
 import asyncio
+import random
 from io import BytesIO
 from unittest import mock
 
@@ -22,9 +23,11 @@ from src.auth.schemas import RegisterUserSchema
 from src.auth.services.auth import AuthService
 from src.auth.views import limiter
 from src.db import metadata, create_redis_pool
-from src.forum.dependencies import get_categories_service, get_posts_service, get_threads_service
+from src.forum.dependencies import get_categories_service, get_posts_service, get_threads_service, \
+    get_thread_meta_service
 from src.forum.enums import CategoryTypeEnum
 from src.forum.models import Category
+from src.forum.schemas import CreateThreadSchema
 from src.forum.services import CategoryService
 from src.logger import logger
 from src.main import app
@@ -33,6 +36,7 @@ from src.roles.models import Role
 from src.roles.utils import get_user_role_scopes
 from src.scopes.dependencies import get_scopes_service
 from src.scopes.models import Scope
+from src.servers.dependencies import get_servers_service
 from src.services import MainService
 from src.settings import get_settings
 from src.users.dependencies import get_users_service
@@ -223,7 +227,7 @@ async def create_fake_roles(number: int = 50, scopes: list[Scope] = None, is_sta
     return roles_list
 
 
-async def create_fake_categories(number: int = 50):
+async def create_fake_categories(number: int = 50, category_type: CategoryTypeEnum = CategoryTypeEnum.PUBLIC.value):
     categories_service: CategoryService = await get_categories_service()
     categories_list: list[Category] = []
     for i in range(number):
@@ -232,7 +236,7 @@ async def create_fake_categories(number: int = 50):
         category = await categories_service.create(
             name=category_name,
             description=category_description,
-            type=CategoryTypeEnum.PUBLIC.value,
+            type=category_type,
         )
         categories_list.append(category)
     return categories_list
@@ -271,15 +275,44 @@ async def create_fake_posts(number: int = 50, author: User = None, thread=None):
 
 async def create_fake_threads(number: int = 50, author: User = None, category: Category = None):
     threads_service = await get_threads_service()
+    if category.type == CategoryTypeEnum.APPLICATION:
+        servers_service = await get_servers_service()
+        thread_meta_service = await get_thread_meta_service()
+        server = await servers_service.create(
+            name="Test server",
+            ip="127.0.0.1",
+            port=25565,
+        )
     threads_list = []
     for i in range(number):
-        thread = await threads_service.create(
-            title=f"Test title {i}",
-            content=f"Test content {i}",
-            author=author,
-            category=category,
-        )
-        threads_list.append(thread)
+        if category.type == CategoryTypeEnum.APPLICATION:
+            threads_list.append(await threads_service.create_thread(
+                data=CreateThreadSchema(
+                    title=f"Test recrutation thread{i}",
+                    content=f"Test content {i}",
+                    author=author,
+                    category=category.id,
+                    server_id=server.id,
+                    question_experience="Test question experience",
+                    question_age="18",
+                    question_reason="Test question why",
+                ),
+                author=author,
+                category=category,
+                thread_meta_service=thread_meta_service,
+                servers_service=servers_service,
+            ))
+        else:
+            threads_list.append(await threads_service.create_thread(
+                data=CreateThreadSchema(
+                    title=f"Test title {i}",
+                    content=f"Test content {i}",
+                    author=author,
+                    category=category.id
+                ),
+                author=author,
+                category=category
+            ))
     return threads_list
 
 
@@ -309,3 +342,17 @@ def create_fake_invalid_image(additional_bytes: int = None):
     else:
         image_bytes = BytesIO(b"\x00\x00\x00" + image_bytes[3:])
     return image_bytes.getvalue()
+
+
+async def create_fake_servers(number: int = 50):
+    servers_service = await get_servers_service()
+    servers_list = []
+    for i in range(number):
+        random_ip = ".".join(map(str, (random.randint(0, 255) for _ in range(4))))
+        random_port = int("".join(map(str, (random.randint(0, 5) for _ in range(4)))))
+        servers_list.append(await servers_service.create(
+            name=f"Test server {i}",
+            ip=random_ip,
+            port=random_port,
+        ))
+    return servers_list
