@@ -120,7 +120,7 @@ class ThreadService(BaseService):
                 "question_age": data.question_age,
                 "question_reason": data.question_reason,
             })
-            return self.get_one(id=new_thread.id,
+            return await self.get_one(id=new_thread.id,
                                 related=["category", "author", "author__display_role", "meta_fields"])
 
         return new_thread
@@ -141,22 +141,22 @@ class LikeService(BaseService):
         model = Like
         not_found_exception = like_not_found_exception
 
-    async def add_like_to_post(self, post: Post, user: User):
+    async def add_like_to_post(self, post: Post, author: User):
         like_exists = False
         for like in post.likes:
-            if like.user == user:
+            if like.user == author:
                 like_exists = True
                 break
         if like_exists:
             raise like_already_exists_exception
-        new_like = await self.create(user=user)
+        new_like = await self.create(author=author)
         await post.likes.add(new_like)
         return new_like, post.likes
 
-    async def remove_like_from_post(self, post: Post, user: User):
+    async def remove_like_from_post(self, post: Post, author: User):
         like_exists = False
         for like in post.likes:
-            if like.user == user:
+            if like.author == author:
                 like_exists = True
                 await post.likes.remove(like)
                 await self.delete(_id=like.id)

@@ -10,7 +10,7 @@ from src.players.exceptions import (
     player_not_found_exception,
     player_server_stats_not_found_exception,
 )
-from src.players.models import SteamRepProfile, Player, PlayerStats
+from src.players.models import SteamRepProfile, Player
 from src.players.schemas import SteamPlayer
 from src.settings import get_settings
 
@@ -123,7 +123,9 @@ class PlayerService(BaseService):
             raise e
 
 
+"""
 class PlayerStatsService(BaseService):
     class Meta:
         model = PlayerStats
         not_found_exception = player_server_stats_not_found_exception
+"""

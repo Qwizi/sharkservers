@@ -3,7 +3,6 @@ from fastapi import Depends
 from src.players.services import (
     SteamRepService,
     PlayerService,
-    PlayerStatsService,
 )
 from src.settings import Settings, get_settings
 
@@ -57,5 +56,8 @@ async def get_valid_player_by_steamid(
     )
 
 
+"""
+
 async def get_player_stats_service():
     return PlayerStatsService()
+"""

@@ -9,7 +9,7 @@ from src.roles.dependencies import get_roles_service
 from src.roles.enums import ProtectedDefaultRolesEnum
 from src.users.dependencies import get_users_service
 from tests.conftest import create_fake_users, TEST_USER, TEST_ADMIN_USER, create_fake_posts, create_fake_threads, \
-    _get_auth_service, settings, create_fake_image, create_fake_invalid_image
+    _get_auth_service, settings, create_fake_image, create_fake_invalid_image, create_fake_categories
 
 USERS_ENDPOINT = "/v1/users"
 
@@ -104,9 +104,10 @@ async def test_get_logged_user_posts(logged_client):
 @pytest.mark.asyncio
 async def test_get_logged_user_threads(logged_client):
     users_service = await get_users_service()
+    categories = await create_fake_categories(1)
     author = await users_service.get_one(username=TEST_USER.get("username"),
                                          related=["display_role", "display_role__scopes"])
-    threads = await create_fake_threads(1, author)
+    threads = await create_fake_threads(1, author, categories[0])
     response = await logged_client.get(f"{USERS_ENDPOINT}/me/threads")
     assert response.status_code == 200
     assert response.json()["total"] == 1
@@ -266,8 +267,9 @@ async def test_not_found_user(client):
 @pytest.mark.asyncio
 async def test_get_user_threads(logged_client):
     users_service = await get_users_service()
+    categories = await create_fake_categories(1)
     author = await users_service.get_one(username=TEST_USER.get("username"))
-    threads = await create_fake_threads(1, author)
+    threads = await create_fake_threads(1, author, categories[0])
     response = await logged_client.get(f"{USERS_ENDPOINT}/{author.id}/threads")
     assert response.status_code == 200
     assert response.json()["total"] == 1
