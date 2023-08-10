@@ -1,9 +1,13 @@
+from fastapi import HTTPException
+from starlette import status as starlette_status
 from src.db import BaseService
-from src.forum.enums import ThreadStatusEnum, ThreadActionEnum
+from src.forum.enums import ThreadStatusEnum, ThreadActionEnum, CategoryTypeEnum
 from src.forum.exceptions import (category_not_found_exception, thread_not_found_exception, post_not_found_exception,
                                   like_not_found_exception, like_already_exists_exception,
                                   thread_meta_not_found_exception, )
 from src.forum.models import Category, Thread, Post, Like, ThreadMeta
+from src.forum.schemas import CreateThreadSchema
+from src.servers.services import ServerService
 from src.users.models import User
 
 
@@ -11,6 +15,17 @@ class CategoryService(BaseService):
     class Meta:
         model = Category
         not_found_exception = category_not_found_exception
+
+
+class ThreadMetaService(BaseService):
+    class Meta:
+        model = ThreadMeta
+        not_found_exception = thread_meta_not_found_exception
+
+    async def fill_meta(self, thread_id: int, data: dict):
+        for key, value in data.items():
+            thread_meta = await self.get_one(name=key, thread_meta__id=thread_id)
+            await thread_meta.update(value=value)
 
 
 class ThreadService(BaseService):
@@ -74,7 +89,41 @@ class ThreadService(BaseService):
         elif action == ThreadActionEnum.MOVE:
             return await self.change_category(thread, new_category)
 
+    async def create_thread(self, data: CreateThreadSchema, author: User, category: Category,
+                            status: ThreadStatusEnum = ThreadStatusEnum.PENDING,
+                            thread_meta_service: ThreadMetaService = None, servers_service: ServerService = None):
+        new_thread = await self.create(
+            title=data.title,
+            content=data.content,
+            category=category,
+            author=author,
+            status=status
+        )
+        if category.type == CategoryTypeEnum.APPLICATION:
+            if not data.server_id:
+                raise HTTPException(status_code=starlette_status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                    detail="server_id is required")
+            if not data.question_experience:
+                raise HTTPException(status_code=starlette_status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                    detail="question_experience is required")
+            if not data.question_age:
+                raise HTTPException(status_code=starlette_status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                    detail="question_age is required")
+            if not data.question_reason:
+                raise HTTPException(status_code=starlette_status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                    detail="question_reason is required")
+            server = await servers_service.get_one(id=data.server_id)
 
+            await thread_meta_service.fill_meta(thread_id=new_thread.id, data={
+                "server_id": data.server_id,
+                "question_experience": data.question_experience,
+                "question_age": data.question_age,
+                "question_reason": data.question_reason,
+            })
+            return self.get_one(id=new_thread.id,
+                                related=["category", "author", "author__display_role", "meta_fields"])
+
+        return new_thread
 
 
 class PostService(BaseService):
@@ -115,9 +164,3 @@ class LikeService(BaseService):
         if not like_exists:
             raise like_not_found_exception
         return {"message": "Like removed"}
-
-
-class ThreadMetaService(BaseService):
-    class Meta:
-        model = ThreadMeta
-        not_found_exception = thread_meta_not_found_exception
