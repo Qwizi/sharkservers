@@ -137,7 +137,7 @@ class AdminUpdatePostSchema(UpdatePostSchema):
 class ThreadQuery(BaseModel):
     category: Optional[int] = Query(None, description="Category ID", gt=0)
     server: Optional[int] = Query(None, description="Server ID", gt=0)
-    order_by: Optional[str] = Query(ThreadOrderEnum.CREATED_DESC.value, description="Order by", enum=ThreadOrderEnum)
+    order_by: Optional[str] = Query(ThreadOrderEnum.ID_DESC, description="Order by", enum=ThreadOrderEnum)
     status: Optional[str] = Query(None, description="Thread status", enum=ThreadStatusEnum)
     closed: Optional[bool] = Query(None, description="Is thread closed")
 

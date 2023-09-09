@@ -89,15 +89,23 @@ class ThreadService(BaseService):
         elif action == ThreadActionEnum.MOVE:
             return await self.change_category(thread, new_category)
 
-    async def create_thread(self, data: CreateThreadSchema, author: User, category: Category,
-                            status: ThreadStatusEnum = ThreadStatusEnum.PENDING,
-                            thread_meta_service: ThreadMetaService = None, servers_service: ServerService = None):
+    async def create_thread(
+            self,
+            data: CreateThreadSchema,
+            author: User,
+            category: Category,
+            status: ThreadStatusEnum = ThreadStatusEnum.PENDING,
+            thread_meta_service: ThreadMetaService = None,
+            servers_service: ServerService = None,
+            **kwargs
+    ):
         new_thread = await self.create(
             title=data.title,
             content=data.content,
             category=category,
             author=author,
-            status=status
+            status=status,
+            **kwargs
         )
         if category.type == CategoryTypeEnum.APPLICATION:
             if not data.server_id:
@@ -121,7 +129,7 @@ class ThreadService(BaseService):
                 "question_reason": data.question_reason,
             })
             return await self.get_one(id=new_thread.id,
-                                related=["category", "author", "author__display_role", "meta_fields"])
+                                      related=["category", "author", "author__display_role", "meta_fields"])
 
         return new_thread
 

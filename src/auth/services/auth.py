@@ -112,7 +112,7 @@ class AuthService:
                     id=ProtectedDefaultRolesEnum.ADMIN.value
                 )
             avatar_url = request.url_for("static",
-                                         path=f"images/avatars/default_avatar.png") if request else "http://localhost/static/images/default_avatar.png"
+                                         path=f"images/default_avatar.png") if request else "http://localhost/static/images/default_avatar.png"
             registered_user = await self.users_service.create(
                 username=user_data.username,
                 email=user_data.email,

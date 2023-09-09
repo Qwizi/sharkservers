@@ -94,7 +94,7 @@ class UserService(BaseService):
         user_id = int(user_id)
 
         user = await self.get_one(id=user_id, related=["display_role", "roles"])
-        await user.update(email=new_email, updated_date=now_datetime())
+        await user.update(email=new_email, updated_at=now_datetime())
         await code_service.delete(code)
         return user
 
