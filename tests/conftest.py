@@ -273,7 +273,12 @@ async def create_fake_posts(number: int = 50, author: User = None, thread=None):
     return posts_list
 
 
-async def create_fake_threads(number: int = 50, author: User = None, category: Category = None):
+async def create_fake_threads(
+        number: int = 50,
+        author: User = None,
+        category: Category = None,
+        **kwargs
+):
     threads_service = await get_threads_service()
     if category.type == CategoryTypeEnum.APPLICATION:
         servers_service = await get_servers_service()
@@ -301,6 +306,7 @@ async def create_fake_threads(number: int = 50, author: User = None, category: C
                 category=category,
                 thread_meta_service=thread_meta_service,
                 servers_service=servers_service,
+                **kwargs
             ))
         else:
             threads_list.append(await threads_service.create_thread(
@@ -308,10 +314,11 @@ async def create_fake_threads(number: int = 50, author: User = None, category: C
                     title=f"Test title {i}",
                     content=f"Test content {i}",
                     author=author,
-                    category=category.id
+                    category=category.id,
                 ),
                 author=author,
-                category=category
+                category=category,
+                **kwargs
             ))
     return threads_list
 

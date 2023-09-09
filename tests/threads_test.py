@@ -1,8 +1,8 @@
 import pytest
 
 from src.auth.schemas import RegisterUserSchema
-from src.forum.dependencies import get_threads_service, get_thread_meta_service
-from src.forum.enums import CategoryTypeEnum
+from src.forum.dependencies import get_threads_service, get_thread_meta_service, get_categories_service
+from src.forum.enums import CategoryTypeEnum, ThreadStatusEnum
 from src.forum.schemas import CreateThreadSchema
 from src.servers.dependencies import get_servers_service
 from src.users.dependencies import get_users_service
@@ -20,14 +20,90 @@ async def test_get_empty_threads(client):
 
 
 @pytest.mark.asyncio
-async def test_get_threads(logged_client):
+@pytest.mark.parametrize("variants", [
+    "default",
+    "closed",
+    "open",
+    "by_category",
+    # TODO: Implement these
+    #"by_server",
+    "by_pending_status",
+    "by_approved_status",
+    "by_rejected_status",
+   # "by_status",
+])
+async def test_get_threads(variants, logged_client):
     users_service = await get_users_service()
-    category = await create_fake_categories(1)
-    author = await users_service.get_one(username=TEST_USER.get("username"))
-    threads = await create_fake_threads(10, author, category[0])
-    r = await logged_client.get(THREADS_ENDPOINT)
-    assert r.status_code == 200
-    assert r.json()["total"] == 10
+    if variants == "default":
+        category = await create_fake_categories(1, category_type=CategoryTypeEnum.PUBLIC)
+        author = await users_service.get_one(username=TEST_USER.get("username"))
+        threads = await create_fake_threads(
+            10,
+            author=author,
+            category=category[0]
+        )
+        r = await logged_client.get(THREADS_ENDPOINT)
+        assert r.status_code == 200
+        assert r.json()["total"] == 10
+    elif variants == "closed":
+        category = await create_fake_categories(1, category_type=CategoryTypeEnum.PUBLIC)
+        author = await users_service.get_one(username=TEST_USER.get("username"))
+        threads = await create_fake_threads(
+            2,
+            author=author,
+            category=category[0],
+            is_closed=True
+        )
+        r = await logged_client.get(THREADS_ENDPOINT+"?closed=true")
+        assert r.status_code == 200
+        assert r.json()["total"] == 2
+        assert r.json()["items"][0]["is_closed"] is True
+    elif variants == "open":
+        category = await create_fake_categories(1, category_type=CategoryTypeEnum.PUBLIC)
+        author = await users_service.get_one(username=TEST_USER.get("username"))
+        await create_fake_threads(
+            2,
+            author=author,
+            category=category[0],
+            is_closed=False
+        )
+        r = await logged_client.get(THREADS_ENDPOINT+"?closed=false")
+        assert r.status_code == 200
+        assert r.json()["total"] == 2
+        assert r.json()["items"][0]["is_closed"] is False
+    elif variants == "by_category":
+        category = await create_fake_categories(2, category_type=CategoryTypeEnum.PUBLIC)
+        author = await users_service.get_one(username=TEST_USER.get("username"))
+        await create_fake_threads(
+            5,
+            author=author,
+            category=category[0],
+        )
+        await create_fake_threads(
+            10,
+            author=author,
+            category=category[1],
+        )
+        r = await logged_client.get(THREADS_ENDPOINT+f"?category={category[0].id}")
+        assert r.status_code == 200
+        assert r.json()["total"] == 5
+    elif variants == "by_pending_status":
+        category = await create_fake_categories(1, category_type=CategoryTypeEnum.APPLICATION)
+        author = await users_service.get_one(username=TEST_USER.get("username"))
+        await create_fake_threads(
+            5,
+            author=author,
+            category=category[0],
+        )
+        await create_fake_threads(
+            10,
+            author=author,
+            category=category[0],
+            status=ThreadStatusEnum.PENDING.value
+        )
+        r = await logged_client.get(THREADS_ENDPOINT+"?status=pending")
+        assert r.status_code == 200
+        assert r.json()["total"] == 10
 
 
 @pytest.mark.asyncio
@@ -187,6 +263,21 @@ async def test_save_thread_signal():
         assert meta_field is not None
         assert meta_field.name == meta_name
         assert meta_field.value is None
+    await thread.category.load()
+    assert thread.category.threads_count == 1
+
+
+@pytest.mark.asyncio
+async def test_delete_thread_signal():
+    users = await create_fake_users(1)
+    categories = await create_fake_categories(1, category_type=CategoryTypeEnum.APPLICATION.value)
+    category = categories[0]
+    threads = await create_fake_threads(1, users[0], category)
+    await category.load()
+    assert category.threads_count == 1
+    await threads[0].delete()
+    await category.load()
+    assert category.threads_count == 0
 
 
 @pytest.mark.asyncio
@@ -222,3 +313,53 @@ async def test_create_application_thread(logged_client):
             assert meta["value"] == question_reason
         else:
             assert False
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("meta_fields", [
+    {
+        # missing fields
+    },
+    {
+        # invalid fields
+        "server_id": "999",
+        # invalid question_age
+        "question_age": "invalid_age",
+        "question_experience": 123,
+        "question_reason": 123,
+    },
+    {
+        # missing server_id
+        "question_age": 18,
+        "question_experience": "Test experience",
+        "question_reason": "Test reason",
+    },
+    {
+        # missing question_age
+        "server_id": "999",
+        "question_experience": "Test experience",
+        "question_reason": "Test reason",
+    },
+    {
+        # missing question_experience
+        "server_id": "999",
+        "question_age": 18,
+        "question_reason": "Test reason",
+    },
+    {
+        # missing question_reason
+        "server_id": "999",
+        "question_age": 18,
+        "question_experience": "Test experience",
+    }
+])
+async def test_create_application_thread_with_invalid_meta_fields(meta_fields, logged_client):
+    categories = await create_fake_categories(1, category_type=CategoryTypeEnum.APPLICATION.value)
+
+    r = await logged_client.post(THREADS_ENDPOINT, json={
+        "title": TEST_THREAD.get("title"),
+        "content": TEST_THREAD.get("content"),
+        "category": categories[0].id,
+        **meta_fields
+    })
+    assert r.status_code == 422

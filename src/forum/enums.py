@@ -178,8 +178,8 @@ class ThreadStatusEnum(str, Enum):
 
 class ThreadOrderEnum(str, Enum):
     """Enum for thread order."""
-    CREATED_DESC = "-created_at"
-    CREATED_ASC = "created_at"
+    ID_DESC = "-id"
+    ID_ASC = "id"
 
 
 class ThreadActionEnum(str, Enum):
