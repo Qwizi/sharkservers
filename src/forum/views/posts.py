@@ -35,24 +35,15 @@ async def get_posts(
     :param params:
     :return:
     """
-    dispatch(PostEventEnum.GET_ALL_PRE, payload={"data": params})
-    related = ["author", "author__display_role", "thread_post"]
-    order_by = ["-created_at"]
+    kwargs = {}
     if thread_id:
-        posts = await posts_service.get_all(
+        kwargs["thread_post__id"] = thread_id
+    return await posts_service.get_all(
             params=params,
-            related=related,
-            thread_post__id=thread_id,
-            order_by=order_by,
+            related = ["author", "author__display_role", "thread_post"],
+            order_by="id",
+            **kwargs
         )
-    else:
-        posts = await posts_service.get_all(
-            params=params,
-            related=related,
-            order_by=order_by,
-        )
-    dispatch(PostEventEnum.GET_ALL_POST, payload={"data": posts})
-    return posts
 
 
 @router.get("/{post_id}", response_model=PostOut)
