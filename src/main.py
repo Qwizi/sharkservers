@@ -191,8 +191,8 @@ def create_app():
         await disconnect_db(_app)
         await FastAPILimiter.close()
 
-    """
     
+    """
     @_app.middleware("http")
     async def emit_event(request: Request, call_next):
         event_name = None
@@ -212,6 +212,7 @@ def create_app():
         dispatch(post_event_name, payload={"request": request, "response": response, "body": response_body[0].decode()},
                  middleware_id=event_handler_id)
         return response
+    """
     @_app.middleware("http")
     async def update_user_last_online_time(request: Request, call_next):
         response = await call_next(request)
@@ -227,7 +228,7 @@ def create_app():
             return response
         except (JWTError, HTTPException):
             return response
-    """
+    
 
     @_app.post("/install", tags=["root"])
     async def install(
