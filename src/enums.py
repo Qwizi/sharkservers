@@ -11,3 +11,8 @@ class ActivationEmailTypeEnum(str, Enum):
     ACCOUNT = "account"
     EMAIL = "email"
     PASSWORD = "password"
+
+
+class OrderEnum(str, Enum):
+    ID_DESC = "-id"
+    ID_ASC = "id"

@@ -44,7 +44,7 @@ class UserService(BaseService):
         :return:
         """
         try:
-            await user.update(username=change_username_data.username, updated_at=now_datetime())
+            await user.update(username=change_username_data.username)
             return user
         except (UniqueViolationError, IntegrityError, SQLIntegrityError):
             raise username_not_available_exception
@@ -60,7 +60,7 @@ class UserService(BaseService):
         if not verify_password(change_password_data.current_password, user.password):
             raise invalid_current_password_exception
         new_password = get_password_hash(change_password_data.new_password)
-        await user.update(password=new_password, updated_at=now_datetime())
+        await user.update(password=new_password)
         return user
 
     @staticmethod
@@ -73,7 +73,7 @@ class UserService(BaseService):
                 break
         if not display_role_exists_in_user_roles:
             raise cannot_change_display_role_exception
-        await user.update(display_role=change_display_role_data.role_id, updated_at=now_datetime(), )
+        await user.update(display_role=change_display_role_data.role_id)
         return user, old_user_display_role
 
     @staticmethod
@@ -94,7 +94,7 @@ class UserService(BaseService):
         user_id = int(user_id)
 
         user = await self.get_one(id=user_id, related=["display_role", "roles"])
-        await user.update(email=new_email, updated_at=now_datetime())
+        await user.update(email=new_email)
         await code_service.delete(code)
         return user
 

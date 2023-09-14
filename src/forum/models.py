@@ -122,16 +122,17 @@ async def update_category_thread_counter_after_delete(sender, instance, **kwargs
     await category.update(threads_count=category.threads_count - 1 if category.threads_count > 0 else 0)
 
 
-"""@post_relation_add(Thread)
+@post_relation_add(Thread)
 async def update_thread_post_counter_after_relation_add(sender, instance, child, **kwargs):
-    if child == Post:
+    if isinstance(child, Post):
         thread = await Thread.objects.get(id=instance.id)
         await thread.update(post_count=thread.post_count + 1)
-        logger.info(f"Thread {thread.title} post count updated to {thread.post_count}")"""
+        logger.info(f"Thread {thread.title} post count updated to {thread.post_count}")
 
 
 @post_relation_remove(Thread)
 async def update_thread_post_counter_after_relation_remove(sender, instance, child, **kwargs):
-    thread = await Thread.objects.get(id=instance.id)
-    await thread.update(post_count=thread.post_count - 1 if thread.post_count > 0 else 0)
-    logger.info(f"Thread {thread.title} post count updated to {thread.post_count}")
+    if isinstance(child, Post):
+        thread = await Thread.objects.get(id=instance.id)
+        await thread.update(post_count=thread.post_count - 1 if thread.post_count > 0 else 0)
+        logger.info(f"Thread {thread.title} post count updated to {thread.post_count}")

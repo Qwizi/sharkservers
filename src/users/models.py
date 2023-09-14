@@ -3,6 +3,7 @@ from typing import Optional, List
 
 import ormar
 from pydantic import EmailStr
+from src.auth.utils import now_datetime
 
 from src.db import BaseMeta, DateFieldsMixins
 from src.roles.models import Role
@@ -39,3 +40,9 @@ class Ban(ormar.Model, DateFieldsMixins):
     reason: Optional[str] = ormar.String(max_length=255)
     ban_time: Optional[datetime.datetime] = ormar.DateTime(nullable=True, timezone=True)
     banned_by: Optional[User] = ormar.ForeignKey(User, related_name="banned_by")
+
+
+
+@ormar.pre_update(User)
+async def update_user_updated_at(sender, instance: User, **kwargs):
+    instance.updated_at = now_datetime()

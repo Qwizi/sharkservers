@@ -94,7 +94,7 @@ class ThreadService(BaseService):
             data: CreateThreadSchema,
             author: User,
             category: Category,
-            status: ThreadStatusEnum = ThreadStatusEnum.PENDING,
+            status: ThreadStatusEnum = ThreadStatusEnum.PENDING.value,
             thread_meta_service: ThreadMetaService = None,
             servers_service: ServerService = None,
             **kwargs

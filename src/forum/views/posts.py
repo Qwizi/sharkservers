@@ -15,7 +15,7 @@ from src.forum.exceptions import (
     thread_is_closed_exception,
 )
 from src.forum.models import Post
-from src.forum.schemas import PostOut, CreatePostSchema, UpdatePostSchema, LikeOut
+from src.forum.schemas import PostOut, CreatePostSchema, PostQuery, UpdatePostSchema, LikeOut
 from src.forum.services import PostService, ThreadService, LikeService
 from src.users.models import User
 
@@ -26,6 +26,7 @@ router = APIRouter()
 async def get_posts(
         thread_id: int = None,
         params: Params = Depends(),
+        queries: PostQuery = Depends(),
         posts_service: PostService = Depends(get_posts_service),
 ) -> Page[PostOut]:
     """
@@ -41,7 +42,7 @@ async def get_posts(
     return await posts_service.get_all(
             params=params,
             related = ["author", "author__display_role", "thread_post"],
-            order_by="id",
+            order_by=queries.order_by,
             **kwargs
         )
 
