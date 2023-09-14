@@ -2,7 +2,9 @@ from fastapi import Security, Depends, APIRouter, HTTPException
 from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Params, Page
 from starlette import status
-
+from fastapi_limiter.depends import RateLimiter
+from src.settings import get_settings
+from src.logger import logger
 from src.auth.dependencies import get_current_active_user
 from src.forum.dependencies import (
     get_valid_thread,
@@ -22,6 +24,11 @@ from src.servers.services import ServerService
 from src.users.models import User
 
 router = APIRouter()
+
+settings = get_settings()
+
+
+limiter = RateLimiter(times=9999, hours=5) if settings.TESTING else RateLimiter(times=1, minutes=1)
 
 
 @router.get("")
@@ -61,7 +68,7 @@ async def get_threads(
     )
 
 
-@router.post("")
+@router.post("", dependencies=[Depends(limiter)])
 async def create_thread(
         thread_data: CreateThreadSchema,
         user: User = Security(get_current_active_user, scopes=["threads:create"]),
@@ -80,6 +87,7 @@ async def create_thread(
     :return:
     """
     # Get category by id
+    logger.info(limiter.milliseconds)
     category = await categories_service.get_one(id=thread_data.category)
     new_thread = await threads_service.create_thread(
         data=thread_data,
@@ -103,7 +111,7 @@ async def get_thread(thread: Thread = Depends(get_valid_thread)):
     return thread
 
 
-@router.put("/{thread_id}", response_model=ThreadOut)
+@router.put("/{thread_id}", response_model=ThreadOut, dependencies=[Depends(limiter)])
 async def update_thread(
         thread_data: UpdateThreadSchema,
         thread: Thread = Depends(get_valid_thread_with_author),

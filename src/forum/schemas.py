@@ -2,6 +2,8 @@ from typing import Optional
 
 from fastapi import Query
 from pydantic import BaseModel, Field
+from src.schemas import OrderQuery
+from src.enums import OrderEnum
 
 from src.forum.enums import CategoryTypeEnum, ThreadOrderEnum, ThreadStatusEnum, ThreadActionEnum
 from src.forum.models import Category, Tag, Thread, Post, Like, ThreadMeta
@@ -134,13 +136,15 @@ class AdminUpdatePostSchema(UpdatePostSchema):
     thread_id: Optional[int]
 
 
-class ThreadQuery(BaseModel):
+class ThreadQuery(OrderQuery):
     category: Optional[int] = Query(None, description="Category ID", gt=0)
     server: Optional[int] = Query(None, description="Server ID", gt=0)
-    order_by: Optional[str] = Query(ThreadOrderEnum.ID_DESC, description="Order by", enum=ThreadOrderEnum)
     status: Optional[str] = Query(None, description="Thread status", enum=ThreadStatusEnum)
     closed: Optional[bool] = Query(None, description="Is thread closed")
 
+
+class PostQuery(OrderQuery):
+    pass
 
 class AdminThreadActionSchema(BaseModel):
     action: ThreadActionEnum = ThreadActionEnum.CLOSE.value

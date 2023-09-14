@@ -25,7 +25,7 @@ from src.auth.views import limiter
 from src.db import metadata, create_redis_pool
 from src.forum.dependencies import get_categories_service, get_posts_service, get_threads_service, \
     get_thread_meta_service
-from src.forum.enums import CategoryTypeEnum
+from src.forum.enums import CategoryTypeEnum, ThreadStatusEnum
 from src.forum.models import Category
 from src.forum.schemas import CreateThreadSchema
 from src.forum.services import CategoryService
@@ -158,6 +158,8 @@ async def admin_client():
     )
     app.state.redis = await create_redis_pool()
     await FastAPILimiter.init(app.state.redis)
+    override_limiter = RateLimiter(times=999, seconds=1)
+    app.dependency_overrides[limiter] = override_limiter
     async with AsyncClient(app=app, base_url="http://localhost", headers=headers) as c:
         yield c
 
@@ -178,8 +180,12 @@ async def logged_client():
     logger.info(headers)
     app.state.redis = await create_redis_pool()
     await FastAPILimiter.init(app.state.redis)
+    override_limiter = RateLimiter(times=9999, hours=1)
+    app.dependency_overrides[limiter] = {"times": 999, "hours": 3}
     async with AsyncClient(app=app, base_url="http://localhost", headers=headers) as c:
+        
         yield c
+    app.dependency_overrides[limiter] = {}
 
 
 @pytest.fixture(scope="module")
@@ -277,17 +283,22 @@ async def create_fake_threads(
         number: int = 50,
         author: User = None,
         category: Category = None,
+        status: ThreadStatusEnum = ThreadStatusEnum.PENDING.value,
         **kwargs
 ):
     threads_service = await get_threads_service()
     if category.type == CategoryTypeEnum.APPLICATION:
         servers_service = await get_servers_service()
         thread_meta_service = await get_thread_meta_service()
-        server = await servers_service.create(
-            name="Test server",
-            ip="127.0.0.1",
-            port=25565,
-        )
+        server_exists = await servers_service.Meta.model.objects.filter(name="Test server").exists()
+        if not server_exists:
+            server = await servers_service.create(
+                name="Test server",
+                ip="127.0.0.1",
+                port=25565,
+            )
+        else:
+            server = await servers_service.get_one(name="Test server")
     threads_list = []
     for i in range(number):
         if category.type == CategoryTypeEnum.APPLICATION:
@@ -306,6 +317,7 @@ async def create_fake_threads(
                 category=category,
                 thread_meta_service=thread_meta_service,
                 servers_service=servers_service,
+                status=status,
                 **kwargs
             ))
         else:

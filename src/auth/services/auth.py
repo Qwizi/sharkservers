@@ -20,9 +20,22 @@ from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
 from src.apps.services import AppService
-from src.auth.exceptions import inactivate_user_exception, user_exists_exception, incorrect_username_password_exception, \
-    token_expired_exception, invalid_credentials_exception, user_activated_exception, invalid_activation_code_exception
-from src.auth.schemas import RegisterUserSchema, TokenSchema, TokenDetailsSchema, RefreshTokenSchema, ResetPasswordSchema
+from src.auth.exceptions import (
+    inactivate_user_exception,
+    user_exists_exception,
+    incorrect_username_password_exception,
+    token_expired_exception,
+    invalid_credentials_exception,
+    user_activated_exception,
+    invalid_activation_code_exception,
+)
+from src.auth.schemas import (
+    RegisterUserSchema,
+    TokenSchema,
+    TokenDetailsSchema,
+    RefreshTokenSchema,
+    ResetPasswordSchema,
+)
 from src.auth.services.code import CodeService
 from src.auth.services.jwt import JWTService
 from src.auth.utils import now_datetime, pwd_context, verify_password, get_password_hash
@@ -33,18 +46,25 @@ from src.roles.enums import ProtectedDefaultRolesEnum
 from src.roles.services import RoleService
 from src.scopes.services import ScopeService
 from src.services import EmailService
-from src.users.exceptions import username_not_available_exception, invalid_current_password_exception, \
-    cannot_change_display_role_exception
+from src.users.exceptions import (
+    username_not_available_exception,
+    invalid_current_password_exception,
+    cannot_change_display_role_exception,
+)
 from src.users.models import User
-from src.users.schemas import ChangeUsernameSchema, ChangePasswordSchema, ChangeDisplayRoleSchema
+from src.users.schemas import (
+    ChangeUsernameSchema,
+    ChangePasswordSchema,
+    ChangeDisplayRoleSchema,
+)
 from src.users.services import UserService
 
 
 class OAuth2ClientSecretRequestForm:
     def __init__(
-            self,
-            client_id: Optional[str] = Form(default=None),
-            client_secret: Optional[str] = Form(default=None),
+        self,
+        client_id: Optional[str] = Form(default=None),
+        client_secret: Optional[str] = Form(default=None),
     ):
         self.client_id = client_id
         self.client_secret = client_secret
@@ -54,10 +74,10 @@ class AuthService:
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/auth/token")
 
     def __init__(
-            self,
-            users_service: UserService,
-            roles_service: RoleService,
-            scopes_service: ScopeService,
+        self,
+        users_service: UserService,
+        roles_service: RoleService,
+        scopes_service: ScopeService,
     ):
         self.users_service = users_service
         self.roles_service = roles_service
@@ -85,11 +105,11 @@ class AuthService:
         return user
 
     async def register(
-            self,
-            user_data: RegisterUserSchema,
-            is_activated: bool = False,
-            is_superuser: bool = False,
-            request: Request = None,
+        self,
+        user_data: RegisterUserSchema,
+        is_activated: bool = False,
+        is_superuser: bool = False,
+        request: Request = None,
     ) -> User:
         """
         Register new user
@@ -111,8 +131,11 @@ class AuthService:
                 role = await self.roles_service.get_one(
                     id=ProtectedDefaultRolesEnum.ADMIN.value
                 )
-            avatar_url = request.url_for("static",
-                                         path=f"images/default_avatar.png") if request else "http://localhost/static/images/default_avatar.png"
+            avatar_url = (
+                request.url_for("static", path=f"images/default_avatar.png")
+                if request
+                else "http://localhost/static/images/default_avatar.png"
+            )
             registered_user = await self.users_service.create(
                 username=user_data.username,
                 email=user_data.email,
@@ -129,14 +152,19 @@ class AuthService:
                 await registered_user.roles.add(user_role)
                 await registered_user.roles.add(role)
             return registered_user
-        except (IntegrityError, SQLIntegrityError, UniqueViolationError, HTTPException) as e:
+        except (
+            IntegrityError,
+            SQLIntegrityError,
+            UniqueViolationError,
+            HTTPException,
+        ) as e:
             raise user_exists_exception
 
     async def login(
-            self,
-            form_data: OAuth2PasswordRequestForm,
-            jwt_access_token_service: JWTService,
-            jwt_refresh_token_service: JWTService,
+        self,
+        form_data: OAuth2PasswordRequestForm,
+        jwt_access_token_service: JWTService,
+        jwt_refresh_token_service: JWTService,
     ) -> (TokenSchema, User):
         """
         Login user
@@ -155,8 +183,7 @@ class AuthService:
         refresh_token, refresh_toke_exp = jwt_refresh_token_service.encode(
             data={"sub": str(user.id), "secret": user.secret_salt}
         )
-        await user.update(last_login=now_datetime().replace(tzinfo=None),
-                          last_online=now_datetime().replace(tzinfo=None))
+        await user.update(last_online=now_datetime())
         return (
             TokenSchema(
                 access_token=TokenDetailsSchema(
@@ -170,10 +197,10 @@ class AuthService:
         )
 
     async def create_access_token_from_refresh_token(
-            self,
-            token_data: RefreshTokenSchema,
-            jwt_access_token_service: JWTService,
-            jwt_refresh_token_service: JWTService,
+        self,
+        token_data: RefreshTokenSchema,
+        jwt_access_token_service: JWTService,
+        jwt_refresh_token_service: JWTService,
     ):
         """
 
@@ -183,7 +210,6 @@ class AuthService:
         :return:
         """
         try:
-
             payload = jwt_refresh_token_service.decode(token_data.refresh_token)
             refresh_token_exp = payload.get("exp", None)
             if datetime.fromtimestamp(refresh_token_exp) < now_datetime():
@@ -206,7 +232,9 @@ class AuthService:
                         token=access_token, exp=access_token_exp, token_type="bearer"
                     ),
                     refresh_token=TokenDetailsSchema(
-                        token=token_data.refresh_token, exp=refresh_token_exp, token_type="bearer"
+                        token=token_data.refresh_token,
+                        exp=refresh_token_exp,
+                        token_type="bearer",
                     ),
                 ),
                 user,
@@ -244,7 +272,7 @@ class AuthService:
         )
 
     async def resend_activation_code(
-            self, email: EmailStr, code_service: CodeService, email_service: EmailService
+        self, email: EmailStr, code_service: CodeService, email_service: EmailService
     ):
         """
         Activate user
@@ -261,7 +289,9 @@ class AuthService:
             code, code_data = await code_service.create(
                 data=int(user.id), code_len=5, expire=900
             )
-            await email_service.send_confirmation_email(ActivationEmailTypeEnum.ACCOUNT, user.email, code)
+            await email_service.send_confirmation_email(
+                ActivationEmailTypeEnum.ACCOUNT, user.email, code
+            )
 
             logger.info(f"Activation code: {code}")
             return msg
@@ -305,7 +335,7 @@ class AuthService:
         return RedirectResponse(auth_url)
 
     async def authenticate_steam_user(
-            self, request: Request, user: User, player_service: PlayerService
+        self, request: Request, user: User, player_service: PlayerService
     ):
         steam_login_url_base = "https://steamcommunity.com/openid/login"
 
@@ -325,7 +355,7 @@ class AuthService:
 
     @staticmethod
     async def change_username(
-            user: User, change_username_data: ChangeUsernameSchema
+        user: User, change_username_data: ChangeUsernameSchema
     ) -> User:
         """
         Change user username
@@ -342,7 +372,7 @@ class AuthService:
             raise username_not_available_exception
 
     async def change_password(
-            self, user: User, change_password_data: ChangePasswordSchema
+        self, user: User, change_password_data: ChangePasswordSchema
     ) -> User:
         """
         Change user password
@@ -351,7 +381,7 @@ class AuthService:
         :return:
         """
         if not self.verify_password(
-                change_password_data.current_password, user.password
+            change_password_data.current_password, user.password
         ):
             raise invalid_current_password_exception
         new_password = self.get_password_hash(change_password_data.new_password)
@@ -360,7 +390,7 @@ class AuthService:
 
     @staticmethod
     async def change_display_role(
-            user: User, change_display_role_data: ChangeDisplayRoleSchema
+        user: User, change_display_role_data: ChangeDisplayRoleSchema
     ) -> (User, int):
         display_role_exists_in_user_roles = False
         old_user_display_role = user.display_role.id
@@ -378,7 +408,7 @@ class AuthService:
 
     @staticmethod
     async def validate_app(
-            client_id: str, client_secret: str, apps_service: AppService
+        client_id: str, client_secret: str, apps_service: AppService
     ):
         """
         Validate app
@@ -395,11 +425,11 @@ class AuthService:
         return app
 
     async def get_app_token(
-            self,
-            form_data: OAuth2ClientSecretRequestForm,
-            apps_service: AppService,
-            jwt_access_token_service: JWTService,
-            jwt_refresh_token_service: JWTService,
+        self,
+        form_data: OAuth2ClientSecretRequestForm,
+        apps_service: AppService,
+        jwt_access_token_service: JWTService,
+        jwt_refresh_token_service: JWTService,
     ) -> TokenSchema:
         """
         Get app token
@@ -442,7 +472,7 @@ class AuthService:
         )
 
     async def confirm_change_email(
-            self, user: User, code: str, code_service: CodeService
+        self, user: User, code: str, code_service: CodeService
     ) -> User:
         """
         Confirm change email
@@ -456,7 +486,9 @@ class AuthService:
             raise invalid_activation_code_exception
         return user
 
-    async def reset_password(self, reset_password_data: ResetPasswordSchema, code_service: CodeService):
+    async def reset_password(
+        self, reset_password_data: ResetPasswordSchema, code_service: CodeService
+    ):
         """
         Confirm change password
         :param reset_password_data:
@@ -468,6 +500,9 @@ class AuthService:
             raise invalid_activation_code_exception
         user = await self.users_service.get_one(email=email)
         new_password = get_password_hash(reset_password_data.password)
-        await user.update(password=new_password, updated_date=now_datetime(), secret_salt=self.generate_secret_salt())
+        await user.update(
+            password=new_password,
+            secret_salt=self.generate_secret_salt(),
+        )
         await code_service.delete(reset_password_data.code)
         return True

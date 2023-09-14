@@ -1,5 +1,9 @@
+from typing import Optional
+from fastapi import Query
 from pydantic import BaseModel
 from starlette import status
+
+from src.enums import OrderEnum
 
 
 class CreateAdmin(BaseModel):
@@ -22,3 +26,7 @@ class HTTPError400Schema(HTTPErrorSchema):
 
 class HTTPError401Schema(HTTPErrorSchema):
     status_code: int = status.HTTP_401_UNAUTHORIZED
+
+
+class OrderQuery(BaseModel):
+    order_by: Optional[str] = Query(OrderEnum.ID_DESC, description="Order by", enum=OrderEnum)

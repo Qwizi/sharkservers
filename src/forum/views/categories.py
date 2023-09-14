@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
+from src.schemas import OrderQuery
 
 from src.forum.dependencies import get_valid_category, get_categories_service
 from src.forum.enums import CategoryEventEnum
@@ -14,6 +15,7 @@ router = APIRouter()
 @router.get("", response_model=Page[CategoryOut])
 async def get_categories(
         params: Params = Depends(),
+        queries: OrderQuery = Depends(),
         categories_service: CategoryService = Depends(get_categories_service),
 ):
     """
@@ -23,7 +25,7 @@ async def get_categories(
     :return:
     """
     dispatch(CategoryEventEnum.GET_ALL_PRE, payload={"data": params})
-    categories = await categories_service.get_all(params=params)
+    categories = await categories_service.get_all(params=params, order_by=queries.order_by)
     dispatch(CategoryEventEnum.GET_ALL_POST, payload={"data": categories})
     return categories
 

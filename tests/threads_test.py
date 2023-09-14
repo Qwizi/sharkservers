@@ -1,5 +1,8 @@
+import asyncio
+from httpx import AsyncClient
 import pytest
-
+from src.enums import OrderEnum
+from src.main import app
 from src.auth.schemas import RegisterUserSchema
 from src.forum.dependencies import get_threads_service, get_thread_meta_service, get_categories_service
 from src.forum.enums import CategoryTypeEnum, ThreadStatusEnum
@@ -8,9 +11,9 @@ from src.servers.dependencies import get_servers_service
 from src.users.dependencies import get_users_service
 from tests.conftest import create_fake_threads, TEST_USER, create_fake_categories, TEST_THREAD, _get_auth_service, \
     create_fake_users, create_fake_servers
+from fastapi_limiter.depends import RateLimiter
 
 THREADS_ENDPOINT = "/v1/forum/threads"
-
 
 @pytest.mark.asyncio
 async def test_get_empty_threads(client):
@@ -25,12 +28,12 @@ async def test_get_empty_threads(client):
     "closed",
     "open",
     "by_category",
-    # TODO: Implement these
-    #"by_server",
-    "by_pending_status",
-    "by_approved_status",
-    "by_rejected_status",
-   # "by_status",
+    # TODO: Implement these,
+    ThreadStatusEnum.PENDING.value,
+    ThreadStatusEnum.APPROVED.value,
+    ThreadStatusEnum.REJECTED.value,
+    OrderEnum.ID_DESC.value,
+    OrderEnum.ID_ASC.value,
 ])
 async def test_get_threads(variants, logged_client):
     users_service = await get_users_service()
@@ -87,23 +90,85 @@ async def test_get_threads(variants, logged_client):
         r = await logged_client.get(THREADS_ENDPOINT+f"?category={category[0].id}")
         assert r.status_code == 200
         assert r.json()["total"] == 5
-    elif variants == "by_pending_status":
+    elif variants == ThreadStatusEnum.PENDING.value:
         category = await create_fake_categories(1, category_type=CategoryTypeEnum.APPLICATION)
         author = await users_service.get_one(username=TEST_USER.get("username"))
-        await create_fake_threads(
-            5,
-            author=author,
-            category=category[0],
-        )
         await create_fake_threads(
             10,
             author=author,
             category=category[0],
             status=ThreadStatusEnum.PENDING.value
         )
-        r = await logged_client.get(THREADS_ENDPOINT+"?status=pending")
+        r = await logged_client.get(THREADS_ENDPOINT+f"?status={ThreadStatusEnum.PENDING.value}")
         assert r.status_code == 200
         assert r.json()["total"] == 10
+
+    elif variants == ThreadStatusEnum.APPROVED.value:
+        category = await create_fake_categories(1, category_type=CategoryTypeEnum.APPLICATION)
+        author = await users_service.get_one(username=TEST_USER.get("username"))
+        await create_fake_threads(
+            5,
+            author=author,
+            category=category[0],
+            status=ThreadStatusEnum.PENDING.value
+        )
+        await create_fake_threads(
+            10,
+            author=author,
+            category=category[0],
+            status=ThreadStatusEnum.APPROVED.value
+        )
+        r = await logged_client.get(THREADS_ENDPOINT+f"?status={ThreadStatusEnum.APPROVED.value}")
+        assert r.status_code == 200
+        assert r.json()["total"] == 10
+
+    elif variants == ThreadStatusEnum.REJECTED.value:
+        category = await create_fake_categories(1, category_type=CategoryTypeEnum.APPLICATION)
+        author = await users_service.get_one(username=TEST_USER.get("username"))
+        await create_fake_threads(
+            5,
+            author=author,
+            category=category[0],
+            status=ThreadStatusEnum.PENDING.value
+        )
+        await create_fake_threads(
+            10,
+            author=author,
+            category=category[0],
+            status=ThreadStatusEnum.REJECTED.value
+        )
+        r = await logged_client.get(THREADS_ENDPOINT+f"?status={ThreadStatusEnum.REJECTED.value}")
+        assert r.status_code == 200
+        assert r.json()["total"] == 10
+    elif variants == OrderEnum.ID_DESC.value:
+        category = await create_fake_categories(1, category_type=CategoryTypeEnum.APPLICATION)
+        author = await users_service.get_one(username=TEST_USER.get("username"))
+        threads = await create_fake_threads(
+            5,
+            author=author,
+            category=category[0],
+            status=ThreadStatusEnum.PENDING.value
+        )
+        first_thread_id = threads[0].id
+        r = await logged_client.get(THREADS_ENDPOINT+f"?order={OrderEnum.ID_DESC}")
+        assert r.status_code == 200
+        assert r.json()["total"] == 5
+        assert r.json()["items"][0]["id"] != first_thread_id
+
+    elif variants == OrderEnum.ID_ASC.value:
+        category = await create_fake_categories(1, category_type=CategoryTypeEnum.APPLICATION)
+        author = await users_service.get_one(username=TEST_USER.get("username"))
+        threads = await create_fake_threads(
+            5,
+            author=author,
+            category=category[0],
+            status=ThreadStatusEnum.PENDING.value
+        )
+        first_thread_id = threads[0].id
+        r = await logged_client.get(THREADS_ENDPOINT+f"?order={OrderEnum.ID_ASC}")
+        assert r.status_code == 200
+        assert r.json()["total"] == 5
+        assert r.json()["items"][0]["id"] != 1
 
 
 @pytest.mark.asyncio
@@ -353,7 +418,7 @@ async def test_create_application_thread(logged_client):
         "question_experience": "Test experience",
     }
 ])
-async def test_create_application_thread_with_invalid_meta_fields(meta_fields, logged_client):
+async def test_create_application_thread_with_invalid_meta_fields(meta_fields, logged_client: AsyncClient):
     categories = await create_fake_categories(1, category_type=CategoryTypeEnum.APPLICATION.value)
 
     r = await logged_client.post(THREADS_ENDPOINT, json={
@@ -362,4 +427,5 @@ async def test_create_application_thread_with_invalid_meta_fields(meta_fields, l
         "category": categories[0].id,
         **meta_fields
     })
+    asyncio.sleep(1)
     assert r.status_code == 422

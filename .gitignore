@@ -219,3 +219,4 @@ installed
 openapi.json
 static/uploads/*
 .idea/*
+.vscode/*
