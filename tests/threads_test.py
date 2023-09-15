@@ -427,5 +427,4 @@ async def test_create_application_thread_with_invalid_meta_fields(meta_fields, l
         "category": categories[0].id,
         **meta_fields
     })
-    asyncio.sleep(1)
     assert r.status_code == 422

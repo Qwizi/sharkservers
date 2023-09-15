@@ -7,7 +7,6 @@ import pytest
 import pytest_asyncio
 import sqlalchemy
 from PIL import ImageDraw, Image
-from faker import Faker
 from fastapi import File
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_events.dispatcher import dispatch
@@ -194,11 +193,6 @@ def event_loop():
     asyncio.set_event_loop(loop)
 
     yield loop
-
-
-@pytest.fixture(scope="session", autouse=True)
-def faker_session_locale():
-    return ["en_US"]
 
 
 async def create_fake_users(number: int = 50):

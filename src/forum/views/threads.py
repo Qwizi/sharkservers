@@ -3,6 +3,7 @@ from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Params, Page
 from starlette import status
 from fastapi_limiter.depends import RateLimiter
+from src.dependencies import Limiter
 from src.settings import get_settings
 from src.logger import logger
 from src.auth.dependencies import get_current_active_user
@@ -27,8 +28,7 @@ router = APIRouter()
 
 settings = get_settings()
 
-
-limiter = RateLimiter(times=9999, hours=5) if settings.TESTING else RateLimiter(times=1, minutes=1)
+limiter = RateLimiter(times=999 if settings.TESTING else 2, minutes=60 if settings.TESTING else 10)
 
 
 @router.get("")
@@ -87,7 +87,6 @@ async def create_thread(
     :return:
     """
     # Get category by id
-    logger.info(limiter.milliseconds)
     category = await categories_service.get_one(id=thread_data.category)
     new_thread = await threads_service.create_thread(
         data=thread_data,

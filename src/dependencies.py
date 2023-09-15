@@ -37,7 +37,18 @@ async def get_upload_service(settings: Settings = Depends(get_settings)) -> Uplo
     return UploadService(settings=settings)
 
 
-def get_limiter(settings_: Settings = Depends(get_settings), limitter: RateLimiter = Depends(RateLimiter(times=2, seconds=60))):
+def get_limiter(settings_: Settings = Depends(get_settings)):
     if settings_.TESTING:
         return None
     return limitter
+
+
+class Limiter:
+
+    def __init__(self, times: int = 3, minutes: int = 2):
+        self.times = times
+        self.minutes = minutes
+
+    def __call__(self):
+        return RateLimiter(times=self.times, minutes=self.minutes)
+
