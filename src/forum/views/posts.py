@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, Security
 from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Params, Page
 from fastapi_pagination.ext.ormar import paginate
+from src.settings import get_settings
+from fastapi_limiter.depends import RateLimiter
 
 from src.auth.dependencies import get_current_active_user
 from src.forum.dependencies import (
@@ -20,6 +22,9 @@ from src.forum.services import PostService, ThreadService, LikeService
 from src.users.models import User
 
 router = APIRouter()
+
+settings = get_settings()
+limiter = RateLimiter(times=999 if settings.TESTING else 1, minutes=60 if settings.TESTING else 2)
 
 
 @router.get("")
@@ -57,7 +62,7 @@ async def get_post_by_id(post: Post = Depends(get_valid_post)):
     return post
 
 
-@router.post("")
+@router.post("", dependencies=[Depends(limiter)])
 async def create_post(
         post_data: CreatePostSchema,
         user: User = Security(get_current_active_user, scopes=["posts:create"]),
@@ -84,9 +89,10 @@ async def create_post(
     return new_post
 
 
-@router.put("/{post_id}", response_model=PostOut)
+@router.put("/{post_id}", dependencies=[Depends(limiter)])
 async def update_post(
-        post_data: UpdatePostSchema, post: Post = Depends(get_valid_post_author)
+        post_data: UpdatePostSchema, 
+        post: Post = Depends(get_valid_post_author)
 ):
     post_updated = await post.update(**post_data.dict(exclude_unset=True))
     dispatch(PostEventEnum.UPDATE_POST, payload={"data": post_updated})
@@ -110,7 +116,7 @@ async def get_post_likes(
         params)
 
 
-@router.post("/{post_id}/like")
+@router.post("/{post_id}/like", dependencies=[Depends(limiter)])
 async def like_post(
         post: Post = Depends(get_valid_post),
         user: User = Security(get_current_active_user, scopes=["posts:create"]),
@@ -127,7 +133,7 @@ async def like_post(
     return {"message": "Post liked successfully", "data": {"new_like": new_like, "likes": likes}}
 
 
-@router.post("/{post_id}/dislike")
+@router.post("/{post_id}/dislike", dependencies=[Depends(limiter)])
 async def dislike_post(
         post: Post = Depends(get_valid_post),
         user: User = Security(get_current_active_user, scopes=["posts:create"]),
