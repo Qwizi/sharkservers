@@ -539,20 +539,6 @@ dnspython = ">=1.15.0"
 idna = ">=2.0.0"
 
 [[package]]
-name = "faker"
-version = "19.2.0"
-description = "Faker is a Python package that generates fake data for you."
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "Faker-19.2.0-py3-none-any.whl", hash = "sha256:c6c1218482faf79ae1d791bb7124067d12339e0b8f400de855e2c281bcf78c77"},
-    {file = "Faker-19.2.0.tar.gz", hash = "sha256:78840b94843f3aa32a34a220b2b5e8b309e3ffff3a231b0c54e841bb68e0757d"},
-]
-
-[package.dependencies]
-python-dateutil = ">=2.4"
-
-[[package]]
 name = "fakeredis"
 version = "2.17.0"
 description = "Python implementation of redis API, can be used for testing purposes."
@@ -2154,4 +2140,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "1fa1433adcacb7d4917eb4fe01bfc734d74138bd4b7bfcac3ef30425bf5bf809"
+content-hash = "302677e762b0763a622f862382e06bf212df5e81ef178854462116ad7df078e2"

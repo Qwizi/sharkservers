@@ -20,10 +20,19 @@ from starlette.responses import Response
 from starlette.staticfiles import StaticFiles
 
 from src.__version import VERSION
-from src.auth.dependencies import get_auth_service, get_application, get_current_active_user, \
-    get_current_user, get_access_token_service
+from src.auth.dependencies import (
+    get_auth_service,
+    get_application,
+    get_current_active_user,
+    get_current_user,
+    get_access_token_service,
+)
 from src.auth.schemas import RegisterUserSchema
 from src.auth.services.auth import AuthService
+from src.forum.dependencies import (
+    get_threads_service,
+    get_posts_service,
+)
 
 # Events
 from src.auth.views import router as auth_router_v1
@@ -57,7 +66,11 @@ from src.users.views_admin import (
 )
 from .apps.models import App
 from .auth.utils import now_datetime
-from .forum.dependencies import get_categories_service, get_threads_service, get_posts_service
+from .forum.dependencies import (
+    get_categories_service,
+    get_threads_service,
+    get_posts_service,
+)
 from .forum.services import CategoryService, ThreadService, PostService
 
 # import admin posts router
@@ -108,8 +121,12 @@ def init_routes(_app: FastAPI):
     _app.include_router(chat_router, prefix="/v1/chat", tags=["chat"])
 
     # Admin routes
-    _app.include_router(admin_users_router, prefix="/v1/admin/users", tags=["admin-users"])
-    _app.include_router(admin_roles_router, prefix="/v1/admin/roles", tags=["admin-roles"])
+    _app.include_router(
+        admin_users_router, prefix="/v1/admin/users", tags=["admin-users"]
+    )
+    _app.include_router(
+        admin_roles_router, prefix="/v1/admin/roles", tags=["admin-roles"]
+    )
     _app.include_router(
         admin_scopes_router, prefix="/v1/admin/scopes", tags=["admin-scopes"]
     )
@@ -154,11 +171,30 @@ async def unban_users_cron():
     logger.info(active_bans)
 """
 
+
+# @crontab("* * * * *")
+# async def my_cron_job():
+#     pass
+#     # This function calls the async cron job function
+#     # await unban_users_cron()
+
+
 @crontab("* * * * *")
-async def my_cron_job():
-    pass
-    # This function calls the async cron job function
-    # await unban_users_cron()
+async def update_tables_counters():
+    try:
+
+        logger.info("Updating tables counters")
+        categories_service = await get_categories_service()
+        threads_service = await get_threads_service()
+        posts_service = await get_posts_service()
+        users_service = await get_users_service()
+        await categories_service.sync_counters()
+        await threads_service.sync_counters()
+        await posts_service.sync_counters()
+        await users_service.sync_counters(threads_service=threads_service, posts_service=posts_service)
+        logger.info("Finished updating tables counters")
+    except Exception as e:
+        logger.error(e)
 
 
 def create_app():
@@ -176,7 +212,11 @@ def create_app():
         allow_headers=["*"],
     )
     event_handler_id: int = id(_app)
-    _app.add_middleware(EventHandlerASGIMiddleware, handlers=[local_handler], middleware_id=event_handler_id)
+    _app.add_middleware(
+        EventHandlerASGIMiddleware,
+        handlers=[local_handler],
+        middleware_id=event_handler_id,
+    )
     _app.mount("/static", StaticFiles(directory=st_abs_file_path), name="static")
     _app.state.database = database
     init_routes(_app)
@@ -191,7 +231,6 @@ def create_app():
         await disconnect_db(_app)
         await FastAPILimiter.close()
 
-    
     """
     @_app.middleware("http")
     async def emit_event(request: Request, call_next):
@@ -213,6 +252,7 @@ def create_app():
                  middleware_id=event_handler_id)
         return response
     """
+
     @_app.middleware("http")
     async def update_user_last_online_time(request: Request, call_next):
         response = await call_next(request)
@@ -228,14 +268,13 @@ def create_app():
             return response
         except (JWTError, HTTPException):
             return response
-    
 
     @_app.post("/install", tags=["root"])
     async def install(
-            user_data: RegisterUserSchema,
-            scopes_service: ScopeService = Depends(get_scopes_service),
-            roles_service: RoleService = Depends(get_roles_service),
-            auth_service: AuthService = Depends(get_auth_service),
+        user_data: RegisterUserSchema,
+        scopes_service: ScopeService = Depends(get_scopes_service),
+        roles_service: RoleService = Depends(get_roles_service),
+        auth_service: AuthService = Depends(get_auth_service),
     ):
         await MainService.install(
             file_path=installed_file_path,
@@ -253,11 +292,11 @@ def create_app():
 
     @_app.get("/generate-random-data", tags=["root"])
     async def generate_random_data(
-            auth_service: AuthService = Depends(get_auth_service),
-            roles_service: RoleService = Depends(get_roles_service),
-            categories_service: CategoryService = Depends(get_categories_service),
-            threads_service: ThreadService = Depends(get_threads_service),
-            posts_service: PostService = Depends(get_posts_service),
+        auth_service: AuthService = Depends(get_auth_service),
+        roles_service: RoleService = Depends(get_roles_service),
+        categories_service: CategoryService = Depends(get_categories_service),
+        threads_service: ThreadService = Depends(get_threads_service),
+        posts_service: PostService = Depends(get_posts_service),
     ):
         dispatch(
             event_name="GENERATE_RANDOM_DATA",
@@ -273,9 +312,23 @@ def create_app():
 
     @_app.get("/protected", tags=["root"])
     async def protected_route(
-            app: App = Security(get_application, scopes=["users:create"]),
+        app: App = Security(get_application, scopes=["users:create"]),
     ):
         return {"msg": "You are authenticated!"}
+
+
+    @_app.get("/test", tags=["root"])
+    async def test(
+        users_service = Depends(get_users_service), 
+        threads_service = Depends(get_threads_service),
+        categories_service: CategoryService = Depends(get_categories_service),
+        posts_service = Depends(get_posts_service),
+    ):
+        await categories_service.sync_counters()
+        await threads_service.sync_counters()
+        await posts_service.sync_counters()
+        await users_service.sync_counters(threads_service=threads_service, posts_service=posts_service)
+        return {}
 
     return _app
 

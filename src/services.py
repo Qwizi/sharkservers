@@ -12,6 +12,7 @@ from fastapi_mail.email_utils import DefaultChecker
 from pydantic import EmailStr
 from starlette import status
 
+
 from src.auth.schemas import RegisterUserSchema
 from src.enums import ActivationEmailTypeEnum
 from src.logger import logger, logger_with_filename
@@ -92,9 +93,17 @@ Administracja SharkServers.pl
             logger.info(f"Email {recipients[0]} is invalid")
             return
         await self.mailer.send_message(
-            message=MessageSchema(subject=subject, recipients=recipients, body=body, subtype=MessageType.html, ))
+            message=MessageSchema(
+                subject=subject,
+                recipients=recipients,
+                body=body,
+                subtype=MessageType.html,
+            )
+        )
 
-    async def send_confirmation_email(self, activation_type: ActivationEmailTypeEnum, email: EmailStr, code: str):
+    async def send_confirmation_email(
+        self, activation_type: ActivationEmailTypeEnum, email: EmailStr, code: str
+    ):
         subject = None
         body = None
         if activation_type == ActivationEmailTypeEnum.ACCOUNT:
@@ -114,27 +123,63 @@ class MainService:
     @staticmethod
     async def create_default_scopes(scopes_service):
         await scopes_service.create_default_scopes(
-            applications=["users", "roles", "scopes", "players", "categories", "tags", "threads", "posts", "apps", ],
-            additional=[("users", "me", "Get my profile"), ("users", "me:username", "Update my username"),
-                ("users", "me:password", "Update my password"), ("users", "me:display-role", "Update my display role"),
-                ("threads", "open", "Open a thread"), ("threads", "close", "Close a thread"), ], )
+            applications=[
+                "users",
+                "roles",
+                "scopes",
+                "players",
+                "categories",
+                "tags",
+                "threads",
+                "posts",
+                "apps",
+            ],
+            additional=[
+                ("users", "me", "Get my profile"),
+                ("users", "me:username", "Update my username"),
+                ("users", "me:password", "Update my password"),
+                ("users", "me:display-role", "Update my display role"),
+                ("threads", "open", "Open a thread"),
+                ("threads", "close", "Close a thread"),
+            ],
+        )
 
     @staticmethod
-    async def install(file_path, admin_user_data: RegisterUserSchema, scopes_service, roles_service, auth_service,
-            create_file: bool = True, ):
-        logger_with_filename(filename=MainService.__name__, data="Step 0 - Install started")
+    async def install(
+        file_path,
+        admin_user_data: RegisterUserSchema,
+        scopes_service,
+        roles_service,
+        auth_service,
+        create_file: bool = True,
+    ):
+        logger_with_filename(
+            filename=MainService.__name__, data="Step 0 - Install started"
+        )
         if create_file:
             if os.path.exists(file_path):
                 raise HTTPException(detail="Its already installed", status_code=400)
-        logger_with_filename(filename=MainService.__name__, data="Step 1 - Create default scopes")
+        logger_with_filename(
+            filename=MainService.__name__, data="Step 1 - Create default scopes"
+        )
         await MainService.create_default_scopes(scopes_service=scopes_service)
-        logger_with_filename(filename=MainService.__name__, data="Step 2 - Create default roles")
+        logger_with_filename(
+            filename=MainService.__name__, data="Step 2 - Create default roles"
+        )
         await roles_service.create_default_roles(scopes_service=scopes_service)
-        logger_with_filename(filename=MainService.__name__, data="Step 2 - Default roles created")
-        logger_with_filename(filename=MainService.__name__, data="Step 3 - Create admin user")
-        admin_user: User = await auth_service.register(admin_user_data, is_activated=True, is_superuser=True)
-        logger_with_filename(filename=MainService.__name__,
-                             data=f"Step 3 - {admin_user.get_pydantic(exclude={'password', })} created")
+        logger_with_filename(
+            filename=MainService.__name__, data="Step 2 - Default roles created"
+        )
+        logger_with_filename(
+            filename=MainService.__name__, data="Step 3 - Create admin user"
+        )
+        admin_user: User = await auth_service.register(
+            admin_user_data, is_activated=True, is_superuser=True
+        )
+        logger_with_filename(
+            filename=MainService.__name__,
+            data=f"Step 3 - {admin_user.get_pydantic(exclude={'password', })} created",
+        )
         if create_file:
             open(file_path, "w+")
 
@@ -153,20 +198,82 @@ class MainService:
                     tag = operation["tags"][0]
                     operation_id = operation["operationId"]
                     to_remove = f"{tag}-"
-                    new_operation_id = operation_id[len(to_remove):]
+                    new_operation_id = operation_id[len(to_remove) :]
                     print(operation_id)
                     operation["operationId"] = new_operation_id
                     print(new_operation_id)
             file_path.write_text(json.dumps(openapi_content))
 
+    # @staticmethod
+    # async def sync_categories_threads_count():
+    #     try:
+    #         categories_service = await get_categories_service()
+    #         categories = await categories_service.Meta.model.objects.select_related(
+    #             "threads"
+    #         ).all()
 
+    #         for category in categories:
+    #             threads_count = await category.threads.count()
+    #             await category.update(threads_count=threads_count)
+    #     except Exception as e:
+    #         logger.error(e)
+
+    # @staticmethod
+    # async def sync_threads_posts_count():
+    #     try:
+    #         threads_service = await get_threads_service()
+    #         threads = await threads_service.Meta.model.objects.select_related("posts").all()
+    #         for thread in threads:
+    #             posts_count = await thread.posts.count()
+    #             await thread.update(post_count=posts_count)
+    #     except Exception as e:
+    #         logger.error(e)
+
+    # @staticmethod
+    # async def sync_post_likes_count():
+    #     try:
+    #         posts_service = await get_posts_service()
+    #         posts = await posts_service.Meta.model.objects.select_related("likes").all()
+    #         for post in posts:
+    #             likes_count = await post.likes.count()
+    #             await post.update(likes_count=likes_count)
+    #     except Exception as  e:
+    #         logger.error()
+
+    # @staticmethod
+    # async def sync_user_counters():
+    #     try:
+    #         threads_service = await get_threads_service()
+    #         posts_service = await get_posts_service()
+    #         users_service = await get_users_service()
+    #         users = await users_service.Meta.model.objects.select_related(
+    #             ["user_threads", "user_posts", "user_reputation"]
+    #         ).all()
+    #         for user in users:
+    #             threads_count = await threads_service.Meta.model.objects.select_related("posts").filter(author=user).count()
+    #             posts_count = await posts_service.Meta.model.objects.select_related("likes").filter(author=user).count()
+    #             await user.update(threads_count=threads_count, posts_count=posts_count)
+    #     except Exception as e:
+    #         logger.error(e.message)
+
+
+    async def sync_counters():
+        logger.info("Rozpoczynam synchoronizacje licznikow")
+        await MainService.sync_categories_threads_count()
+        await MainService.sync_threads_posts_count()
+        await MainService.sync_post_likes_count()
+        # await MainService.sync_user_counters()
+        logger.info("Zakonczylem synchornizacje liczników")
+    
 class UploadService:
     ROOT_FOLDER = "static/uploads"
     AVATAR_FOLDER = "avatars"
 
     def __init__(self, settings: Settings):
         self.settings = settings
-        self.avatars_upload_folder = Path.joinpath(Path(__file__).parent.parent, self.ROOT_FOLDER, self.AVATAR_FOLDER)
+        self.avatars_upload_folder = Path.joinpath(
+            Path(__file__).parent.parent, self.ROOT_FOLDER, self.AVATAR_FOLDER
+        )
 
     def is_valid_content_type(self, file: UploadFile):
         return file.content_type in self.settings.IMAGE_ALLOWED_CONTENT_TYPES
@@ -204,22 +311,33 @@ class UploadService:
         except UnidentifiedImageError:
             if file_path.exists():
                 file_path.unlink()
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="File is not an image")
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="File is not an image",
+            )
 
     async def upload_avatar(self, file: UploadFile):
         file_content = await file.read()
         if not self.is_valid_content_type(file):
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                                detail="File extension is not allowed")
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="File extension is not allowed",
+            )
         if not self.is_valid_avatar_size(file_content):
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="File size is too big")
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="File size is too big",
+            )
         file_name = self.create_avatar_file_name(Path(file.filename).suffix)
         avatar_full_path = self.get_avatar_path(file_name)
         # create avatar file
         self.create_file(avatar_full_path, file_content)
         # resize avatar
         self.resize_image(avatar_full_path)
-        return {"file_name": file_name, "avatar_full_path": str(avatar_full_path), }
+        return {
+            "file_name": file_name,
+            "avatar_full_path": str(avatar_full_path),
+        }
 
     def delete_avatar(self, file_name: str):
         avatar_full_path = self.get_avatar_path(file_name)

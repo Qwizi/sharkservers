@@ -24,7 +24,7 @@ from src.users.models import User
 router = APIRouter()
 
 settings = get_settings()
-limiter = RateLimiter(times=999 if settings.TESTING else 1, minutes=60 if settings.TESTING else 2)
+limiter = RateLimiter(times=999 if settings.TESTING else 5, minutes=60 if settings.TESTING else 1)
 
 
 @router.get("")
