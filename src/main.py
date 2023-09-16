@@ -18,6 +18,8 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.staticfiles import StaticFiles
+from src.servers.dependencies import get_servers_service
+from src.servers.services import ServerService
 
 from src.__version import VERSION
 from src.auth.dependencies import (
@@ -140,45 +142,6 @@ def init_routes(_app: FastAPI):
     return _app
 
 
-"""
-
-async def unban_users_cron():
-    # This is an async cron job that runs every minute
-    logger.info("Cron job ran")
-
-    users_service = await get_users_service()
-    roles_service = await get_roles_service()
-    scopes_service = await get_scopes_service()
-    auth_service = await get_auth_service(
-        users_service=users_service,
-        roles_service=roles_service,
-        scopes_service=scopes_service,
-    )
-    ban_service = await get_ban_service(
-        auth_service=auth_service, roles_service=roles_service
-    )
-    active_bans = await ban_service.Meta.model.objects.filter(
-        ban_time__lte=datetime.datetime.utcnow()
-    ).all()
-
-    now = datetime.datetime.utcnow()
-
-    for ban in active_bans:
-        logger.info(ban.ban_time.date())
-        if ban.ban_time < now:
-            await ban_service.unban_user(ban.user)
-
-    logger.info(active_bans)
-"""
-
-
-# @crontab("* * * * *")
-# async def my_cron_job():
-#     pass
-#     # This function calls the async cron job function
-#     # await unban_users_cron()
-
-
 @crontab("* * * * *")
 async def update_tables_counters():
     try:
@@ -231,28 +194,6 @@ def create_app():
         await disconnect_db(_app)
         await FastAPILimiter.close()
 
-    """
-    @_app.middleware("http")
-    async def emit_event(request: Request, call_next):
-        event_name = None
-        for route in _app.routes:
-            if route.path == request.url.path:
-                print(route.name)
-                event_name = f"{route.name}"
-                break
-        post_event_name = f"{event_name}"
-        start_time = time()
-        response = await call_next(request)
-        process_time = time() - start_time
-        response.headers["X-Process-Time"] = str(process_time)
-        response_body = [chunk async for chunk in response.body_iterator]
-        response.body_iterator = iterate_in_threadpool(iter(response_body))
-        print(f"response_body={response_body[0].decode()}")
-        dispatch(post_event_name, payload={"request": request, "response": response, "body": response_body[0].decode()},
-                 middleware_id=event_handler_id)
-        return response
-    """
-
     @_app.middleware("http")
     async def update_user_last_online_time(request: Request, call_next):
         response = await call_next(request)
@@ -297,6 +238,7 @@ def create_app():
         categories_service: CategoryService = Depends(get_categories_service),
         threads_service: ThreadService = Depends(get_threads_service),
         posts_service: PostService = Depends(get_posts_service),
+        servers_service: ServerService = Depends(get_servers_service)
     ):
         dispatch(
             event_name="GENERATE_RANDOM_DATA",
@@ -306,6 +248,7 @@ def create_app():
                 "categories_service": categories_service,
                 "threads_service": threads_service,
                 "posts_service": posts_service,
+                "servers_service": servers_service,
             },
         )
         return {"msg": "Done"}

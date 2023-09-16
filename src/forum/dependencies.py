@@ -50,7 +50,7 @@ async def get_valid_thread(
     """
     dispatch(ThreadEventEnum.GET_ONE_PRE, payload={"data": thread_id})
     return await threads_service.get_one(
-        id=thread_id, related=["category", "author", "author__display_role", "meta_fields"]
+        id=thread_id, related=["category", "author", "author__display_role", "meta_fields", "server"]
     )
 
 

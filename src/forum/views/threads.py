@@ -54,8 +54,7 @@ async def get_threads(
         else:
             kwargs["order_by"] = queries.order_by
     if queries.server:
-        kwargs["meta_fields__name"] = "server_id"
-        kwargs["meta_fields__value"] = str(queries.server)
+        kwargs["server__id"] = queries.server
     if queries.status:
         kwargs["status"] = queries.status
     if queries.closed:
@@ -63,7 +62,7 @@ async def get_threads(
 
     return await threads_service.get_all(
         params=params,
-        related=["category", "author", "author__display_role", "meta_fields"],
+        related=["category", "author", "author__display_role", "meta_fields", "server"],
         **kwargs
     )
 

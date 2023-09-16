@@ -80,6 +80,7 @@ class Thread(ormar.Model, DateFieldsMixins):
     posts: Optional[List[Post]] = ormar.ManyToMany(Post, related_name="thread_post")
     meta_fields: Optional[List[ThreadMeta]] = ormar.ManyToMany(ThreadMeta, related_name="thread_meta")
     post_count: int = ormar.Integer(default=0)
+    server: Optional[Server] = ormar.ForeignKey(Server, related_name="thread_server")
 
 
 @post_save(Thread)

@@ -117,14 +117,6 @@ class ThreadService(BaseService):
         servers_service: ServerService = None,
         **kwargs
     ):
-        new_thread = await self.create(
-            title=data.title,
-            content=data.content,
-            category=category,
-            author=author,
-            status=status,
-            **kwargs
-        )
         if category.type == CategoryTypeEnum.APPLICATION:
             if not data.server_id:
                 raise HTTPException(
@@ -147,7 +139,15 @@ class ThreadService(BaseService):
                     detail="question_reason is required",
                 )
             server = await servers_service.get_one(id=data.server_id)
-
+            new_thread = await self.create(
+                title=data.title,
+                content=data.content,
+                category=category,
+                author=author,
+                status=status,
+                server=server,
+                **kwargs
+            )
             await thread_meta_service.fill_meta(
                 thread_id=new_thread.id,
                 data={
@@ -157,11 +157,19 @@ class ThreadService(BaseService):
                     "question_reason": data.question_reason,
                 },
             )
+            
             return await self.get_one(
                 id=new_thread.id,
                 related=["category", "author", "author__display_role", "meta_fields"],
             )
-
+        new_thread = await self.create(
+            title=data.title,
+            content=data.content,
+            category=category,
+            author=author,
+            status=status,
+            **kwargs
+        )
         return new_thread
     
     async def sync_counters(self):

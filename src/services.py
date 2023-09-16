@@ -203,67 +203,6 @@ class MainService:
                     operation["operationId"] = new_operation_id
                     print(new_operation_id)
             file_path.write_text(json.dumps(openapi_content))
-
-    # @staticmethod
-    # async def sync_categories_threads_count():
-    #     try:
-    #         categories_service = await get_categories_service()
-    #         categories = await categories_service.Meta.model.objects.select_related(
-    #             "threads"
-    #         ).all()
-
-    #         for category in categories:
-    #             threads_count = await category.threads.count()
-    #             await category.update(threads_count=threads_count)
-    #     except Exception as e:
-    #         logger.error(e)
-
-    # @staticmethod
-    # async def sync_threads_posts_count():
-    #     try:
-    #         threads_service = await get_threads_service()
-    #         threads = await threads_service.Meta.model.objects.select_related("posts").all()
-    #         for thread in threads:
-    #             posts_count = await thread.posts.count()
-    #             await thread.update(post_count=posts_count)
-    #     except Exception as e:
-    #         logger.error(e)
-
-    # @staticmethod
-    # async def sync_post_likes_count():
-    #     try:
-    #         posts_service = await get_posts_service()
-    #         posts = await posts_service.Meta.model.objects.select_related("likes").all()
-    #         for post in posts:
-    #             likes_count = await post.likes.count()
-    #             await post.update(likes_count=likes_count)
-    #     except Exception as  e:
-    #         logger.error()
-
-    # @staticmethod
-    # async def sync_user_counters():
-    #     try:
-    #         threads_service = await get_threads_service()
-    #         posts_service = await get_posts_service()
-    #         users_service = await get_users_service()
-    #         users = await users_service.Meta.model.objects.select_related(
-    #             ["user_threads", "user_posts", "user_reputation"]
-    #         ).all()
-    #         for user in users:
-    #             threads_count = await threads_service.Meta.model.objects.select_related("posts").filter(author=user).count()
-    #             posts_count = await posts_service.Meta.model.objects.select_related("likes").filter(author=user).count()
-    #             await user.update(threads_count=threads_count, posts_count=posts_count)
-    #     except Exception as e:
-    #         logger.error(e.message)
-
-
-    async def sync_counters():
-        logger.info("Rozpoczynam synchoronizacje licznikow")
-        await MainService.sync_categories_threads_count()
-        await MainService.sync_threads_posts_count()
-        await MainService.sync_post_likes_count()
-        # await MainService.sync_user_counters()
-        logger.info("Zakonczylem synchornizacje liczników")
     
 class UploadService:
     ROOT_FOLDER = "static/uploads"
