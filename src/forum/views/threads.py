@@ -57,7 +57,7 @@ async def get_threads(
         kwargs["server__id"] = queries.server
     if queries.status:
         kwargs["status"] = queries.status
-    if queries.closed:
+    if queries.closed is not None:
         kwargs["is_closed"] = queries.closed
 
     return await threads_service.get_all(
