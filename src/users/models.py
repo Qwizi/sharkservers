@@ -29,6 +29,9 @@ class User(ormar.Model, DateFieldsMixins):
     last_login: Optional[datetime.datetime] = ormar.DateTime(nullable=True)
     last_online: Optional[datetime.datetime] = ormar.DateTime(nullable=True)
     secret_salt: Optional[str] = ormar.String(max_length=255, unique=True)
+    threads_count: int = ormar.Integer(default=0)
+    posts_count: int = ormar.Integer(default=0)
+    likes_count: int = ormar.Integer(default=0)
 
 
 class Ban(ormar.Model, DateFieldsMixins):

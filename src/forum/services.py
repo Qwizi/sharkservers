@@ -2,19 +2,35 @@ from fastapi import HTTPException
 from starlette import status as starlette_status
 from src.db import BaseService
 from src.forum.enums import ThreadStatusEnum, ThreadActionEnum, CategoryTypeEnum
-from src.forum.exceptions import (category_not_found_exception, thread_not_found_exception, post_not_found_exception,
-                                  like_not_found_exception, like_already_exists_exception,
-                                  thread_meta_not_found_exception, )
+from src.forum.exceptions import (
+    category_not_found_exception,
+    thread_not_found_exception,
+    post_not_found_exception,
+    like_not_found_exception,
+    like_already_exists_exception,
+    thread_meta_not_found_exception,
+)
 from src.forum.models import Category, Thread, Post, Like, ThreadMeta
 from src.forum.schemas import CreateThreadSchema
 from src.servers.services import ServerService
 from src.users.models import User
+from src.logger import logger
 
 
 class CategoryService(BaseService):
     class Meta:
         model = Category
         not_found_exception = category_not_found_exception
+
+    async def sync_counters(self):
+        try:
+            categories = await self.Meta.model.objects.select_related("threads").all()
+            for category in categories:
+                threads_count = await category.threads.count()
+                await category.update(threads_count=threads_count)
+            logger.info(f"Finished sync counters to category threads -> {len(categories)}")
+        except Exception as e:
+            logger.error(e)
 
 
 class ThreadMetaService(BaseService):
@@ -73,7 +89,9 @@ class ThreadService(BaseService):
         await thread.update(category=new_category)
         return thread
 
-    async def run_action(self, thread: Thread, action: ThreadActionEnum, new_category: Category = None):
+    async def run_action(
+        self, thread: Thread, action: ThreadActionEnum, new_category: Category = None
+    ):
         if action == ThreadActionEnum.APPROVE:
             return await self.approve(thread)
         elif action == ThreadActionEnum.REJECT:
@@ -90,14 +108,14 @@ class ThreadService(BaseService):
             return await self.change_category(thread, new_category)
 
     async def create_thread(
-            self,
-            data: CreateThreadSchema,
-            author: User,
-            category: Category,
-            status: ThreadStatusEnum = ThreadStatusEnum.PENDING.value,
-            thread_meta_service: ThreadMetaService = None,
-            servers_service: ServerService = None,
-            **kwargs
+        self,
+        data: CreateThreadSchema,
+        author: User,
+        category: Category,
+        status: ThreadStatusEnum = ThreadStatusEnum.PENDING.value,
+        thread_meta_service: ThreadMetaService = None,
+        servers_service: ServerService = None,
+        **kwargs
     ):
         new_thread = await self.create(
             title=data.title,
@@ -109,35 +127,68 @@ class ThreadService(BaseService):
         )
         if category.type == CategoryTypeEnum.APPLICATION:
             if not data.server_id:
-                raise HTTPException(status_code=starlette_status.HTTP_422_UNPROCESSABLE_ENTITY,
-                                    detail="server_id is required")
+                raise HTTPException(
+                    status_code=starlette_status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="server_id is required",
+                )
             if not data.question_experience:
-                raise HTTPException(status_code=starlette_status.HTTP_422_UNPROCESSABLE_ENTITY,
-                                    detail="question_experience is required")
+                raise HTTPException(
+                    status_code=starlette_status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="question_experience is required",
+                )
             if not data.question_age:
-                raise HTTPException(status_code=starlette_status.HTTP_422_UNPROCESSABLE_ENTITY,
-                                    detail="question_age is required")
+                raise HTTPException(
+                    status_code=starlette_status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="question_age is required",
+                )
             if not data.question_reason:
-                raise HTTPException(status_code=starlette_status.HTTP_422_UNPROCESSABLE_ENTITY,
-                                    detail="question_reason is required")
+                raise HTTPException(
+                    status_code=starlette_status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="question_reason is required",
+                )
             server = await servers_service.get_one(id=data.server_id)
 
-            await thread_meta_service.fill_meta(thread_id=new_thread.id, data={
-                "server_id": data.server_id,
-                "question_experience": data.question_experience,
-                "question_age": data.question_age,
-                "question_reason": data.question_reason,
-            })
-            return await self.get_one(id=new_thread.id,
-                                      related=["category", "author", "author__display_role", "meta_fields"])
+            await thread_meta_service.fill_meta(
+                thread_id=new_thread.id,
+                data={
+                    "server_id": data.server_id,
+                    "question_experience": data.question_experience,
+                    "question_age": data.question_age,
+                    "question_reason": data.question_reason,
+                },
+            )
+            return await self.get_one(
+                id=new_thread.id,
+                related=["category", "author", "author__display_role", "meta_fields"],
+            )
 
         return new_thread
+    
+    async def sync_counters(self):
+        try:
+            threads = await self.Meta.model.objects.select_related("posts").all()
+            for thread in threads:
+                posts_count = await thread.posts.count()
+                await thread.update(post_count=posts_count)
+            logger.info(f"Finished sync counters to thread posts -> {len(threads)}")
+        except Exception as e:
+            logger.error(e)
 
 
 class PostService(BaseService):
     class Meta:
         model = Post
         not_found_exception = post_not_found_exception
+
+    async def sync_counters(self):
+        try:
+            posts = await self.Meta.model.objects.select_related("likes").all()
+            for post in posts:
+                likes_count = await post.likes.count()
+                await post.update(likes_count=likes_count)
+            logger.info(f"Finished sync counters to post likes -> {len(posts)}")
+        except Exception as  e:
+            logger.error(e)
 
 
 class SpecialThreadQuestionService(BaseService):

@@ -76,7 +76,7 @@ class Thread(ormar.Model, DateFieldsMixins):
         max_length=64, choices=list(ThreadStatusEnum), default=None, nullable=True
     )
     category: Optional[Category] = ormar.ForeignKey(Category)
-    author: Optional[User] = ormar.ForeignKey(User, relaed_name="user_threads")
+    author: Optional[User] = ormar.ForeignKey(User, related_name="user_threads")
     posts: Optional[List[Post]] = ormar.ManyToMany(Post, related_name="thread_post")
     meta_fields: Optional[List[ThreadMeta]] = ormar.ManyToMany(ThreadMeta, related_name="thread_meta")
     post_count: int = ormar.Integer(default=0)
@@ -86,8 +86,10 @@ class Thread(ormar.Model, DateFieldsMixins):
 async def on_thread_save(sender, instance, **kwargs):
     # Update category thread counter
     category = await Category.objects.get(id=instance.category.id)
-    await category.update(threads_count=category.threads_count + 1)
-
+    threads_category_count = category.threads_count + 1
+    threads_count = instance.author.threads_count + 1
+    await category.update(threads_count=threads_category_count)
+    await instance.author.update(threads_count=threads_count)
     # Check category type
     if category.type == CategoryTypeEnum.APPLICATION:
         # create thread server_id meta field
@@ -126,13 +128,20 @@ async def update_category_thread_counter_after_delete(sender, instance, **kwargs
 async def update_thread_post_counter_after_relation_add(sender, instance, child, **kwargs):
     if isinstance(child, Post):
         thread = await Thread.objects.get(id=instance.id)
-        await thread.update(post_count=thread.post_count + 1)
+        thread_posts_count = thread.post_count + 1
+        posts_count = child.author.posts_count + 1
+        await thread.update(post_count=thread_posts_count)
         logger.info(f"Thread {thread.title} post count updated to {thread.post_count}")
+        await child.author.update(posts_count=posts_count)
 
 
 @post_relation_remove(Thread)
 async def update_thread_post_counter_after_relation_remove(sender, instance, child, **kwargs):
     if isinstance(child, Post):
         thread = await Thread.objects.get(id=instance.id)
-        await thread.update(post_count=thread.post_count - 1 if thread.post_count > 0 else 0)
+        thread_posts_count=thread.post_count - 1 if thread.post_count > 0 else 0
+        posts_count=child.author.posts_count - 1 if child.author.posts_count > 0 else 0
+        await thread.update(post_count=thread_posts_count)
         logger.info(f"Thread {thread.title} post count updated to {thread.post_count}")
+        await child.author.update(posts_count=posts_count)
+
