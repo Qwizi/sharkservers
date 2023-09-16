@@ -78,6 +78,7 @@ async def generate_random_data(event: Event):
                 kwargs["server"] = random.choice(list(servers_list))
                 kwargs["title"] = f"Test application thread {i}"
                 kwargs["content"] = f"Test application content {i}"
+                kwargs["status"] = ThreadStatusEnum.PENDING.value
 
             new_thread = await threads_service.create(
                     category=category,
