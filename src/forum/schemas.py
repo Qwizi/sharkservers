@@ -24,7 +24,7 @@ author_exclude = {
 category_out = Category.get_pydantic(exclude={"threads"})
 tags_out = Tag.get_pydantic()
 thread_out = Thread.get_pydantic(
-    exclude=author_exclude | {"posts", "server"},
+    exclude=author_exclude | {"posts", "server__server_chat_color_module"},
 )
 post_out = Post.get_pydantic(exclude=author_exclude | {"likes", "thread_post"})
 like_out = Like.get_pydantic(exclude=author_exclude | {"post_likes"})

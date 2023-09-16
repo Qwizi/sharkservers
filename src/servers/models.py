@@ -1,3 +1,4 @@
+from enum import unique
 from typing import Optional
 
 import ormar
@@ -18,8 +19,8 @@ class Server(ormar.Model, DateFieldsMixins):
 
     id: int = ormar.Integer(primary_key=True)
     name: str = ormar.String(max_length=64, unique=True)
-    ip: str = ormar.String(max_length=64, unique=True)
-    port: int = ormar.Integer()
+    ip: str = ormar.String(max_length=64)
+    port: int = ormar.Integer(unique=True)
 
 
 """
