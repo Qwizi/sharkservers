@@ -8,6 +8,3 @@ class ChatService(BaseService):
     class Meta:
         model = Chat
         not_found_exception = chat_not_found_exception
-
-
-chat_service = ChatService()

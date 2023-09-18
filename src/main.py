@@ -1,16 +1,30 @@
 import datetime
+import json
 import logging
 import os
 from time import time
+from typing import Annotated
+from fastapi.encoders import jsonable_encoder
 
-from fastapi import FastAPI, Depends, Security, HTTPException
+from fastapi import (
+    FastAPI,
+    Depends,
+    Query,
+    Security,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+    WebSocketException,
+    status,
+)
+from fastapi.exceptions import WebSocketRequestValidationError
 from fastapi.routing import APIRoute
 from fastapi.security import SecurityScopes
 from fastapi_events.dispatcher import dispatch
 from fastapi_events.handlers.local import local_handler
 from fastapi_events.middleware import EventHandlerASGIMiddleware
 from fastapi_limiter import FastAPILimiter
-from fastapi_pagination import add_pagination
+from fastapi_pagination import Params, add_pagination
 from jose import JWTError
 from starlette.concurrency import iterate_in_threadpool
 from starlette.middleware.authentication import AuthenticationMiddleware
@@ -18,6 +32,11 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.staticfiles import StaticFiles
+from src.chat.enums import WebsocketEventEnum
+from src.chat.schemas import ChatEventSchema
+from src.chat.dependencies import get_chat_service
+from src.chat.services import ChatService
+from src.chat.dependencies import ws_get_current_user
 from src.servers.dependencies import get_servers_service
 from src.servers.services import ServerService
 
@@ -66,6 +85,7 @@ from src.users.views import router as users_router_v1
 from src.users.views_admin import (
     router as admin_users_router,
 )
+from src.users.models import User
 from .apps.models import App
 from .auth.utils import now_datetime
 from .forum.dependencies import (
@@ -74,6 +94,7 @@ from .forum.dependencies import (
     get_posts_service,
 )
 from .forum.services import CategoryService, ThreadService, PostService
+from fastapi_socketio import SocketManager
 
 # import admin posts router
 
@@ -111,6 +132,28 @@ async def disconnect_db(_app: FastAPI):
     await app.state.redis.close()
 
 
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: list[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def send_personal_message(self, chat_schema: ChatEventSchema, websocket: WebSocket):
+        await websocket.send_json(jsonable_encoder(chat_schema))
+
+    async def broadcast(self, chat_schema: ChatEventSchema):
+        for connection in self.active_connections:
+            await connection.send_json(jsonable_encoder(chat_schema))
+
+
+manager = ConnectionManager()
+
+
 def init_routes(_app: FastAPI):
     # V1 routes
     _app.include_router(auth_router_v1, prefix="/v1/auth", tags=["auth"])
@@ -145,7 +188,6 @@ def init_routes(_app: FastAPI):
 @crontab("* * * * *")
 async def update_tables_counters():
     try:
-
         logger.info("Updating tables counters")
         categories_service = await get_categories_service()
         threads_service = await get_threads_service()
@@ -154,7 +196,9 @@ async def update_tables_counters():
         await categories_service.sync_counters()
         await threads_service.sync_counters()
         await posts_service.sync_counters()
-        await users_service.sync_counters(threads_service=threads_service, posts_service=posts_service)
+        await users_service.sync_counters(
+            threads_service=threads_service, posts_service=posts_service
+        )
         logger.info("Finished updating tables counters")
     except Exception as e:
         logger.error(e)
@@ -169,7 +213,7 @@ def create_app():
     )
     _app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=["http://localhost:3000"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -238,7 +282,7 @@ def create_app():
         categories_service: CategoryService = Depends(get_categories_service),
         threads_service: ThreadService = Depends(get_threads_service),
         posts_service: PostService = Depends(get_posts_service),
-        servers_service: ServerService = Depends(get_servers_service)
+        servers_service: ServerService = Depends(get_servers_service),
     ):
         dispatch(
             event_name="GENERATE_RANDOM_DATA",
@@ -259,19 +303,70 @@ def create_app():
     ):
         return {"msg": "You are authenticated!"}
 
-
     @_app.get("/test", tags=["root"])
     async def test(
-        users_service = Depends(get_users_service), 
-        threads_service = Depends(get_threads_service),
+        users_service=Depends(get_users_service),
+        threads_service=Depends(get_threads_service),
         categories_service: CategoryService = Depends(get_categories_service),
-        posts_service = Depends(get_posts_service),
+        posts_service=Depends(get_posts_service),
     ):
         await categories_service.sync_counters()
         await threads_service.sync_counters()
         await posts_service.sync_counters()
-        await users_service.sync_counters(threads_service=threads_service, posts_service=posts_service)
+        await users_service.sync_counters(
+            threads_service=threads_service, posts_service=posts_service
+        )
         return {}
+
+    @_app.websocket("/ws")
+    async def websocket_endpoint(
+        websocket: WebSocket,
+        chat_service: ChatService = Depends(get_chat_service),
+        user: User = Depends(ws_get_current_user),
+    ):
+        try:
+            await manager.connect(websocket)
+            logger.info(websocket)
+            logger.info(user)
+            while True:
+                data = await websocket.receive_json()
+                event = data.get("event", None)
+                event_data = data.get("data", None)
+                if event is None:
+                    raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
+
+                if event == WebsocketEventEnum.GET_MESSAGES:
+                    messages = await chat_service.get_all(
+                        params=Params(size=10),
+                        related=["author", "author__display_role"],
+                        order_by="-id",
+                    )
+                    messages_schema = ChatEventSchema(
+                        event=WebsocketEventEnum.GET_MESSAGES, data=messages
+                    )
+                    logger.info(jsonable_encoder(messages_schema))
+                    await manager.broadcast(messages_schema)
+                elif event == WebsocketEventEnum.SEND_MESSAGE:
+                    if event_data is not None:
+                        new_message = await chat_service.create(
+                            author=user, message=event_data
+                        )
+                        new_message_schema = ChatEventSchema(
+                            event=WebsocketEventEnum.GET_MESSAGE, data=new_message
+                        )
+                        messages = await chat_service.get_all(
+                            params=Params(size=10),
+                            related=["author", "author__display_role"],
+                            order_by="-id",
+                        )
+                        messages_schema = ChatEventSchema(
+                            event=WebsocketEventEnum.GET_MESSAGES, data=messages
+                        )
+                        logger.info(jsonable_encoder(messages_schema))
+                        await manager.broadcast(messages_schema)
+
+        except WebSocketDisconnect:
+            manager.disconnect(websocket)
 
     return _app
 
