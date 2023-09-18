@@ -21,4 +21,10 @@ class ChatEventsEnum(str, Enum):
     ADMIN_DELETE = "CHAT_ADMIN_DELETE"
 
 
+class WebsocketEventEnum(str, Enum):
+    GET_MESSAGES = "get_messages"
+    GET_MESSAGE = "get_message"
+    SEND_MESSAGE = "send_message"
+
+
 

@@ -1,5 +1,7 @@
 # chat schemas
+from fastapi_pagination import Page
 from pydantic import BaseModel, Field
+from src.chat.enums import WebsocketEventEnum
 from src.chat.models import Chat
 
 ChatOut = Chat.get_pydantic(
@@ -22,3 +24,8 @@ class CreateChatMessageSchema(BaseModel):
 
 class UpdateChatSchema(BaseModel):
     pass
+
+
+class ChatEventSchema(BaseModel):
+    event: WebsocketEventEnum
+    data: Page[ChatOut] | ChatOut
