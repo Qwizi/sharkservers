@@ -12,7 +12,6 @@ from fastapi_mail.email_utils import DefaultChecker
 from pydantic import EmailStr
 from starlette import status
 
-
 from src.auth.schemas import RegisterUserSchema
 from src.enums import ActivationEmailTypeEnum
 from src.logger import logger, logger_with_filename
@@ -175,6 +174,16 @@ class MainService:
         )
         admin_user: User = await auth_service.register(
             admin_user_data, is_activated=True, is_superuser=True
+        )
+        bot_password = auth_service.generate_secret_salt()
+        bot_user: User = await auth_service.register(
+            RegisterUserSchema(
+                username="Bot",
+                email="bot@sharkservers.pl",
+                password=bot_password,
+                password2=bot_password
+            ),
+            is_activated=True,
         )
         logger_with_filename(
             filename=MainService.__name__,

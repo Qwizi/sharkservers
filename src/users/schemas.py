@@ -1,6 +1,8 @@
 from typing import Optional
+from fastapi import Query
 
 from pydantic import BaseModel, validator, EmailStr
+from src.schemas import OrderQuery
 
 from src.auth.schemas import UsernameRegex
 from src.users.models import User
@@ -79,3 +81,7 @@ class AdminUpdateUserSchema(BaseModel):
     roles: Optional[list[int]]
     display_role: Optional[int]
     secret_salt: Optional[str]
+
+
+class UserQuery(OrderQuery):
+    username: Optional[str] = Query(None, description="Username")

@@ -45,6 +45,7 @@ from src.users.schemas import (
     ChangeDisplayRoleSchema,
     SuccessChangeUsernameSchema,
     ChangeEmailSchema,
+    UserQuery,
 )
 from src.users.services import UserService
 
@@ -56,7 +57,7 @@ limiter = RateLimiter(times=1, seconds=60)
 @router.get("", response_model=Page[UserOut])
 async def get_users(
     params: Params = Depends(),
-    queries: OrderQuery = Depends(),
+    queries: UserQuery = Depends(),
     users_service: UserService = Depends(get_users_service),
 ) -> Page[UserOut]:
     """
@@ -66,8 +67,11 @@ async def get_users(
     :return Page[UserOut]:
     """
     dispatch(UsersEventsEnum.GET_ALL_PRE, payload={"data": params})
+    kwargs = {}
+    if queries.username:
+        kwargs["username__contains"] = queries.username
     users = await users_service.get_all(
-        params=params, related=["display_role"], order_by=queries.order_by
+        params=params, related=["display_role"], order_by=queries.order_by, **kwargs
     )
     dispatch(UsersEventsEnum.GET_ALL_POST, payload={"data": users})
     return users

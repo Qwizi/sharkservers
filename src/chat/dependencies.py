@@ -1,5 +1,8 @@
 # chat dependencies
 from fastapi import Depends, WebSocketException, status
+from src.chat.bot import Bot
+from src.forum.dependencies import get_posts_service, get_threads_service
+from src.forum.services import PostService, ThreadService
 from src.auth.dependencies import get_access_token_service
 from src.auth.services.jwt import JWTService
 from src.chat.services import ChatService
@@ -26,3 +29,20 @@ async def ws_get_current_user(
     if user.secret_salt != token_data.secret:
         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
     return user
+
+
+async def get_bot(
+    users_service: UserService = Depends(get_users_service),
+    threads_service: ThreadService = Depends(get_threads_service),
+    posts_service: PostService = Depends(get_posts_service),
+    chat_service: ChatService = Depends(get_chat_service)
+):
+    bot = Bot(
+        user_id=2,
+        users_service=users_service,
+        threads_service=threads_service,
+        posts_service=posts_service,
+        chat_service=chat_service
+    )
+    await bot.init_bot_user()
+    return bot
