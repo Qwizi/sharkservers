@@ -160,7 +160,7 @@ class ThreadService(BaseService):
             
             return await self.get_one(
                 id=new_thread.id,
-                related=["category", "author", "author__display_role", "meta_fields"],
+                related=["category", "author", "author__display_role", "meta_fields", "server"],
             )
         new_thread = await self.create(
             title=data.title,
