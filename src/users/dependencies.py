@@ -24,7 +24,7 @@ async def get_valid_user(
     """
     try:
         return await users_service.get_one(
-            id=user_id, related=["roles", "display_role"]
+            id=user_id, related=["roles", "display_role", "player", "player__steamrep_profile"]
         )
     except NoMatch:
         raise user_not_found_exception

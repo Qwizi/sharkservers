@@ -62,7 +62,7 @@ async def get_threads(
 
     return await threads_service.get_all(
         params=params,
-        related=["category", "author", "author__display_role", "meta_fields", "server"],
+        related=["category", "author", "author__display_role", "author__player", "author__player__steamrep_profile", "meta_fields", "server"],
         **kwargs
     )
 

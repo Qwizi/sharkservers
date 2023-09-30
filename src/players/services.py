@@ -13,6 +13,7 @@ from src.players.exceptions import (
 from src.players.models import SteamRepProfile, Player
 from src.players.schemas import SteamPlayer
 from src.settings import get_settings
+from src.users.models import User
 
 settings = get_settings()
 
@@ -73,13 +74,14 @@ class PlayerService(BaseService):
         try:
             steam_api = WebAPI(self.steam_api_key)
             results = steam_api.call("ISteamUser.GetPlayerSummaries", steamids=steamid64)
+            logger.info(results)
             if not len(results["response"]["players"]):
                 raise Exception("Invalid steamid64")
 
             player = results["response"]["players"][0]
 
             profile_url = player["profileurl"]
-            avatar = player["avatar"]
+            avatar = player["avatarfull"]
             loccountrycode = player.get("loccountrycode", "N/A")
 
             steamid64_from_player = player["steamid"]

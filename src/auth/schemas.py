@@ -4,8 +4,13 @@ from pydantic import BaseModel, validator, Field, EmailStr
 
 
 class UsernameRegex(BaseModel):
-    username: str = Field(min_length=3, max_length=32, regex=r"^[a-zA-Z0-9_-]+$", strip_whitespace=True,
-                          default="username")
+    username: str = Field(
+        min_length=3,
+        max_length=32,
+        regex=r"^[a-zA-Z0-9_-]+$",
+        strip_whitespace=True,
+        default="username",
+    )
 
 
 class PasswordSchema(BaseModel):
@@ -64,3 +69,16 @@ class EmailConfirmSchema(BaseModel):
 
 class ResetPasswordSchema(ActivateUserCodeSchema, PasswordSchema):
     pass
+
+
+class SteamAuthSchema(BaseModel):
+    openid_ns: str
+    openid_mode: str
+    openid_op_endpoint: str
+    openid_claimed_id: str
+    openid_identity: str
+    openid_return_to: str
+    openid_response_nonce: str
+    openid_assoc_handle: str
+    openid_signed: str
+    openid_sig: str

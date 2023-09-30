@@ -46,7 +46,7 @@ async def get_posts(
         kwargs["thread_post__id"] = thread_id
     return await posts_service.get_all(
             params=params,
-            related = ["author", "author__display_role", "thread_post"],
+            related = ["author", "author__display_role", "thread_post", "author__player", "author__player__steamrep_profile"],
             order_by=queries.order_by,
             **kwargs
         )

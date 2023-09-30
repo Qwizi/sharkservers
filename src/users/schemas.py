@@ -8,9 +8,9 @@ from src.auth.schemas import UsernameRegex
 from src.users.models import User
 
 user_out = User.get_pydantic(
-    exclude={"password", "email", "secret_salt", "apps", "players", "banned_user", "banned_by", "roles",
+    exclude={"password", "email", "secret_salt", "apps", "banned_user", "banned_by", "roles",
              "password_reset_token", "display_role__scopes"})
-user_out_with_email = User.get_pydantic(exclude={"password", "secret_salt", "apps", "players", "password_reset_token"})
+user_out_with_email = User.get_pydantic(exclude={"password", "secret_salt", "apps", "password_reset_token"})
 
 
 class UserOut(user_out):

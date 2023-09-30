@@ -4,7 +4,6 @@ from typing import Optional
 import ormar
 
 from src.db import DateFieldsMixins, BaseMeta
-from src.users.models import User
 
 
 class SteamRepProfile(ormar.Model, DateFieldsMixins):
@@ -22,7 +21,6 @@ class Player(ormar.Model, DateFieldsMixins):
         tablename = "players"
 
     id: int = ormar.Integer(primary_key=True)
-    user: Optional[User] = ormar.ForeignKey(User, related_name="players")
     steamrep_profile: Optional[SteamRepProfile] = ormar.ForeignKey(
         SteamRepProfile, related_name="players"
     )

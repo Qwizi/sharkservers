@@ -5,6 +5,9 @@ from fastapi.security import SecurityScopes
 from jose import JWTError
 from ormar import Model
 from redis.client import Redis
+from src.auth.services.steam import SteamAuthService
+from src.players.dependencies import get_players_service
+from src.players.services import PlayerService
 
 from src.apps.dependencies import get_app_service
 from src.apps.services import AppService
@@ -89,7 +92,7 @@ async def get_current_user(
             raise no_permissions_exception
     user = await users_service.get_one(
         id=token_data.user_id,
-        related=["roles", "display_role", "roles__scopes", "players"],
+        related=["roles", "display_role", "roles__scopes", "player", "player__steamrep_profile"],
     )
     if user.secret_salt != token_data.secret:
         raise invalid_credentials_exception
@@ -171,3 +174,10 @@ async def get_reset_account_password_code_service(redis: Redis = Depends(get_red
     :return CodeService:
     """
     return CodeService(redis=redis, key=RedisAuthKeyEnum.RESET_PASSWORD.value)
+
+
+async def get_steam_auth_service(
+    users_service: UserService = Depends(get_users_service),
+    players_service: PlayerService = Depends(get_players_service)
+):
+    return SteamAuthService(users_service, players_service)

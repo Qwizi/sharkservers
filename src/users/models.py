@@ -3,6 +3,7 @@ from typing import Optional, List
 
 import ormar
 from pydantic import EmailStr
+from src.players.models import Player
 from src.auth.utils import now_datetime
 
 from src.db import BaseMeta, DateFieldsMixins
@@ -32,6 +33,7 @@ class User(ormar.Model, DateFieldsMixins):
     threads_count: int = ormar.Integer(default=0)
     posts_count: int = ormar.Integer(default=0)
     likes_count: int = ormar.Integer(default=0)
+    player: Optional[Player] = ormar.ForeignKey(Player, related_name="player")
 
 
 class Ban(ormar.Model, DateFieldsMixins):

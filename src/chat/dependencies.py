@@ -24,7 +24,7 @@ async def ws_get_current_user(
     token_data = access_token_service.decode_token(token)
     user = await users_service.get_one(
         id=token_data.user_id,
-        related=["roles", "display_role", "roles__scopes", "players"],
+        related=["roles", "display_role", "roles__scopes", "player", "player__steamrep_profile"],
     )
     if user.secret_salt != token_data.secret:
         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)

@@ -50,7 +50,7 @@ async def get_valid_thread(
     """
     dispatch(ThreadEventEnum.GET_ONE_PRE, payload={"data": thread_id})
     return await threads_service.get_one(
-        id=thread_id, related=["category", "author", "author__display_role", "meta_fields", "server"]
+        id=thread_id, related=["category", "author", "author__display_role", "author__player", "author__player__steamrep_profile", "meta_fields", "server"]
     )
 
 
@@ -92,7 +92,7 @@ async def get_valid_post(
     """
     dispatch(PostEventEnum.GET_ONE_PRE, payload={"data": post_id})
     return await posts_service.get_one(
-        id=post_id, related=["author", "author__display_role", "likes"]
+        id=post_id, related=["author", "author__display_role", "likes", "author__player", "author__player__steamrep_profile"]
     )
 
 
