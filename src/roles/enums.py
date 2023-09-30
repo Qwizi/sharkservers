@@ -5,6 +5,7 @@ class ProtectedDefaultRolesEnum(int, Enum):
     ADMIN = 1
     USER = 2
     BANNED = 3
+    VIP = 4
 
     @classmethod
     def has_value(cls, value):

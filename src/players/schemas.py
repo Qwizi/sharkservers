@@ -5,7 +5,9 @@ from pydantic import BaseModel
 
 from src.players.models import Player
 
-playerOut = Player.get_pydantic(exclude={"user"})
+playerOut = Player.get_pydantic(exclude={
+    
+})
 
 class PlayerOut(playerOut):
     pass
