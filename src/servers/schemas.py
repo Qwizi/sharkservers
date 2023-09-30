@@ -5,7 +5,10 @@ from pydantic.color import Color
 
 from src.servers.models import Server
 
-ServerOut = Server.get_pydantic()
+serverOut = Server.get_pydantic()
+
+class ServerOut(serverOut):
+    pass
 
 
 class CreateServerSchema(BaseModel):
