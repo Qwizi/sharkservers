@@ -35,7 +35,7 @@ LOGOUT_ENDPOINT = "/v1/auth/logout"
 async def test_auth_register(client):
     r = await client.post(REGISTER_ENDPOINT, json=TEST_REGISTER_USER)
     assert r.status_code == 200
-    assert len(await User.objects.all()) == 2
+    assert len(await User.objects.all()) == 3
     assert r.json()["username"] == TEST_REGISTER_USER.get("username")
     assert "password" not in r.json()
     assert "secret_salt" not in r.json()

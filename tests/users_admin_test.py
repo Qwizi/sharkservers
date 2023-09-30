@@ -42,8 +42,8 @@ async def test_unauthorized_admin_update_user(client):
 async def test_admin_get_empty_users(admin_client):
     r = await admin_client.get(ENDPOINT)
     assert r.status_code == 200
-    # Total 1 because of admin user
-    assert r.json()["total"] == 1
+    # Total 1 because of admin user, bot user
+    assert r.json()["total"] == 2
 
 
 @pytest.mark.asyncio
@@ -52,8 +52,8 @@ async def test_admin_get_users(admin_client):
     await create_fake_users(number=50)
     r = await admin_client.get(ENDPOINT)
     assert r.status_code == 200
-    # 51 because of admin user
-    assert r.json()["total"] == 51
+    # 52 because of admin user, bot user
+    assert r.json()["total"] == 52
     assert r.json()["page"] == 1
 
     r2 = await admin_client.get(ENDPOINT + "?page=2&limit=25")
@@ -62,7 +62,7 @@ async def test_admin_get_users(admin_client):
 
 
 @pytest.mark.asyncio
-async def test_admin_get_user(admin_client, faker):
+async def test_admin_get_user(admin_client):
     users = await create_fake_users(1)
     r = await admin_client.get(ENDPOINT + f"/{users[0].id}")
     assert r.status_code == 200
@@ -87,7 +87,7 @@ async def test_admin_create_user_not_activated_and_no_superuser(admin_client):
     )
     assert r.status_code == 200
     assert r.json()["username"] == TEST_USER.get("username")
-    assert await User.objects.count() == 2
+    assert await User.objects.count() == 3
     assert r.json()['is_activated'] is False
     assert r.json()['is_superuser'] is False
     assert "password" not in r.json()
@@ -106,7 +106,7 @@ async def test_admin_create_user_activated_and_no_superuser(admin_client):
     )
     assert r.status_code == 200
     assert r.json()["username"] == TEST_USER.get("username")
-    assert await User.objects.count() == 2
+    assert await User.objects.count() == 3
     assert r.json()['is_activated'] is True
     assert r.json()['is_superuser'] is False
     assert "password" not in r.json()
@@ -126,7 +126,7 @@ async def test_admin_create_user_activated_and_superuser(admin_client):
     )
     assert r.status_code == 200
     assert r.json()["username"] == TEST_USER.get("username")
-    assert await User.objects.count() == 2
+    assert await User.objects.count() == 3
     assert r.json()['is_activated'] is True
     assert r.json()['is_superuser'] is True
     assert "password" not in r.json()
@@ -143,7 +143,7 @@ async def test_admin_delete_user(admin_client):
     users = await create_fake_users(1)
     r = await admin_client.delete(ENDPOINT + f"/{users[0].id}")
     assert r.status_code == 200
-    assert await User.objects.count() == 1
+    assert await User.objects.count() == 2
 
 
 @pytest.mark.asyncio
