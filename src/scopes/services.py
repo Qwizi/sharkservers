@@ -115,7 +115,7 @@ class ScopeService(BaseService):
         scopes = None
         if role_id == ProtectedDefaultRolesEnum.ADMIN.value:
             scopes = await self.Meta.model.objects.all()
-        elif role_id == ProtectedDefaultRolesEnum.USER.value:
+        elif role_id == ProtectedDefaultRolesEnum.USER.value or role_id == ProtectedDefaultRolesEnum.VIP.value:
             scopes = await self.Meta.model.objects.filter(
                 or_(
                     and_(app_name="users", value="me"),

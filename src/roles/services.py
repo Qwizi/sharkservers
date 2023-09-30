@@ -17,6 +17,7 @@ class RoleService(BaseService):
             (ProtectedDefaultRolesEnum.ADMIN.value, "Admin", "#C53030"),
             (ProtectedDefaultRolesEnum.USER.value, "User", "#99999"),
             (ProtectedDefaultRolesEnum.BANNED.value, "Banned", "#000000"),
+            (ProtectedDefaultRolesEnum.VIP.value, "VIP", "#ffda83"),
         ]
         for role in roles_to_create:
             logger_with_filename(filename=self.__class__.__name__, data=role)
