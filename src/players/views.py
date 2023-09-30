@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from fastapi_pagination import Params
+from fastapi_pagination import Page, Params
 
 from src.players.dependencies import (
     get_players_service,
@@ -8,6 +8,7 @@ from src.players.dependencies import (
 from src.players.models import Player
 from src.players.schemas import (
     CreatePlayerSchema,
+    PlayerOut,
     UpdatePlayerStatsSchema,
 )
 from src.players.services import (
@@ -21,7 +22,7 @@ router = APIRouter()
 async def get_players(
     params: Params = Depends(),
     players_service: PlayerService = Depends(get_players_service),
-):
+) -> Page[PlayerOut]:
     return await players_service.get_all(params=params, related=["steamrep_profile"])
 
 

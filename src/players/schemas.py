@@ -5,8 +5,10 @@ from pydantic import BaseModel
 
 from src.players.models import Player
 
-steam_profile_out = Player.get_pydantic(exclude={"user"})
+playerOut = Player.get_pydantic(exclude={"user"})
 
+class PlayerOut(playerOut):
+    pass
 
 class SteamPlayer(BaseModel):
     id: Optional[int] = None

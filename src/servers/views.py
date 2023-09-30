@@ -38,7 +38,7 @@ async def get_servers(
     ip: str = None,
     port: int = None,
     servers_service: ServerService = Depends(get_servers_service),
-):
+) -> Page[ServerOut]:
     """
     Get all servers
     :return:
@@ -60,8 +60,8 @@ async def get_servers_status(
     return servers_status
 
 
-@router.get("/{server_id}", response_model=ServerOut)
-async def get_server(server: Model = Depends(get_valid_server)):
+@router.get("/{server_id}")
+async def get_server(server: Model = Depends(get_valid_server)) -> ServerOut:
     """
     Get server by id
     :param server:
