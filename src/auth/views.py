@@ -43,6 +43,7 @@ router = APIRouter()
 
 settings = get_settings()
 limiter = RateLimiter(times=999 if settings.TESTING else 3, minutes=60 if settings.TESTING else  2)
+refresh_token_limiter = RateLimiter(times=3, minutes=60)
 
 
 @router.post("/register", dependencies=[Depends(limiter)])
@@ -111,7 +112,7 @@ async def login_user(
     return token
 
 
-@router.post("/token/refresh", dependencies=[Depends(limiter)])
+@router.post("/token/refresh")
 async def get_access_token_from_refresh_token(
     token_data: RefreshTokenSchema,
     access_token_service: JWTService = Depends(get_access_token_service),

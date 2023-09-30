@@ -10,6 +10,7 @@ from fastapi import (
 from fastapi_events.dispatcher import dispatch
 from fastapi_limiter.depends import RateLimiter
 from fastapi_pagination import Page, Params
+from src.auth.services.steam import SteamAuthService
 from src.schemas import OrderQuery
 
 from src.apps.dependencies import get_app_service
@@ -19,8 +20,9 @@ from src.auth.dependencies import (
     get_current_active_user,
     get_auth_service,
     get_change_account_email_code_service,
+    get_steam_auth_service,
 )
-from src.auth.schemas import ActivateUserCodeSchema
+from src.auth.schemas import ActivateUserCodeSchema, SteamAuthSchema
 from src.auth.services.auth import AuthService
 from src.auth.services.code import CodeService
 from src.dependencies import get_email_service, get_upload_service
@@ -71,7 +73,7 @@ async def get_users(
     if queries.username:
         kwargs["username__contains"] = queries.username
     users = await users_service.get_all(
-        params=params, related=["display_role"], order_by=queries.order_by, **kwargs
+        params=params, related=["display_role", "player", "player__steamrep_profile"], order_by=queries.order_by, **kwargs
     )
     dispatch(UsersEventsEnum.GET_ALL_POST, payload={"data": users})
     return users
@@ -353,6 +355,14 @@ async def upload_user_avatar(
     print(data)
     return {"msg": "Avatar was uploaded"}
 
+@router.post("/me/connect/steam")
+async def connect_steam_profile(
+    params: SteamAuthSchema,
+    user: User = Security(get_current_active_user, scopes=["users:me"]),
+    steam_auth_service: SteamAuthService = Depends(get_steam_auth_service),
+):
+    return await steam_auth_service.authenticate(user, params)
+
 
 @router.get("/{user_id}", response_model=UserOut)
 async def get_user(user: User = Depends(get_valid_user)) -> UserOut:
@@ -402,3 +412,5 @@ async def get_user_threads(
     return await threads_service.get_all(
         params=params, author__id=user.id, order_by=queries.order_by
     )
+
+

@@ -45,7 +45,7 @@ class UserService(BaseService):
     async def get_last_online_users(self, params: Params) -> Page[UserOut]:
         filter_after = now_datetime() - timedelta(minutes=15)
         return await self.get_all(
-            params=params, related=["display_role"], last_online__gt=filter_after
+            params=params, related=["display_role", "player", "player__steamrep_profile"], last_online__gt=filter_after
         )
 
     @staticmethod

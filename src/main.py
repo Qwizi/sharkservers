@@ -166,7 +166,7 @@ async def chatroom_ws_receiver(websocket, chat_service: ChatService, author: Use
             )
             messages = await chat_service.get_all(
                     params=Params(size=10),
-                    related=["author", "author__display_role"],
+                    related=["author", "author__display_role", "author__player", "author__player__steamrep_profile"],
                     order_by="-id",
             )
             messages_schema = ChatEventSchema(
@@ -187,7 +187,7 @@ async def chatroom_ws_sender(websocket: WebSocket, chat_service: ChatService, au
             if message_event == WebsocketEventEnum.GET_MESSAGES:
                 messages = await chat_service.get_all(
                     params=Params(size=10),
-                    related=["author", "author__display_role"],
+                    related=["author", "author__display_role", "author__player", "author__player__steamrep_profile"],
                     order_by="-id",
                 )
                 messages_schema = ChatEventSchema(

@@ -41,15 +41,13 @@ install:
    		-H 'Content-Type: application/json' \
    		-d '{"username":"Qwizi","email":"test@test.pl", "password":"test123456", "password2":"test123456"}'
 	@echo "Instalation finished"
-	@curl -X POST http://localhost/v1/players \
-   		-H 'Content-Type: application/json' \
-   		-d '{"steamid64":"76561198190469450"}'
 test:
 	docker compose exec app pytest -vv
 
 
 generate:
 	curl -X GET http://localhost/generate-openapi
+	cd ../sharkservers-js-client && npm run generate-client
 
 
 migration:
