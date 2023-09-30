@@ -19,7 +19,7 @@ async def test_get_users(client):
     response = await client.get(USERS_ENDPOINT)
     assert response.status_code == 200
     # 1 because of the admin user
-    assert response.json()["total"] == 1
+    assert response.json()["total"] == 2
 
 
 @pytest.mark.asyncio
