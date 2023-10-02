@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     AVATAR_MAX_SIZE: int = 1024 * 1024 * 2 # 2MB
     AVATAR_HEIGHT: int = 100
     AVATAR_WIDTH: int = 100
+    STRIPE_API_KEY: str
+    STRIPE_WEBHOOK_SECRET: str
 
     class Config:
         env_file = ".env"

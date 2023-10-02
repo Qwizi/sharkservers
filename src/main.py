@@ -79,6 +79,7 @@ from src.servers.views import router as servers_router
 from src.servers.views_admin import router as admin_servers_router
 from src.services import MainService
 from src.chat.views import router as chat_router
+from src.subscryptions.views import router as subscryptions_router
 from aiocron import crontab
 from src.manager import manager
 
@@ -226,6 +227,7 @@ def init_routes(_app: FastAPI):
     _app.include_router(forum_router)
     _app.include_router(servers_router, prefix="/v1/servers", tags=["servers"])
     _app.include_router(chat_router, prefix="/v1/chat", tags=["chat"])
+    _app.include_router(subscryptions_router, prefix="/v1/subscryption", tags=["subscryption"])
 
     # Admin routes
     _app.include_router(
