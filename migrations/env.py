@@ -30,6 +30,7 @@ from src.forum.models import Category, Tag, Post, Thread, Like, ThreadMeta
 from src.servers.models import Server
 from src.apps.models import App
 from src.chat.models import Chat
+from src.subscryptions.models import UserSubscription
 
 target_metadata = BaseMeta.metadata
 

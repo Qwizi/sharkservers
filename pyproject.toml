@@ -32,6 +32,7 @@ uvicorn = {extras = ["standard"], version = "^0.23.2"}
 httpx = "^0.25.0"
 wsproto = "^1.2.0"
 broadcaster = {extras = ["redis"], version = "^0.2.0"}
+stripe = "^6.6.0"
 
 
 [tool.poetry.group.dev.dependencies]

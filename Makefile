@@ -1,30 +1,30 @@
 build:
 	@echo "Starting building containers"
-	docker-compose build
+	docker compose build
 	@echo "Containers built"
 
 up:
 	@echo "Starting containers"
-	docker-compose up -d
+	docker compose up -d
 	@echo "Containers started"
 
 stop:
 	@echo "Starting stopping containers"
-	docker-compose stop
+	docker compose stop
 	@echo "Containers stopped"
 
 down:
 	@echo "Starting removing containers"
-	docker-compose down
+	docker compose down
 	@echo "Containers removed"
 
 logs:
 	@echo "Starting logs"
-	docker-compose logs app
+	docker compose logs app
 
 uninstall:
 	@echo "Starting removing containers"
-	docker-compose down
+	docker compose down
 	@echo "Containers removed"
 	@echo "Started removing instalation file"
 	rm -rf src/installed
