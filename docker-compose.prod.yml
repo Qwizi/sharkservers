@@ -1,0 +1,49 @@
+services:
+  app:
+    image: qwizii/sharkservers-api:latest
+    command: uvicorn src.main:app --reload --host 0.0.0.0 --port 80 --log-level trace --ws  wsproto
+    ports:
+      - "80:80"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_started
+      redis:
+        condition: service_started
+    restart: always
+    networks:
+      - shark
+  db:
+    image: postgres:15.1
+    environment:
+      - POSTGRES_DB=shark_db
+      - POSTGRES_USER=shark_user
+      - POSTGRES_PASSWORD=shark_password
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - shark
+    healthcheck:
+      test: "exit 1"
+  redis:
+    image: "redis:alpine"
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - shark
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: "exit 1"
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  shark:
