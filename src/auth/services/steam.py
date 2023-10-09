@@ -18,16 +18,6 @@ class SteamAuthService:
 
     def format_params(self, params: SteamAuthSchema) -> dict:
         params_dict = {}
-        #   'openid.ns': 'http://specs.openid.net/auth/2.0',
-        #   'openid.mode': 'id_res',
-        #   'openid.op_endpoint': 'https://steamcommunity.com/openid/login',
-        #   'openid.claimed_id': 'https://steamcommunity.com/openid/id/76561198190469450',
-        #   'openid.identity': 'https://steamcommunity.com/openid/id/76561198190469450',
-        #   'openid.return_to': 'http://localhost:3000/settings/connected-accounts/steam/callback',
-        #   'openid.response_nonce': '2023-09-29T09:28:05ZJJioTudsxVptILcRlbMrwrdreKk=',
-        #   'openid.assoc_handle': '1234567890',
-        #   'openid.signed': 'signed,op_endpoint,claimed_id,identity,return_to,response_nonce,assoc_handle',
-        #   'openid.sig': 'VfzZNeWuJpFKdbXyRQytNS+anvE='
         params_dict["openid.ns"] = params.openid_ns
         params_dict["openid.mode"] = params.openid_mode
         params_dict["openid.op_endpoint"] = params.openid_op_endpoint

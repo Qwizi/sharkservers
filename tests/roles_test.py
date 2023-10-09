@@ -11,8 +11,8 @@ ROLES_ENDPOINT = "/v1/roles"
 async def test_get_roles(client):
     r = await client.get(ROLES_ENDPOINT)
     assert r.status_code == 200
-    # 3 default roles [Admin, User, Banned]
-    assert r.json()["total"] == 3
+    # 3 default roles [Admin, User, Banned, Vip]
+    assert r.json()["total"] == 4
 
 
 @pytest.mark.asyncio
@@ -45,5 +45,5 @@ async def test_get_default_role(default_roles_id, client):
 
 @pytest.mark.asyncio
 async def test_get_invalid_role(client):
-    r = await client.get(f"{ROLES_ENDPOINT}/4")
+    r = await client.get(f"{ROLES_ENDPOINT}/9999")
     assert r.status_code == 404
