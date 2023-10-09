@@ -69,7 +69,7 @@ async def register(
     :return UserOut:
     """
     registered_user: User = await auth_service.register(
-        user_data=user_data, request=request
+        user_data=user_data, request=request, settings=settings
     )
     activation_code, _user_id = await code_service.create(
         data=registered_user.id, code_len=5, expire=900
@@ -207,14 +207,14 @@ async def resend_activate_code(
     }
 
 
-@router.get("/connect/steam")
+@router.get("/connect/steam", deprecated=True)
 async def connect_steam_profile(
     auth_service: AuthService = Depends(get_auth_service),
 ):
     return auth_service.redirect_to_steam()
 
 
-@router.get("/callback/steam")
+@router.get("/callback/steam", deprecated=True)
 async def steam_profile_callback(
     request: Request,
     user: User = Depends(get_current_active_user),

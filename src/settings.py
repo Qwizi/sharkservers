@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     AVATAR_WIDTH: int = 100
     STRIPE_API_KEY: str
     STRIPE_WEBHOOK_SECRET: str
+    SITE_URL: str = "http://localhost:80"
 
     class Config:
         env_file = ".env"

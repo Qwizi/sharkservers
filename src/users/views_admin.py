@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Security
 from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
+from src.settings import Settings, get_settings
 
 from src.auth.dependencies import get_admin_user, get_auth_service
 from src.auth.schemas import RegisterUserSchema
@@ -56,6 +57,7 @@ async def admin_create_user(
         user_data: CreateUserSchema,
         auth_service: AuthService = Depends(get_auth_service),
         admin_user: User = Security(get_admin_user, scopes=["users:create"]),
+        settings: Settings = Depends(get_settings)
 ) -> UserOutWithEmail:
     """
     Admin create user
@@ -71,6 +73,7 @@ async def admin_create_user(
     ),
         is_activated=user_data.is_activated,
         is_superuser=user_data.is_superuser,
+        settings=settings
     )
     dispatch(UsersAdminEventsEnum.CREATE, payload={"data": created_user})
     return created_user

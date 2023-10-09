@@ -18,6 +18,7 @@ from passlib.context import CryptContext
 from pydantic import EmailStr
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
+from src.settings import Settings
 
 from src.apps.services import AppService
 from src.auth.exceptions import (
@@ -110,6 +111,7 @@ class AuthService:
         is_activated: bool = False,
         is_superuser: bool = False,
         request: Request = None,
+        settings: Settings = None,
     ) -> User:
         """
         Register new user
@@ -131,9 +133,10 @@ class AuthService:
                 role = await self.roles_service.get_one(
                     id=ProtectedDefaultRolesEnum.ADMIN.value
                 )
+
             avatar_url = (
-                request.url_for("static", path=f"images/default_avatar.png")
-                if request
+                f"{settings.SITE_URL}/static/images/default_avatar.png"
+                if settings
                 else "http://localhost/static/images/default_avatar.png"
             )
             registered_user = await self.users_service.create(

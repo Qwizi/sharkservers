@@ -277,7 +277,7 @@ def create_app():
     )
     _app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:3000"],
+        allow_origins=["http://localhost:3000", "https://api-sharkservers.qwizi.dev", "https://beta.sharkservers.pl", "https://api.sharkservers.pl", "https://api-beta.sharkservers.pl"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
