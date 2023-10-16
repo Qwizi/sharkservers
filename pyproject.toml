@@ -24,7 +24,7 @@ aiocron = "^1.8"
 redis = "^4.5.5"
 cryptography = "^41.0.4"
 python-multipart = "^0.0.6"
-pillow = "^10.0.0"
+pillow = "^10.1.0"
 fastapi-limiter = "^0.1.5"
 fakeredis = {extras = ["lua"], version = "^2.17.0"}
 websockets = "^11.0.3"
