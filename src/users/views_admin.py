@@ -30,7 +30,7 @@ async def admin_get_users(
     :param params:
     :return Page[UserOutWithEmail]:
     """
-    users = await users_service.get_all(params=params, related=["display_role"])
+    users = await users_service.get_all(params=params, related=["display_role", "player", "player__steamrep_profile"])
     dispatch(UsersAdminEventsEnum.GET_ALL, payload={"data": users})
     return users
 

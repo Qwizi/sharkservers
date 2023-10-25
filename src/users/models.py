@@ -1,5 +1,6 @@
 import datetime
 from typing import Optional, List
+import uuid
 
 import ormar
 from pydantic import EmailStr
@@ -9,6 +10,13 @@ from src.auth.utils import now_datetime
 from src.db import BaseMeta, DateFieldsMixins
 from src.roles.models import Role
 
+class UserSession(ormar.Model, DateFieldsMixins):
+    class Meta(BaseMeta):
+        tablename = "user_sessions"
+
+    id: str = ormar.UUID(primary_key=True, default=uuid.uuid4)
+    user_ip: str = ormar.String(max_length=255)
+    user_agent: str = ormar.String(max_length=255)
 
 class User(ormar.Model, DateFieldsMixins):
     class Meta(BaseMeta):
@@ -34,6 +42,7 @@ class User(ormar.Model, DateFieldsMixins):
     posts_count: int = ormar.Integer(default=0)
     likes_count: int = ormar.Integer(default=0)
     player: Optional[Player] = ormar.ForeignKey(Player, related_name="player")
+    sessions: Optional[UserSession] = ormar.ManyToMany(UserSession, related_name="users_sessions")
 
 
 class Ban(ormar.Model, DateFieldsMixins):

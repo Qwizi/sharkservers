@@ -38,9 +38,10 @@ class JWTService:
                 raise invalid_credentials_exception
             token_scopes = payload.get("scopes", [])
             secret = payload.get("secret")
+            session_id = payload.get("session_id")
 
             return TokenDataSchema(
-                user_id=int(user_id), scopes=token_scopes, secret=secret
+                user_id=int(user_id), scopes=token_scopes, secret=secret, session_id=session_id
             )
         except JWTError as e:
             raise invalid_credentials_exception
