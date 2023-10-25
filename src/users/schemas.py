@@ -5,13 +5,16 @@ from pydantic import BaseModel, validator, EmailStr
 from src.schemas import OrderQuery
 
 from src.auth.schemas import UsernameRegex
-from src.users.models import User
+from src.users.models import User, UserSession
 
 user_out = User.get_pydantic(
     exclude={"password", "email", "secret_salt", "apps", "banned_user", "banned_by", "roles",
              "password_reset_token", "display_role__scopes"})
 user_out_with_email = User.get_pydantic(exclude={"password", "secret_salt", "apps", "password_reset_token"})
+user_session_out = UserSession.get_pydantic(exclude={"users_sessions"})
 
+class UserSessionOut(user_session_out):
+    pass
 
 class UserOut(user_out):
     pass

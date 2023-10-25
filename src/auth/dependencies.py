@@ -1,4 +1,5 @@
 from datetime import timedelta
+import uuid
 
 from fastapi import Depends
 from fastapi.security import SecurityScopes
@@ -27,9 +28,9 @@ from src.roles.services import RoleService
 from src.scopes.dependencies import get_scopes_service
 from src.scopes.services import ScopeService
 from src.settings import Settings, get_settings
-from src.users.dependencies import get_users_service
+from src.users.dependencies import get_users_service, get_users_sessions_service
 from src.users.models import User
-from src.users.services import UserService
+from src.users.services import UserService, UserSessionService
 
 
 async def get_access_token_service(
@@ -64,11 +65,13 @@ async def get_auth_service(
         users_service: UserService = Depends(get_users_service),
         roles_service: RoleService = Depends(get_roles_service),
         scopes_service: ScopeService = Depends(get_scopes_service),
+        users_sessions_service: UserSessionService = Depends(get_users_sessions_service)
 ) -> AuthService:
     return AuthService(
         users_service=users_service,
         roles_service=roles_service,
         scopes_service=scopes_service,
+        users_sessions_service=users_sessions_service
     )
 
 
@@ -77,6 +80,7 @@ async def get_current_user(
         token: str = Depends(AuthService.oauth2_scheme),
         access_token_service: JWTService = Depends(get_access_token_service),
         users_service: UserService = Depends(get_users_service),
+        users_sessions_service: UserSessionService = Depends(get_users_sessions_service)
 ) -> Model:
     """
     Get current user
@@ -87,15 +91,29 @@ async def get_current_user(
     :return dict:
     """
     token_data = access_token_service.decode_token(token)
+    session_id = token_data.session_id
+    if not session_id:
+        raise invalid_credentials_exception
     for scope in security_scopes.scopes:
         if scope not in token_data.scopes:
             raise no_permissions_exception
     user = await users_service.get_one(
         id=token_data.user_id,
-        related=["roles", "display_role", "roles__scopes", "player", "player__steamrep_profile"],
+        related=["roles", "display_role", "roles__scopes", "player", "player__steamrep_profile", "sessions"],
     )
-    if user.secret_salt != token_data.secret:
+    session_exists = await users_sessions_service.Meta.model.objects.filter(
+        id=uuid.UUID(session_id)
+    ).exists()
+    user_session_exists = False
+    if session_exists:
+        user_session = await users_sessions_service.Meta.model.objects.get(id=uuid.UUID(session_id))
+        for session in user.sessions:
+            if session.id == user_session.id:
+                user_session_exists = True
+                break
+    if user.secret_salt != token_data.secret or not session_exists or not user_session_exists:
         raise invalid_credentials_exception
+    
     return user
 
 

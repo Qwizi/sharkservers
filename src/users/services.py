@@ -27,7 +27,7 @@ from src.users.exceptions import (
     cannot_change_display_role_exception,
     user_email_is_the_same_exception,
 )
-from src.users.models import User
+from src.users.models import User, UserSession
 from src.users.schemas import (
     UserOut,
     ChangeUsernameSchema,
@@ -162,3 +162,8 @@ class UserService(BaseService):
             logger.info(f"Finished sync counters to users -> {len(users)}")
         except Exception as e:
             logger.error(e.message)
+
+class UserSessionService(BaseService):
+    class Meta:
+        model = UserSession
+        not_found_exception = user_not_found_exception

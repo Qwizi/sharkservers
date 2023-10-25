@@ -88,6 +88,7 @@ async def register(
 
 @router.post("/token", dependencies=[Depends(limiter)])
 async def login_user(
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     access_token_service: JWTService = Depends(get_access_token_service),
     refresh_token_service: JWTService = Depends(get_refresh_token_service),
@@ -102,10 +103,14 @@ async def login_user(
     :return TokenSchema:
     """
     dispatch(AuthEventsEnum.ACCESS_TOKEN_PRE, payload={"form_data": form_data.__dict__})
+    user_ip = request.client.host
+    user_agent = request.headers.get("User-Agent", None)
     token, user = await auth_service.login(
         form_data,
         jwt_access_token_service=access_token_service,
         jwt_refresh_token_service=refresh_token_service,
+        user_ip=user_ip,
+        user_agent=user_agent
     )
     payload = {"user": json.loads(user.json()), "token": json.loads(token.json())}
     dispatch(AuthEventsEnum.ACCESS_TOKEN_POST, payload=payload)

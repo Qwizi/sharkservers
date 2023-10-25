@@ -19,7 +19,8 @@ author_exclude = {
     "author__banned_by",
     "author__banned_user",
     "author__players",
-    "author__chats"
+    "author__chats",
+    "author__sessions"
 }
 
 category_out = Category.get_pydantic(exclude={"threads"})

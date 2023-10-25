@@ -11,6 +11,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi import (
     FastAPI,
     Depends,
+    Header,
     Query,
     Security,
     HTTPException,
@@ -150,35 +151,46 @@ async def disconnect_broadcast(_app: FastAPI):
     broadcast_ = _app.state.broadcast
     await broadcast_.disconnect()
 
-async def chatroom_ws_receiver(websocket, chat_service: ChatService, author: User | None = None):
+
+async def chatroom_ws_receiver(
+    websocket, chat_service: ChatService, author: User | None = None
+):
     async for message in websocket.iter_json():
         message_event = message.get("event", None)
         message_data = message.get("data", None)
         if message_event == WebsocketEventEnum.SEND_MESSAGE:
             if message_data is None:
                 return
-            
-            new_message = await chat_service.create(
-                    author=author, message=message_data
-                )
+
+            new_message = await chat_service.create(author=author, message=message_data)
             logger.info(new_message)
             new_message_schema = ChatEventSchema(
                 event=WebsocketEventEnum.GET_MESSAGE, data=new_message
             )
             messages = await chat_service.get_all(
-                    params=Params(size=10),
-                    related=["author", "author__display_role", "author__player", "author__player__steamrep_profile"],
-                    order_by="-id",
+                params=Params(size=10),
+                related=[
+                    "author",
+                    "author__display_role",
+                    "author__player",
+                    "author__player__steamrep_profile",
+                ],
+                order_by="-id",
             )
             messages_schema = ChatEventSchema(
-                        event=WebsocketEventEnum.GET_MESSAGES, data=messages
+                event=WebsocketEventEnum.GET_MESSAGES, data=messages
             )
-            #await websocket.send_json(jsonable_encoder(messages_schema))
-            await broadcast.publish(channel="chat", message=json.dumps(jsonable_encoder(messages_schema)))
-            
+            # await websocket.send_json(jsonable_encoder(messages_schema))
+            await broadcast.publish(
+                channel="chat", message=json.dumps(jsonable_encoder(messages_schema))
+            )
+
         await broadcast.publish(channel="chat", message=json.dumps(message))
 
-async def chatroom_ws_sender(websocket: WebSocket, chat_service: ChatService, author: User = None):
+
+async def chatroom_ws_sender(
+    websocket: WebSocket, chat_service: ChatService, author: User = None
+):
     async with broadcast.subscribe(channel="chat") as subscriber:
         async for event in subscriber:
             message = json.loads(event.message)
@@ -188,7 +200,12 @@ async def chatroom_ws_sender(websocket: WebSocket, chat_service: ChatService, au
             if message_event == WebsocketEventEnum.GET_MESSAGES:
                 messages = await chat_service.get_all(
                     params=Params(size=10),
-                    related=["author", "author__display_role", "author__player", "author__player__steamrep_profile"],
+                    related=[
+                        "author",
+                        "author__display_role",
+                        "author__player",
+                        "author__player__steamrep_profile",
+                    ],
                     order_by="-id",
                 )
                 messages_schema = ChatEventSchema(
@@ -216,7 +233,6 @@ async def chatroom_ws_sender(websocket: WebSocket, chat_service: ChatService, au
             #     await websocket.send_json(jsonable_encoder(messages_schema))
 
 
-
 def init_routes(_app: FastAPI):
     # V1 routes
     _app.include_router(auth_router_v1, prefix="/v1/auth", tags=["auth"])
@@ -227,7 +243,9 @@ def init_routes(_app: FastAPI):
     _app.include_router(forum_router)
     _app.include_router(servers_router, prefix="/v1/servers", tags=["servers"])
     _app.include_router(chat_router, prefix="/v1/chat", tags=["chat"])
-    _app.include_router(subscryptions_router, prefix="/v1/subscryption", tags=["subscryption"])
+    _app.include_router(
+        subscryptions_router, prefix="/v1/subscryption", tags=["subscryption"]
+    )
 
     # Admin routes
     _app.include_router(
@@ -277,7 +295,14 @@ def create_app():
     )
     _app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:3000", "https://api-sharkservers.qwizi.dev", "https://beta.sharkservers.pl", "https://api.sharkservers.pl", "https://api-beta.sharkservers.pl"],
+        allow_origins=[
+            "http://localhost:3000",
+            "http://localhost:3001"
+            "https://api-sharkservers.qwizi.dev",
+            "https://beta.sharkservers.pl",
+            "https://api.sharkservers.pl",
+            "https://api-beta.sharkservers.pl",
+        ],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -371,17 +396,13 @@ def create_app():
 
     @_app.get("/test", tags=["root"])
     async def test(
-        users_service=Depends(get_users_service),
-        threads_service=Depends(get_threads_service),
-        categories_service: CategoryService = Depends(get_categories_service),
-        posts_service=Depends(get_posts_service),
-        chat_service=Depends(get_chat_service),
-        bot: Bot = Depends(get_bot),
-        msg: str = Query()
+        request: Request,
     ):
-        bot.set_broadcast(_app.state.broadcast)
-        await bot.send_message(msg)
-        return {}
+        client_host = request.client.host
+        user_agent = request.headers.get("User-Agent", None)
+        x_forwarded_for = request.headers.get("X-Forwarded-For", None)
+        x_real_ip = request.headers.get("X-Real-Ip", None)
+        return {"user_ip": client_host, "user_agent": user_agent, "X-Forwarded-For": x_forwarded_for, "X-Real-Ip": x_real_ip}
 
     @_app.websocket("/ws")
     async def websocket_endpoint(
@@ -396,53 +417,16 @@ def create_app():
             async with anyio.create_task_group() as task_group:
                 # run until first is complete
                 async def run_chatroom_ws_receiver() -> None:
-                    await chatroom_ws_receiver(websocket=websocket, chat_service=chat_service, author=author)
+                    await chatroom_ws_receiver(
+                        websocket=websocket, chat_service=chat_service, author=author
+                    )
                     task_group.cancel_scope.cancel()
 
                 task_group.start_soon(run_chatroom_ws_receiver)
-                await chatroom_ws_sender(websocket, chat_service=chat_service, author=author)
-        #     await manager.connect(websocket)
-        #     logger.info(websocket)
-        #     logger.info(user)
-        #     while True:
-        #         data = await websocket.receive_json()
-        #         event = data.get("event", None)
-        #         event_data = data.get("data", None)
-        #         if event is None:
-        #             raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
-
-        #         if event == WebsocketEventEnum.GET_MESSAGES:
-        #             messages = await chat_service.get_all(
-        #                 params=Params(size=10),
-        #                 related=["author", "author__display_role"],
-        #                 order_by="-id",
-        #             )
-        #             messages_schema = ChatEventSchema(
-        #                 event=WebsocketEventEnum.GET_MESSAGES, data=messages
-        #             )
-        #             logger.info(jsonable_encoder(messages_schema))
-        #             await manager.broadcast(messages_schema)
-        #         elif event == WebsocketEventEnum.SEND_MESSAGE:
-        #             if event_data is not None:
-        #                 new_message = await chat_service.create(
-        #                     author=user, message=event_data
-        #                 )
-        #                 new_message_schema = ChatEventSchema(
-        #                     event=WebsocketEventEnum.GET_MESSAGE, data=new_message
-        #                 )
-        #                 messages = await chat_service.get_all(
-        #                     params=Params(size=10),
-        #                     related=["author", "author__display_role"],
-        #                     order_by="-id",
-        #                 )
-        #                 messages_schema = ChatEventSchema(
-        #                     event=WebsocketEventEnum.GET_MESSAGES, data=messages
-        #                 )
-        #                 logger.info(jsonable_encoder(messages_schema))
-        #                 await manager.broadcast(messages_schema)
-
+                await chatroom_ws_sender(
+                    websocket, chat_service=chat_service, author=author
+                )
         except WebSocketDisconnect:
-            #     manager.disconnect(websocket)
             pass
 
     return _app

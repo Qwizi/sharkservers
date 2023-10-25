@@ -42,6 +42,7 @@ class TokenDataSchema(BaseModel):
     user_id: int | None = None
     secret: str
     scopes: list[str] = []
+    session_id: str | None
 
 
 class RefreshTokenSchema(BaseModel):
