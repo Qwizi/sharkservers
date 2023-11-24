@@ -9,7 +9,7 @@ from src.players.models import Player
 from src.players.schemas import (
     CreatePlayerSchema,
     PlayerOut,
-    )
+)
 from src.players.services import (
     PlayerService,
 )

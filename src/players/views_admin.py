@@ -27,7 +27,7 @@ async def admin_get_steam_profiles(
 @router.get("/{profile_id}")
 async def admin_get_steam_profile(
     profile_id: int, user: User = Security(get_admin_user, scopes=["players:retrieve"])
-)  -> PlayerOut:
+) -> PlayerOut:
     try:
         steam_profile = await Player.objects.get(id=profile_id)
         return steam_profile
@@ -42,7 +42,9 @@ async def admin_create_player(
     user: User = Security(get_admin_user, scopes=["players:create"]),
     players_service: PlayerService = Depends(get_players_service),
 ):
-    background_tasks.add_task(players_service.create_player, profile_data.dict()["steamid64"])
+    background_tasks.add_task(
+        players_service.create_player, profile_data.dict()["steamid64"]
+    )
     return {"msg": "Player created"}
 
 

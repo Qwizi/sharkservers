@@ -29,6 +29,7 @@ class ServerPlayerStats(ormar.Model, DateFieldsMixins):
     points: int = ormar.Integer(default=1000)
 """
 
+
 class ChatColorModule(ormar.Model, DateFieldsMixins):
     class Meta(BaseMeta):
         tablename = "chat_color_module"
@@ -43,6 +44,7 @@ class ChatColorModule(ormar.Model, DateFieldsMixins):
     tag_color: Color = ormar.String(max_length=8)
     name_color: Color = ormar.String(max_length=8)
     text_color: Color = ormar.String(max_length=8)
+
 
 """
 @post_save(Server)

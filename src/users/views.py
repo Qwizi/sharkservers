@@ -34,7 +34,11 @@ from src.scopes.dependencies import get_scopes_service
 from src.scopes.services import ScopeService
 from src.services import EmailService, UploadService
 from src.settings import Settings, get_settings
-from src.users.dependencies import get_valid_user, get_users_service, get_valid_user_session
+from src.users.dependencies import (
+    get_valid_user,
+    get_users_service,
+    get_valid_user_session,
+)
 from src.users.enums import UsersEventsEnum
 from src.users.models import User, UserSession
 from src.users.schemas import (
@@ -72,7 +76,10 @@ async def get_users(
     if queries.username:
         kwargs["username__contains"] = queries.username
     users = await users_service.get_all(
-        params=params, related=["display_role", "player", "player__steamrep_profile"], order_by=queries.order_by, **kwargs
+        params=params,
+        related=["display_role", "player", "player__steamrep_profile"],
+        order_by=queries.order_by,
+        **kwargs
     )
     dispatch(UsersEventsEnum.GET_ALL_POST, payload={"data": users})
     return users
@@ -354,6 +361,7 @@ async def upload_user_avatar(
     print(data)
     return {"msg": "Avatar was uploaded"}
 
+
 @router.post("/me/connect/steam")
 async def connect_steam_profile(
     params: SteamAuthSchema,
@@ -362,18 +370,21 @@ async def connect_steam_profile(
 ):
     return await steam_auth_service.authenticate(user, params)
 
+
 @router.get("/me/sessions")
 async def get_user_sessions(
     user: User = Security(get_current_active_user, scopes=["users:me"])
 ) -> list[UserSessionOut]:
     return user.sessions
 
+
 @router.delete("/me/sessions/{session_id}")
 async def delete_user_session(
-    user_session: UserSession = Depends(get_valid_user_session)
+    user_session: UserSession = Depends(get_valid_user_session),
 ):
     await user_session.delete()
     return user_session
+
 
 @router.get("/{user_id}", response_model=UserOut)
 async def get_user(user: User = Depends(get_valid_user)) -> UserOut:
@@ -423,5 +434,3 @@ async def get_user_threads(
     return await threads_service.get_all(
         params=params, author__id=user.id, order_by=queries.order_by
     )
-
-

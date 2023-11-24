@@ -8,13 +8,16 @@ from src.forum.dependencies import (
     get_valid_thread,
     get_valid_thread_with_author,
     get_threads_service,
-    get_categories_service, get_thread_meta_service,
+    get_categories_service,
+    get_thread_meta_service,
 )
 from src.forum.enums import ThreadEventEnum, ThreadStatusEnum
 from src.forum.models import Thread
 from src.forum.schemas import (
     ThreadOut,
-    UpdateThreadSchema, CreateThreadSchema, ThreadQuery,
+    UpdateThreadSchema,
+    CreateThreadSchema,
+    ThreadQuery,
 )
 from src.forum.services import CategoryService, ThreadService, ThreadMetaService
 from src.servers.dependencies import get_servers_service
@@ -25,14 +28,16 @@ router = APIRouter()
 
 settings = get_settings()
 
-limiter = RateLimiter(times=999 if settings.TESTING else 5, minutes=60 if settings.TESTING else 2)
+limiter = RateLimiter(
+    times=999 if settings.TESTING else 5, minutes=60 if settings.TESTING else 2
+)
 
 
 @router.get("")
 async def get_threads(
-        params: Params = Depends(),
-        queries: ThreadQuery = Depends(),
-        threads_service: ThreadService = Depends(get_threads_service),
+    params: Params = Depends(),
+    queries: ThreadQuery = Depends(),
+    threads_service: ThreadService = Depends(get_threads_service),
 ) -> Page[ThreadOut]:
     """
     Get all threads.
@@ -59,19 +64,27 @@ async def get_threads(
 
     return await threads_service.get_all(
         params=params,
-        related=["category", "author", "author__display_role", "author__player", "author__player__steamrep_profile", "meta_fields", "server"],
+        related=[
+            "category",
+            "author",
+            "author__display_role",
+            "author__player",
+            "author__player__steamrep_profile",
+            "meta_fields",
+            "server",
+        ],
         **kwargs
     )
 
 
 @router.post("", dependencies=[Depends(limiter)])
 async def create_thread(
-        thread_data: CreateThreadSchema,
-        user: User = Security(get_current_active_user, scopes=["threads:create"]),
-        threads_service: ThreadService = Depends(get_threads_service),
-        categories_service: CategoryService = Depends(get_categories_service),
-        thread_meta_service: ThreadMetaService = Depends(get_thread_meta_service),
-        servers_service: ServerService = Depends(get_servers_service),
+    thread_data: CreateThreadSchema,
+    user: User = Security(get_current_active_user, scopes=["threads:create"]),
+    threads_service: ThreadService = Depends(get_threads_service),
+    categories_service: CategoryService = Depends(get_categories_service),
+    thread_meta_service: ThreadMetaService = Depends(get_thread_meta_service),
+    servers_service: ServerService = Depends(get_servers_service),
 ) -> ThreadOut:
     """
     Create new thread.
@@ -90,7 +103,7 @@ async def create_thread(
         category=category,
         status=ThreadStatusEnum.PENDING.value,
         thread_meta_service=thread_meta_service,
-        servers_service=servers_service
+        servers_service=servers_service,
     )
     return new_thread
 
@@ -108,8 +121,8 @@ async def get_thread(thread: Thread = Depends(get_valid_thread)):
 
 @router.put("/{thread_id}", response_model=ThreadOut, dependencies=[Depends(limiter)])
 async def update_thread(
-        thread_data: UpdateThreadSchema,
-        thread: Thread = Depends(get_valid_thread_with_author),
+    thread_data: UpdateThreadSchema,
+    thread: Thread = Depends(get_valid_thread_with_author),
 ):
     """
     Update thread by id.
@@ -121,5 +134,3 @@ async def update_thread(
     updated_thread = await thread.update(**thread_data.dict(exclude_unset=True))
     dispatch(ThreadEventEnum.UPDATE_POST, payload={"data": updated_thread})
     return updated_thread
-
-

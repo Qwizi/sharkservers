@@ -69,7 +69,7 @@ async def test_auth_register_exception_when_password_not_match(client):
 
 @pytest.mark.asyncio
 async def test_auth_register_exception_when_username_or_password_is_taken(
-        client,
+    client,
 ):
     auth_service = await _get_auth_service()
     user = await auth_service.register(
@@ -88,62 +88,79 @@ async def test_auth_register_exception_when_username_or_password_is_taken(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("username", [
-    # too short
-    "a",
-    "bb",
-    # too long
-    "a" * 33,
-    "b" * 34,
-    # invalid characters
-    "a!" * 3,
-    "b@" * 3,
-    "c#" * 3,
-    "d$" * 3,
-    "e%" * 3,
-    "f^" * 3,
-    "g&" * 3,
-    "h*" * 3,
-    # with spaces
-    "Username with spaces",
-])
+@pytest.mark.parametrize(
+    "username",
+    [
+        # too short
+        "a",
+        "bb",
+        # too long
+        "a" * 33,
+        "b" * 34,
+        # invalid characters
+        "a!" * 3,
+        "b@" * 3,
+        "c#" * 3,
+        "d$" * 3,
+        "e%" * 3,
+        "f^" * 3,
+        "g&" * 3,
+        "h*" * 3,
+        # with spaces
+        "Username with spaces",
+    ],
+)
 async def test_auth_register_exception_with_invalid_username(username, client):
-    r = await client.post(REGISTER_ENDPOINT, json={
-        "username": username,
-        "email": TEST_REGISTER_USER["email"],
-        "password": TEST_REGISTER_USER["password"],
-        "password2": TEST_REGISTER_USER["password2"],
-    })
+    r = await client.post(
+        REGISTER_ENDPOINT,
+        json={
+            "username": username,
+            "email": TEST_REGISTER_USER["email"],
+            "password": TEST_REGISTER_USER["password"],
+            "password2": TEST_REGISTER_USER["password2"],
+        },
+    )
     assert r.status_code == 422
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("email", [
-    # without @
-    "email.pl",
-    # without domain
-    "email@",
-    # without domain extension
-    "email@domain",
-])
+@pytest.mark.parametrize(
+    "email",
+    [
+        # without @
+        "email.pl",
+        # without domain
+        "email@",
+        # without domain extension
+        "email@domain",
+    ],
+)
 async def test_auth_register_exception_with_invalid_email(email, client):
-    r = await client.post(REGISTER_ENDPOINT, json={
-        "username": TEST_REGISTER_USER["username"],
-        "email": "email",
-        "password": TEST_REGISTER_USER["password"],
-        "password2": TEST_REGISTER_USER["password2"],
-    })
+    r = await client.post(
+        REGISTER_ENDPOINT,
+        json={
+            "username": TEST_REGISTER_USER["username"],
+            "email": "email",
+            "password": TEST_REGISTER_USER["password"],
+            "password2": TEST_REGISTER_USER["password2"],
+        },
+    )
     assert r.status_code == 422
 
 
 @pytest.mark.asyncio
 async def test_auth_create_access_token(client):
     auth_service = await _get_auth_service()
-    user = await auth_service.register(RegisterUserSchema(**TEST_REGISTER_USER), is_activated=True)
-    r = await client.post(TOKEN_ENDPOINT, data={
-        "username": user.username,
-        "password": TEST_REGISTER_USER["password"],
-    })
+    user = await auth_service.register(
+        RegisterUserSchema(**TEST_REGISTER_USER), is_activated=True
+    )
+    r = await client.post(
+        TOKEN_ENDPOINT,
+        data={
+            "username": user.username,
+            "password": TEST_REGISTER_USER["password"],
+        },
+    )
     assert r.status_code == 200
     assert r.json()["access_token"]["token"] is not None
     assert r.json()["access_token"]["exp"] is not None
@@ -156,10 +173,13 @@ async def test_auth_create_access_token(client):
 async def test_auth_create_access_token_exception_when_user_not_activated(client):
     auth_service = await _get_auth_service()
     user = await auth_service.register(RegisterUserSchema(**TEST_REGISTER_USER))
-    r = await client.post(TOKEN_ENDPOINT, data={
-        "username": user.username,
-        "password": TEST_REGISTER_USER["password"],
-    })
+    r = await client.post(
+        TOKEN_ENDPOINT,
+        data={
+            "username": user.username,
+            "password": TEST_REGISTER_USER["password"],
+        },
+    )
 
     assert r.status_code == 400
     assert r.json() == {"detail": AuthExceptionsDetailEnum.INACTIVE_USER.value}
@@ -168,10 +188,13 @@ async def test_auth_create_access_token_exception_when_user_not_activated(client
 @pytest.mark.asyncio
 async def test_auth_create_access_token_exception_when_user_not_exist(client):
     # No user in database
-    r = await client.post(TOKEN_ENDPOINT, data={
-        "username": TEST_REGISTER_USER["username"],
-        "password": TEST_REGISTER_USER["password"],
-    })
+    r = await client.post(
+        TOKEN_ENDPOINT,
+        data={
+            "username": TEST_REGISTER_USER["username"],
+            "password": TEST_REGISTER_USER["password"],
+        },
+    )
 
     assert r.status_code == 404
 
@@ -179,18 +202,24 @@ async def test_auth_create_access_token_exception_when_user_not_exist(client):
 @pytest.mark.asyncio
 async def test_get_refresh_token(client):
     auth_service = await _get_auth_service()
-    user = await auth_service.register(RegisterUserSchema(**TEST_REGISTER_USER), is_activated=True)
+    user = await auth_service.register(
+        RegisterUserSchema(**TEST_REGISTER_USER), is_activated=True
+    )
     token_response = await client.post(TOKEN_ENDPOINT, data=TEST_LOGIN_USER)
     assert token_response.status_code == 200
     token_data = token_response.json()
     await asyncio.sleep(1)
     refresh_token_response = await client.post(
-        REFRESH_TOKEN_ENDPOINT, json={"refresh_token": token_data["refresh_token"]["token"]}
+        REFRESH_TOKEN_ENDPOINT,
+        json={"refresh_token": token_data["refresh_token"]["token"]},
     )
     refresh_token_data = refresh_token_response.json()
     assert refresh_token_response.status_code == 200
     # refresh token should be different from access token
-    assert token_data["access_token"]["token"] != refresh_token_data["access_token"]["token"]
+    assert (
+        token_data["access_token"]["token"]
+        != refresh_token_data["access_token"]["token"]
+    )
 
 
 @pytest.mark.asyncio
@@ -203,19 +232,26 @@ async def test_get_refresh_token_exception_when_refresh_token_not_exist(client):
 async def test_get_refresh_token_exception_when_refresh_token_is_expired(client):
     auth_service = await _get_auth_service()
     settings = get_settings()
-    user = await auth_service.register(RegisterUserSchema(**TEST_REGISTER_USER), is_activated=True)
+    user = await auth_service.register(
+        RegisterUserSchema(**TEST_REGISTER_USER), is_activated=True
+    )
     token_response = await client.post(TOKEN_ENDPOINT, data=TEST_LOGIN_USER)
     assert token_response.status_code == 200
     token_data = token_response.json()
     await asyncio.sleep(1)
-    with mock.patch('src.auth.services.auth.now_datetime',
-                    return_value=datetime.datetime.now() + datetime.timedelta(
-                        minutes=settings.REFRESH_TOKEN_EXPIRES + 5)):
+    with mock.patch(
+        "src.auth.services.auth.now_datetime",
+        return_value=datetime.datetime.now()
+        + datetime.timedelta(minutes=settings.REFRESH_TOKEN_EXPIRES + 5),
+    ):
         refresh_token_response = await client.post(
-            REFRESH_TOKEN_ENDPOINT, json={"refresh_token": token_data["refresh_token"]["token"]}
+            REFRESH_TOKEN_ENDPOINT,
+            json={"refresh_token": token_data["refresh_token"]["token"]},
         )
         assert refresh_token_response.status_code == 401
-        assert refresh_token_response.json() == {"detail": AuthExceptionsDetailEnum.TOKEN_EXPIRED.value}
+        assert refresh_token_response.json() == {
+            "detail": AuthExceptionsDetailEnum.TOKEN_EXPIRED.value
+        }
 
 
 @pytest.mark.asyncio

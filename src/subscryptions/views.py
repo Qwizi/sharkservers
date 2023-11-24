@@ -142,7 +142,9 @@ async def get_webhook(
         )
 
         if old_display_role.id == vip_role.id:
-            old_display_role = await roles_service.Meta.model.objects.get(pk=ProtectedDefaultRolesEnum.USER.value)
+            old_display_role = await roles_service.Meta.model.objects.get(
+                pk=ProtectedDefaultRolesEnum.USER.value
+            )
 
         await user.update(display_role=vip_role)
         new_user_subscryption = await user_subscryption_service.create(
@@ -173,7 +175,7 @@ async def get_webhook(
         await user_subscryption.update(
             stripe_price_id=subscryption["items"]["data"][0]["price"]["id"],
             stripe_current_period_end=current_period_end_datetime,
-            stripe_subscription_id=subscryption.get("id")
+            stripe_subscription_id=subscryption.get("id"),
         )
 
     elif event["type"] == "customer.subscription.deleted":

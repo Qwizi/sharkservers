@@ -21,8 +21,12 @@ from src.auth.schemas import RegisterUserSchema
 from src.auth.services.auth import AuthService
 from src.auth.views import limiter
 from src.db import metadata, create_redis_pool
-from src.forum.dependencies import get_categories_service, get_posts_service, get_threads_service, \
-    get_thread_meta_service
+from src.forum.dependencies import (
+    get_categories_service,
+    get_posts_service,
+    get_threads_service,
+    get_thread_meta_service,
+)
 from src.forum.enums import CategoryTypeEnum, ThreadStatusEnum
 from src.forum.models import Category
 from src.forum.schemas import CreateThreadSchema
@@ -179,7 +183,6 @@ async def logged_client():
     override_limiter = RateLimiter(times=9999, hours=1)
     app.dependency_overrides[limiter] = {"times": 999, "hours": 3}
     async with AsyncClient(app=app, base_url="http://localhost", headers=headers) as c:
-        
         yield c
     app.dependency_overrides[limiter] = {}
 
@@ -208,7 +211,9 @@ async def create_fake_users(number: int = 50):
     return users_list
 
 
-async def create_fake_roles(number: int = 50, scopes: list[Scope] = None, is_staff: bool = False):
+async def create_fake_roles(
+    number: int = 50, scopes: list[Scope] = None, is_staff: bool = False
+):
     roles_service = await get_roles_service()
     roles_list = []
     for role_id in range(number):
@@ -224,7 +229,9 @@ async def create_fake_roles(number: int = 50, scopes: list[Scope] = None, is_sta
     return roles_list
 
 
-async def create_fake_categories(number: int = 50, category_type: CategoryTypeEnum = CategoryTypeEnum.PUBLIC.value):
+async def create_fake_categories(
+    number: int = 50, category_type: CategoryTypeEnum = CategoryTypeEnum.PUBLIC.value
+):
     categories_service: CategoryService = await get_categories_service()
     categories_list: list[Category] = []
     for i in range(number):
@@ -271,17 +278,19 @@ async def create_fake_posts(number: int = 50, author: User = None, thread=None):
 
 
 async def create_fake_threads(
-        number: int = 50,
-        author: User = None,
-        category: Category = None,
-        status: ThreadStatusEnum = ThreadStatusEnum.PENDING.value,
-        **kwargs
+    number: int = 50,
+    author: User = None,
+    category: Category = None,
+    status: ThreadStatusEnum = ThreadStatusEnum.PENDING.value,
+    **kwargs,
 ):
     threads_service = await get_threads_service()
     if category.type == CategoryTypeEnum.APPLICATION:
         servers_service = await get_servers_service()
         thread_meta_service = await get_thread_meta_service()
-        server_exists = await servers_service.Meta.model.objects.filter(name="Test server").exists()
+        server_exists = await servers_service.Meta.model.objects.filter(
+            name="Test server"
+        ).exists()
         if not server_exists:
             server = await servers_service.create(
                 name="Test server",
@@ -293,36 +302,40 @@ async def create_fake_threads(
     threads_list = []
     for i in range(number):
         if category.type == CategoryTypeEnum.APPLICATION:
-            threads_list.append(await threads_service.create_thread(
-                data=CreateThreadSchema(
-                    title=f"Test recrutation thread{i}",
-                    content=f"Test content {i}",
+            threads_list.append(
+                await threads_service.create_thread(
+                    data=CreateThreadSchema(
+                        title=f"Test recrutation thread{i}",
+                        content=f"Test content {i}",
+                        author=author,
+                        category=category.id,
+                        server_id=server.id,
+                        question_experience="Test question experience",
+                        question_age="18",
+                        question_reason="Test question why",
+                    ),
                     author=author,
-                    category=category.id,
-                    server_id=server.id,
-                    question_experience="Test question experience",
-                    question_age="18",
-                    question_reason="Test question why",
-                ),
-                author=author,
-                category=category,
-                thread_meta_service=thread_meta_service,
-                servers_service=servers_service,
-                status=status,
-                **kwargs
-            ))
+                    category=category,
+                    thread_meta_service=thread_meta_service,
+                    servers_service=servers_service,
+                    status=status,
+                    **kwargs,
+                )
+            )
         else:
-            threads_list.append(await threads_service.create_thread(
-                data=CreateThreadSchema(
-                    title=f"Test title {i}",
-                    content=f"Test content {i}",
+            threads_list.append(
+                await threads_service.create_thread(
+                    data=CreateThreadSchema(
+                        title=f"Test title {i}",
+                        content=f"Test content {i}",
+                        author=author,
+                        category=category.id,
+                    ),
                     author=author,
-                    category=category.id,
-                ),
-                author=author,
-                category=category,
-                **kwargs
-            ))
+                    category=category,
+                    **kwargs,
+                )
+            )
     return threads_list
 
 
@@ -360,9 +373,11 @@ async def create_fake_servers(number: int = 50):
     for i in range(number):
         random_ip = ".".join(map(str, (random.randint(0, 255) for _ in range(4))))
         random_port = int("".join(map(str, (random.randint(0, 5) for _ in range(4)))))
-        servers_list.append(await servers_service.create(
-            name=f"Test server {i}",
-            ip=random_ip,
-            port=random_port,
-        ))
+        servers_list.append(
+            await servers_service.create(
+                name=f"Test server {i}",
+                ip=random_ip,
+                port=random_port,
+            )
+        )
     return servers_list

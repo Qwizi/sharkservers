@@ -76,14 +76,16 @@ class AuthService:
         users_service: UserService,
         roles_service: RoleService,
         scopes_service: ScopeService,
-        users_sessions_service: UserSessionService
+        users_sessions_service: UserSessionService,
     ):
         self.users_service = users_service
         self.roles_service = roles_service
         self.scopes_service = scopes_service
         self.users_sessions_service = users_sessions_service
 
-    async def authenticate_user(self, username: str, password: str, user_ip: str, user_agent: str):
+    async def authenticate_user(
+        self, username: str, password: str, user_ip: str, user_agent: str
+    ):
         """
         Authenticate user
         :param username:
@@ -168,7 +170,7 @@ class AuthService:
         jwt_access_token_service: JWTService,
         jwt_refresh_token_service: JWTService,
         user_ip: str,
-        user_agent: str
+        user_agent: str,
     ) -> (TokenSchema, User):
         """
         Login user
@@ -177,17 +179,22 @@ class AuthService:
         :param jwt_refresh_token_service:
         :return:
         """
-        user = await self.authenticate_user(form_data.username, form_data.password, user_ip=user_ip, user_agent=user_agent)
+        user = await self.authenticate_user(
+            form_data.username,
+            form_data.password,
+            user_ip=user_ip,
+            user_agent=user_agent,
+        )
         if not user:
             raise incorrect_username_password_exception
-        user_session_exists = await self.users_sessions_service.Meta.model.objects.filter(
-            user_ip=user_ip,
-            user_agent=user_agent
-        ).exists()
+        user_session_exists = (
+            await self.users_sessions_service.Meta.model.objects.filter(
+                user_ip=user_ip, user_agent=user_agent
+            ).exists()
+        )
         if user_session_exists:
             user_session = await self.users_sessions_service.Meta.model.objects.get(
-                user_ip=user_ip,
-                user_agent=user_agent
+                user_ip=user_ip, user_agent=user_agent
             )
             exists_in_relation = False
             for session in user.sessions:
@@ -197,21 +204,19 @@ class AuthService:
                 await user.sessions.add(user_session)
         else:
             user_session = await self.users_sessions_service.create(
-                    user_ip=user_ip,
-                    user_agent=user_agent
-                )
+                user_ip=user_ip, user_agent=user_agent
+            )
             logger.info(user_session)
             await user.sessions.add(user_session)
             logger.info(user.sessions)
 
         scopes = await self.scopes_service.get_scopes_list(user.roles)
         access_token, access_token_exp = jwt_access_token_service.encode(
-            data=
-            {
-                "sub": str(user.id), 
-                "scopes": scopes, 
+            data={
+                "sub": str(user.id),
+                "scopes": scopes,
                 "secret": user.secret_salt,
-                "session_id": str(user_session.id)
+                "session_id": str(user_session.id),
             }
         )
         refresh_token, refresh_toke_exp = jwt_refresh_token_service.encode(
@@ -540,7 +545,6 @@ class AuthService:
         )
         await code_service.delete(reset_password_data.code)
         return True
-    
+
     async def get_user_agent(request: Request):
         return request.headers.get("User-Agent", None)
-

@@ -180,7 +180,7 @@ class MainService:
                 username="Bot",
                 email="bot@sharkservers.pl",
                 password=bot_password,
-                password2=bot_password
+                password2=bot_password,
             ),
             is_activated=True,
         )
@@ -211,7 +211,8 @@ class MainService:
                     operation["operationId"] = new_operation_id
                     print(new_operation_id)
             file_path.write_text(json.dumps(openapi_content))
-    
+
+
 class UploadService:
     ROOT_FOLDER = "static/uploads"
     AVATAR_FOLDER = "avatars"
