@@ -1,13 +1,15 @@
 import asyncio
 from logging.config import fileConfig
+import os
 
-from alembic import context
-from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy.ext.asyncio import async_engine_from_config, create_async_engine
+
+from alembic import context
 
 from src.db import BaseMeta
+from src.admins.models import AdminGroup, Admin, Group, GroupImmunity, GroupOverride, Override, Config
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -21,25 +23,21 @@ if config.config_file_name is not None:
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
-# target_metadata = mymodel.Base.metadata\
-from src.users.models import UserSession, User, Ban
-from src.scopes.models import Scope
-from src.roles.models import Role
-from src.players.models import SteamRepProfile, Player
-from src.forum.models import Category, Tag, Post, Thread, Like, ThreadMeta
-from src.servers.models import Server
-from src.apps.models import App
-from src.chat.models import Chat
-from src.subscryptions.models import UserSubscription
-
+# target_metadata = mymodel.Base.metadata
 target_metadata = BaseMeta.metadata
-
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+def get_url() -> str:
+    POSTGRES_USER = os.getenv("POSTGRES_USER", "")
+    POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "")
+    POSTGRES_HOST = os.getenv("POSTGRES_HOST", "")
+    POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
+    POSTGRES_DB = os.getenv("POSTGRES_DB", "")
+    return f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
@@ -53,7 +51,8 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = get_url()
+
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -72,20 +71,14 @@ def do_run_migrations(connection: Connection) -> None:
         context.run_migrations()
 
 
-async def run_migrations_online() -> None:
-    """Run migrations in 'online' mode.
-
-    In this scenario we need to create an Engine
+async def run_async_migrations() -> None:
+    """In this scenario we need to create an Engine
     and associate a connection with the context.
 
     """
-    connectable = AsyncEngine(
-        engine_from_config(
-            config.get_section(config.config_ini_section),
-            prefix="sqlalchemy.",
-            poolclass=pool.NullPool,
-            future=True,
-        )
+
+    connectable = create_async_engine(
+        get_url()
     )
 
     async with connectable.connect() as connection:
@@ -94,7 +87,13 @@ async def run_migrations_online() -> None:
     await connectable.dispose()
 
 
+def run_migrations_online() -> None:
+    """Run migrations in 'online' mode."""
+
+    asyncio.run(run_async_migrations())
+
+
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    asyncio.run(run_migrations_online())
+    run_migrations_online()

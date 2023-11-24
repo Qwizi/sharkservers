@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "fastapi_sourcemod_admins"
+version = "0.0.1"
+description = ""
+authors = ["Adrian Ciołek <ciolek.adrian@protonmail.com>"]
+readme = "README.md"
+packages = []
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.104.0"
+ormar = {extras = ["postgresql"], version = "^0.12.2"}
+uvicorn = "^0.23.2"
+alembic = "^1.12.0"
+python-dotenv = "^1.0.0"
+fastapi-pagination = "^0.12.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

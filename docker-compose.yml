@@ -1,15 +1,17 @@
 services:
   app:
     build:
-      context: .
+      context: api/
       dockerfile: Dockerfile
-    command: uvicorn src.main:app --reload --host 0.0.0.0 --port 80 --log-level trace --ws  wsproto --proxy-headers
+    cpus: '0.50'
+    mem_limit: 1g
+    command: uvicorn src.main:app --reload --host 0.0.0.0 --port 8000 --ws  wsproto --proxy-headers
     ports:
-      - "80:80"
+      - "8000:8000"
     volumes:
-      - ./:/code/
+      - ./api:/code/
     env_file:
-      - .env
+      - ./api/.env
     depends_on:
       db:
         condition: service_started
@@ -40,6 +42,40 @@ services:
       - shark
     healthcheck:
       test: "exit 1"
+  jailbreak_db:
+    image: postgres:15.1
+    environment:
+      - POSTGRES_DB=jailbreak_db
+      - POSTGRES_USER=jailbreak_user
+      - POSTGRES_PASSWORD=jailbreak_password
+    restart: always
+    expose:
+      - "5432:5432"
+    networks:
+      - shark
+    healthcheck:
+      test: "exit 1"
+  jailbreak_app:
+    build:
+      context: sourcemod_api/
+      dockerfile: Dockerfile
+    cpus: '0.50'
+    mem_limit: 1g
+    command: uvicorn src.main:app --reload --host 0.0.0.0 --port 8001 --proxy-headers
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./sourcemod_api:/code/
+    env_file:
+      - ./sourcemod_api/.env
+    depends_on:
+      jailbreak_db:
+        condition: service_started
+      redis:
+        condition: service_started
+    restart: always
+    networks:
+      - shark
 
 networks:
   shark:
