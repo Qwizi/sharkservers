@@ -9,7 +9,6 @@ import sqlalchemy
 from PIL import ImageDraw, Image
 from fastapi import File
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi_events.dispatcher import dispatch
 from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter
 from httpx import AsyncClient
@@ -31,8 +30,6 @@ from src.forum.services import CategoryService
 from src.logger import logger
 from src.main import app
 from src.roles.dependencies import get_roles_service
-from src.roles.models import Role
-from src.roles.utils import get_user_role_scopes
 from src.scopes.dependencies import get_scopes_service
 from src.scopes.models import Scope
 from src.servers.dependencies import get_servers_service

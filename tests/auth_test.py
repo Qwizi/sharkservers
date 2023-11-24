@@ -1,17 +1,15 @@
 import asyncio
 import datetime
 from unittest import mock
-from zoneinfo import ZoneInfo
 
 import pytest
 
 from src.auth.enums import AuthExceptionsDetailEnum
 from src.auth.schemas import RegisterUserSchema
-from src.auth.utils import now_datetime
 from src.roles.enums import ProtectedDefaultRolesEnum
 from src.settings import get_settings
 from src.users.models import User
-from tests.conftest import create_fake_users, TEST_USER, _get_auth_service
+from tests.conftest import _get_auth_service
 
 TEST_REGISTER_USER = {
     "username": "Test",

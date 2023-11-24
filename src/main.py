@@ -1,9 +1,6 @@
-import datetime
 from email import message
 import json
-import logging
 import os
-from time import time
 from typing import Annotated
 import anyio
 from fastapi.encoders import jsonable_encoder
@@ -11,34 +8,24 @@ from fastapi.encoders import jsonable_encoder
 from fastapi import (
     FastAPI,
     Depends,
-    Header,
-    Query,
     Security,
     HTTPException,
     WebSocket,
     WebSocketDisconnect,
-    WebSocketException,
-    status,
-)
-from fastapi.exceptions import WebSocketRequestValidationError
+    )
 from fastapi.routing import APIRoute
-from fastapi.security import SecurityScopes
 from fastapi_events.dispatcher import dispatch
 from fastapi_events.handlers.local import local_handler
 from fastapi_events.middleware import EventHandlerASGIMiddleware
 from fastapi_limiter import FastAPILimiter
 from fastapi_pagination import Params, add_pagination
 from jose import JWTError
-from starlette.concurrency import iterate_in_threadpool
-from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
-from starlette.responses import Response
 from starlette.staticfiles import StaticFiles
-from src.chat.bot import Bot
 from src.chat.enums import WebsocketEventEnum
 from src.chat.schemas import ChatEventSchema
-from src.chat.dependencies import get_bot, get_chat_service
+from src.chat.dependencies import get_chat_service
 from src.chat.services import ChatService
 from src.chat.dependencies import ws_get_current_user
 from src.servers.dependencies import get_servers_service
@@ -48,8 +35,6 @@ from src.__version import VERSION
 from src.auth.dependencies import (
     get_auth_service,
     get_application,
-    get_current_active_user,
-    get_current_user,
     get_access_token_service,
 )
 from src.auth.schemas import RegisterUserSchema
@@ -82,7 +67,6 @@ from src.services import MainService
 from src.chat.views import router as chat_router
 from src.subscryptions.views import router as subscryptions_router
 from aiocron import crontab
-from src.manager import manager
 
 # Routes
 from src.users.views import router as users_router_v1
@@ -103,15 +87,9 @@ from .forum.services import CategoryService, ThreadService, PostService
 
 # import admin posts router
 from broadcaster import Broadcast
-
-
-from .handlers import handle_all_events_and_debug_log, generate_random_data
 from .auth.handlers import create_activate_code_after_register
 from .logger import logger
 from .users.dependencies import get_users_service
-from .users.enums import UsersEventsEnum
-from .users.services import UserService
-from .auth.handlers import create_activate_code_after_register
 
 script_dir = os.path.dirname(__file__)
 st_abs_file_path = os.path.join(script_dir, "../static/")

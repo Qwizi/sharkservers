@@ -1,17 +1,12 @@
 import json
-import uuid
 from datetime import timedelta
-from pathlib import Path
 from sqlite3 import IntegrityError as SQLIntegrityError
 
-from PIL import Image
-
 from asyncpg import UniqueViolationError
-from fastapi import File, Request, HTTPException, UploadFile
+from fastapi import Request, HTTPException, UploadFile
 from fastapi_pagination import Params, Page
 from psycopg2 import IntegrityError
 from pydantic import EmailStr
-from starlette import status
 from src.forum.services import PostService, ThreadService
 
 from src.auth.exceptions import invalid_activation_code_exception

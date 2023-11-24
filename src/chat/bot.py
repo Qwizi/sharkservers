@@ -6,7 +6,6 @@ from src.chat.enums import WebsocketEventEnum
 from src.chat.schemas import ChatEventSchema
 from src.chat.services import ChatService
 from src.forum.services import PostService, ThreadService
-from src.settings import Settings
 from src.users.services import UserService
 from broadcaster import Broadcast
 

@@ -2,9 +2,6 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from cryptography.fernet import Fernet
-from fastapi.security import (
-    OAuth2PasswordBearer,
-)
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

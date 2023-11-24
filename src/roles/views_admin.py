@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Security, Depends
 from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
-from fastapi_pagination.bases import AbstractPage
 from ormar import NoMatch
 
 from src.auth.dependencies import get_admin_user
@@ -11,7 +10,6 @@ from src.roles.exceptions import role_not_found_exception
 from src.roles.models import Role
 from src.roles.schemas import RoleOut, RoleOutWithScopes, CreateRoleSchema, UpdateRoleSchema
 from src.roles.services import RoleService
-from src.roles.utils import _delete_role
 from src.scopes.dependencies import get_scopes_service
 from src.scopes.models import Scope
 from src.scopes.services import ScopeService

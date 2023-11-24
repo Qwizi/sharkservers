@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime, timezone
+from datetime import timedelta, datetime
 from zoneinfo import ZoneInfo
 
 from jose import jwt, JWTError

@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, Security
 from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
-from fastapi_pagination.bases import AbstractPage
 
 from src.auth.dependencies import get_admin_user
 from src.scopes.dependencies import get_scopes_service, get_valid_scope
@@ -9,7 +8,6 @@ from src.scopes.enums import ScopesAdminEventsEnum
 from src.scopes.models import Scope
 from src.scopes.schemas import ScopeOut, CreateScopeSchema, UpdateScopeSchema
 from src.scopes.services import ScopeService
-from src.scopes.utils import _get_scopes, _get_scope, _create_scope, _delete_scope
 from src.users.models import User
 
 router = APIRouter()

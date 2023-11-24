@@ -1,16 +1,10 @@
-from enum import unique
 from typing import Optional
 
 import ormar
-from ormar import post_save
 from pydantic.color import Color
 
 from src.db import BaseMeta, DateFieldsMixins
-from src.logger import logger
 from src.players.models import Player
-from src.roles.dependencies import get_roles_service
-from src.roles.enums import ProtectedDefaultRolesEnum
-from src.scopes.dependencies import get_scopes_service
 
 
 class Server(ormar.Model, DateFieldsMixins):

@@ -11,7 +11,7 @@ from src.roles.services import RoleService
 from src.users.dependencies import get_valid_user, get_users_service
 from src.users.enums import UsersAdminEventsEnum
 from src.users.models import User
-from src.users.schemas import UserOutWithEmail, CreateUserSchema, BanUserSchema, AdminUpdateUserSchema
+from src.users.schemas import UserOutWithEmail, CreateUserSchema, AdminUpdateUserSchema
 from src.users.services import UserService
 
 router = APIRouter()

@@ -1,7 +1,5 @@
 from fastapi import Depends
 from ormar import Model
-
-from src.roles.models import Role
 from src.roles.services import RoleService
 
 

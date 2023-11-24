@@ -3,9 +3,8 @@ from typing import Optional
 from fastapi import Query
 from pydantic import BaseModel, Field
 from src.schemas import OrderQuery
-from src.enums import OrderEnum
 
-from src.forum.enums import CategoryTypeEnum, ThreadOrderEnum, ThreadStatusEnum, ThreadActionEnum
+from src.forum.enums import CategoryTypeEnum, ThreadStatusEnum, ThreadActionEnum
 from src.forum.models import Category, Tag, Thread, Post, Like, ThreadMeta
 from src.roles.models import Role
 

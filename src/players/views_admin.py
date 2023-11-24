@@ -1,11 +1,9 @@
 from fastapi import APIRouter, Depends, Security, BackgroundTasks
-from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
 from ormar import NoMatch
 
 from src.auth.dependencies import get_admin_user
 from src.players.dependencies import get_players_service
-from src.players.enums import PlayerEventEnum
 from src.players.exceptions import (
     SteamProfileNotFound,
 )

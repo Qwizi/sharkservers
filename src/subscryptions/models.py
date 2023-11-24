@@ -1,5 +1,4 @@
 import datetime
-from enum import unique
 import uuid
 import ormar
 from src.roles.models import Role

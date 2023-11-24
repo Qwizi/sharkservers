@@ -1,6 +1,4 @@
 import datetime
-from importlib import metadata
-import json
 from venv import logger
 from fastapi import APIRouter, Depends, Request, Security, HTTPException
 from ormar import NoMatch
