@@ -37,7 +37,7 @@ install:
 	sleep 2
 	docker compose exec app alembic upgrade head
 	sleep 2
-	@curl -X POST http://localhost/install \
+	@curl -X POST http://localhost:8000/install \
    		-H 'Content-Type: application/json' \
    		-d '{"username":"Qwizi","email":"test@test.pl", "password":"test123456", "password2":"test123456"}'
 	@echo "Instalation finished"
@@ -46,7 +46,7 @@ test:
 
 
 generate:
-	curl -X GET http://localhost/generate-openapi
+	curl -X GET http://localhost:8000/generate-openapi
 	cd ../sharkservers-js-client && npm run generate-client
 
 
