@@ -40,7 +40,9 @@ class UserService(BaseService):
     async def get_last_online_users(self, params: Params) -> Page[UserOut]:
         filter_after = now_datetime() - timedelta(minutes=15)
         return await self.get_all(
-            params=params, related=["display_role", "player", "player__steamrep_profile"], last_online__gt=filter_after
+            params=params,
+            related=["display_role", "player", "player__steamrep_profile"],
+            last_online__gt=filter_after,
         )
 
     @staticmethod
@@ -145,18 +147,29 @@ class UserService(BaseService):
         except HTTPException as e:
             raise e
 
-    async def sync_counters(self, threads_service: ThreadService, posts_service: PostService):
+    async def sync_counters(
+        self, threads_service: ThreadService, posts_service: PostService
+    ):
         try:
             users = await self.Meta.model.objects.select_related(
                 ["user_threads", "user_posts", "user_reputation"]
             ).all()
             for user in users:
-                threads_count = await threads_service.Meta.model.objects.select_related("posts").filter(author=user).count()
-                posts_count = await posts_service.Meta.model.objects.select_related("likes").filter(author=user).count()
+                threads_count = (
+                    await threads_service.Meta.model.objects.select_related("posts")
+                    .filter(author=user)
+                    .count()
+                )
+                posts_count = (
+                    await posts_service.Meta.model.objects.select_related("likes")
+                    .filter(author=user)
+                    .count()
+                )
                 await user.update(threads_count=threads_count, posts_count=posts_count)
             logger.info(f"Finished sync counters to users -> {len(users)}")
         except Exception as e:
             logger.error(e.message)
+
 
 class UserSessionService(BaseService):
     class Meta:

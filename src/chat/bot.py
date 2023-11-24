@@ -12,6 +12,7 @@ from broadcaster import Broadcast
 
 class Bot:
     broadcast: None | Broadcast
+
     def __init__(
         self,
         users_service: UserService,
@@ -28,11 +29,12 @@ class Bot:
         self.bot_user = None
 
     async def init_bot_user(self):
-        self.bot_user = await self.users_service.get_one(id=self.user_id, related=["display_role"])
+        self.bot_user = await self.users_service.get_one(
+            id=self.user_id, related=["display_role"]
+        )
 
     def set_broadcast(self, broadcast: Broadcast):
         self.broadcast = broadcast
-    
 
     async def send_message(self, message: str):
         new_message = await self.chat_service.create(
@@ -49,5 +51,7 @@ class Bot:
         messages_schema = ChatEventSchema(
             event=WebsocketEventEnum.GET_MESSAGES, data=messages
         )
-            #await websocket.send_json(jsonable_encoder(messages_schema))
-        await self.broadcast.publish(channel="chat", message=json.dumps(jsonable_encoder(messages_schema)))
+        # await websocket.send_json(jsonable_encoder(messages_schema))
+        await self.broadcast.publish(
+            channel="chat", message=json.dumps(jsonable_encoder(messages_schema))
+        )

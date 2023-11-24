@@ -8,7 +8,7 @@ from src.db import BaseService
 from src.logger import logger
 from src.players.exceptions import (
     player_not_found_exception,
-    )
+)
 from src.players.models import SteamRepProfile, Player
 from src.players.schemas import SteamPlayer
 from src.settings import get_settings
@@ -71,7 +71,9 @@ class PlayerService(BaseService):
     def get_steam_player_info(self, steamid64: str) -> SteamPlayer:
         try:
             steam_api = WebAPI(self.steam_api_key)
-            results = steam_api.call("ISteamUser.GetPlayerSummaries", steamids=steamid64)
+            results = steam_api.call(
+                "ISteamUser.GetPlayerSummaries", steamids=steamid64
+            )
             logger.info(results)
             if not len(results["response"]["players"]):
                 raise Exception("Invalid steamid64")

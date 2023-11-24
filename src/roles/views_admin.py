@@ -8,7 +8,12 @@ from src.roles.dependencies import get_roles_service, get_valid_role
 from src.roles.enums import RolesAdminEventsEnum
 from src.roles.exceptions import role_not_found_exception
 from src.roles.models import Role
-from src.roles.schemas import RoleOut, RoleOutWithScopes, CreateRoleSchema, UpdateRoleSchema
+from src.roles.schemas import (
+    RoleOut,
+    RoleOutWithScopes,
+    CreateRoleSchema,
+    UpdateRoleSchema,
+)
 from src.roles.services import RoleService
 from src.scopes.dependencies import get_scopes_service
 from src.scopes.models import Scope
@@ -20,9 +25,9 @@ router = APIRouter()
 
 @router.get("", response_model=Page[RoleOut])
 async def admin_get_roles(
-        params: Params = Depends(),
-        admin_user: User = Security(get_admin_user, scopes=["roles:all"]),
-        roles_service: RoleService = Depends(get_roles_service),
+    params: Params = Depends(),
+    admin_user: User = Security(get_admin_user, scopes=["roles:all"]),
+    roles_service: RoleService = Depends(get_roles_service),
 ) -> Page[RoleOut]:
     """
     Admin get all roles.
@@ -39,7 +44,8 @@ async def admin_get_roles(
 
 @router.get("/{role_id}", response_model=RoleOutWithScopes)
 async def admin_get_role(
-        role: Role = Depends(get_valid_role), user: User = Security(get_admin_user, scopes=["roles:retrieve"])
+    role: Role = Depends(get_valid_role),
+    user: User = Security(get_admin_user, scopes=["roles:retrieve"]),
 ) -> RoleOutWithScopes:
     """
     Admin get role by id.
@@ -55,10 +61,10 @@ async def admin_get_role(
 
 @router.post("", response_model=RoleOutWithScopes)
 async def admin_create_role(
-        role_data: CreateRoleSchema,
-        admin_user: User = Security(get_admin_user, scopes=["roles:create"]),
-        roles_service: RoleService = Depends(get_roles_service),
-        scopes_service: ScopeService = Depends(get_scopes_service),
+    role_data: CreateRoleSchema,
+    admin_user: User = Security(get_admin_user, scopes=["roles:create"]),
+    roles_service: RoleService = Depends(get_roles_service),
+    scopes_service: ScopeService = Depends(get_scopes_service),
 ):
     """
     Admin create role.
@@ -76,8 +82,9 @@ async def admin_create_role(
 
 @router.delete("/{role_id}")
 async def admin_delete_role(
-        role: Role = Depends(get_valid_role), user: User = Security(get_admin_user, scopes=["roles:delete"]),
-        roles_service: RoleService = Depends(get_roles_service),
+    role: Role = Depends(get_valid_role),
+    user: User = Security(get_admin_user, scopes=["roles:delete"]),
+    roles_service: RoleService = Depends(get_roles_service),
 ):
     """
     Admin delete role.
@@ -93,10 +100,10 @@ async def admin_delete_role(
 
 @router.put("/{role_id}")
 async def admin_update_role(
-        update_role_data: UpdateRoleSchema,
-        role: Role = Depends(get_valid_role),
-        admin_user: User = Security(get_admin_user, scopes=["roles:update"]),
-        scopes_service: ScopeService = Depends(get_scopes_service),
+    update_role_data: UpdateRoleSchema,
+    role: Role = Depends(get_valid_role),
+    admin_user: User = Security(get_admin_user, scopes=["roles:update"]),
+    scopes_service: ScopeService = Depends(get_scopes_service),
 ):
     """
     Admin update role.
@@ -129,9 +136,9 @@ async def admin_update_role(
 
 @router.post("/{role_id}/scopes/add", response_model=RoleOut)
 async def admin_add_scopes_to_role(
-        role_id: int,
-        scopes: list[int],
-        user: User = Security(get_admin_user, scopes=["roles:create"]),
+    role_id: int,
+    scopes: list[int],
+    user: User = Security(get_admin_user, scopes=["roles:create"]),
 ):
     role = await Role.objects.select_related(["scopes"]).get(id=role_id)
     if not role:

@@ -19,7 +19,7 @@ author_exclude = {
     "author__banned_user",
     "author__players",
     "author__chats",
-    "author__sessions"
+    "author__sessions",
 }
 
 category_out = Category.get_pydantic(exclude={"threads"})
@@ -140,12 +140,15 @@ class AdminUpdatePostSchema(UpdatePostSchema):
 class ThreadQuery(OrderQuery):
     category: Optional[int] = Query(None, description="Category ID", gt=0)
     server: Optional[int] = Query(None, description="Server ID", gt=0)
-    status: Optional[str] = Query(None, description="Thread status", enum=ThreadStatusEnum)
+    status: Optional[str] = Query(
+        None, description="Thread status", enum=ThreadStatusEnum
+    )
     closed: Optional[bool] = Query(None, description="Is thread closed")
 
 
 class PostQuery(OrderQuery):
     pass
+
 
 class AdminThreadActionSchema(BaseModel):
     action: ThreadActionEnum = ThreadActionEnum.CLOSE.value

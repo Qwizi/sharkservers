@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Params, Page
 from ormar import Model
@@ -6,7 +5,7 @@ from src.players.dependencies import (
     get_valid_player_by_steamid,
     get_players_service,
 )
-from src.players.services import  PlayerService
+from src.players.services import PlayerService
 from src.servers.dependencies import (
     get_servers_service,
     get_valid_server,
@@ -210,6 +209,7 @@ async def update_server_player_stats(
         await player_stats.update(**{key: old_value + value})
     return player_stats
 """
+
 
 @router.post("/{server_id}/modules/chat-colors/")
 async def create_player_chat_color(

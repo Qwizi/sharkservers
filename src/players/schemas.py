@@ -4,12 +4,12 @@ from pydantic import BaseModel
 
 from src.players.models import Player
 
-playerOut = Player.get_pydantic(exclude={
-    
-})
+playerOut = Player.get_pydantic(exclude={})
+
 
 class PlayerOut(playerOut):
     pass
+
 
 class SteamPlayer(BaseModel):
     id: Optional[int] = None

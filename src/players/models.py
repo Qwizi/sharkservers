@@ -32,6 +32,7 @@ class Player(ormar.Model, DateFieldsMixins):
     country_code: str = ormar.String(max_length=15)
     reputation: int = ormar.Integer(default=1000)
 
+
 """
 class PlayerStats(ormar.Model, DateFieldsMixins):
     class Meta(BaseMeta):

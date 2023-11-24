@@ -42,7 +42,9 @@ from src.users.schemas import UserOut
 router = APIRouter()
 
 settings = get_settings()
-limiter = RateLimiter(times=999 if settings.TESTING else 3, minutes=60 if settings.TESTING else  2)
+limiter = RateLimiter(
+    times=999 if settings.TESTING else 3, minutes=60 if settings.TESTING else 2
+)
 refresh_token_limiter = RateLimiter(times=3, minutes=60)
 
 
@@ -110,7 +112,7 @@ async def login_user(
         jwt_access_token_service=access_token_service,
         jwt_refresh_token_service=refresh_token_service,
         user_ip=user_ip,
-        user_agent=user_agent
+        user_agent=user_agent,
     )
     payload = {"user": json.loads(user.json()), "token": json.loads(token.json())}
     dispatch(AuthEventsEnum.ACCESS_TOKEN_POST, payload=payload)

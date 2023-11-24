@@ -19,9 +19,9 @@ router = APIRouter()
 
 @router.get("", response_model=Page[UserOutWithEmail], response_model_exclude_none=True)
 async def admin_get_users(
-        params: Params = Depends(),
-        users_service: UserService = Depends(get_users_service),
-        admin_user: User = Security(get_admin_user, scopes=["users:all"]),
+    params: Params = Depends(),
+    users_service: UserService = Depends(get_users_service),
+    admin_user: User = Security(get_admin_user, scopes=["users:all"]),
 ) -> Page[UserOutWithEmail]:
     """
     Admin route to get users list
@@ -30,15 +30,17 @@ async def admin_get_users(
     :param params:
     :return Page[UserOutWithEmail]:
     """
-    users = await users_service.get_all(params=params, related=["display_role", "player", "player__steamrep_profile"])
+    users = await users_service.get_all(
+        params=params, related=["display_role", "player", "player__steamrep_profile"]
+    )
     dispatch(UsersAdminEventsEnum.GET_ALL, payload={"data": users})
     return users
 
 
 @router.get("/{user_id}", response_model=UserOutWithEmail)
 async def admin_get_user(
-        user: User = Depends(get_valid_user),
-        admin_users: User = Security(get_admin_user, scopes=["users:retrieve"]),
+    user: User = Depends(get_valid_user),
+    admin_users: User = Security(get_admin_user, scopes=["users:retrieve"]),
 ) -> UserOutWithEmail:
     """
     Admin route to get user
@@ -51,13 +53,12 @@ async def admin_get_user(
     return user
 
 
-
 @router.post("", response_model=UserOutWithEmail)
 async def admin_create_user(
-        user_data: CreateUserSchema,
-        auth_service: AuthService = Depends(get_auth_service),
-        admin_user: User = Security(get_admin_user, scopes=["users:create"]),
-        settings: Settings = Depends(get_settings)
+    user_data: CreateUserSchema,
+    auth_service: AuthService = Depends(get_auth_service),
+    admin_user: User = Security(get_admin_user, scopes=["users:create"]),
+    settings: Settings = Depends(get_settings),
 ) -> UserOutWithEmail:
     """
     Admin create user
@@ -65,15 +66,16 @@ async def admin_create_user(
     :param user:
     :return UserOutWithEmail:
     """
-    created_user = await auth_service.register(RegisterUserSchema(
-        username=user_data.username,
-        email=user_data.email,
-        password=user_data.password,
-        password2=user_data.password
-    ),
+    created_user = await auth_service.register(
+        RegisterUserSchema(
+            username=user_data.username,
+            email=user_data.email,
+            password=user_data.password,
+            password2=user_data.password,
+        ),
         is_activated=user_data.is_activated,
         is_superuser=user_data.is_superuser,
-        settings=settings
+        settings=settings,
     )
     dispatch(UsersAdminEventsEnum.CREATE, payload={"data": created_user})
     return created_user
@@ -81,9 +83,9 @@ async def admin_create_user(
 
 @router.delete("/{user_id}")
 async def admin_delete_user(
-        validate_user: User = Depends(get_valid_user),
-        admin_user: User = Security(get_admin_user, scopes=["users:delete"]),
-        users_service: UserService = Depends(get_users_service),
+    validate_user: User = Depends(get_valid_user),
+    admin_user: User = Security(get_admin_user, scopes=["users:delete"]),
+    users_service: UserService = Depends(get_users_service),
 ) -> dict:
     """
     Admin delete user
@@ -100,11 +102,10 @@ async def admin_delete_user(
 
 @router.put("/{user_id}")
 async def admin_update_user(
-        update_user_data: AdminUpdateUserSchema,
-        admin_user: User = Security(get_admin_user, scopes=["users:update"]),
-        validate_user: User = Depends(get_valid_user),
-        roles_service: RoleService = Depends(get_roles_service)
-
+    update_user_data: AdminUpdateUserSchema,
+    admin_user: User = Security(get_admin_user, scopes=["users:update"]),
+    validate_user: User = Depends(get_valid_user),
+    roles_service: RoleService = Depends(get_roles_service),
 ) -> UserOutWithEmail:
     update_user_data_dict = update_user_data.dict()
     filtered = {k: v for k, v in update_user_data_dict.items() if v is not None}

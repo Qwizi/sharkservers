@@ -16,6 +16,7 @@ async def get_server_player_stats_service() -> ServerPlayerStatsService:
     return ServerPlayerStatsService()
 """
 
+
 async def get_valid_server(
     server_id: int, servers_service: ServerService = Depends(get_servers_service)
 ) -> Model:
@@ -34,6 +35,7 @@ async def get_valid_server_player_stats(
         server=server, player=player, related=["player", "server", "stats"]
     )
 """
+
 
 async def get_chat_color_module_service() -> ChatColorModuleService:
     return ChatColorModuleService()

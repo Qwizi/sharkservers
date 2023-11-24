@@ -12,7 +12,7 @@ from fastapi import (
     HTTPException,
     WebSocket,
     WebSocketDisconnect,
-    )
+)
 from fastapi.routing import APIRoute
 from fastapi_events.dispatcher import dispatch
 from fastapi_events.handlers.local import local_handler
@@ -275,8 +275,7 @@ def create_app():
         CORSMiddleware,
         allow_origins=[
             "http://localhost:3000",
-            "http://localhost:3001"
-            "https://api-sharkservers.qwizi.dev",
+            "http://localhost:3001" "https://api-sharkservers.qwizi.dev",
             "https://beta.sharkservers.pl",
             "https://api.sharkservers.pl",
             "https://api-beta.sharkservers.pl",
@@ -380,7 +379,12 @@ def create_app():
         user_agent = request.headers.get("User-Agent", None)
         x_forwarded_for = request.headers.get("X-Forwarded-For", None)
         x_real_ip = request.headers.get("X-Real-Ip", None)
-        return {"user_ip": client_host, "user_agent": user_agent, "X-Forwarded-For": x_forwarded_for, "X-Real-Ip": x_real_ip}
+        return {
+            "user_ip": client_host,
+            "user_agent": user_agent,
+            "X-Forwarded-For": x_forwarded_for,
+            "X-Real-Ip": x_real_ip,
+        }
 
     @_app.websocket("/ws")
     async def websocket_endpoint(
