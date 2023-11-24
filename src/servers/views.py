@@ -1,17 +1,11 @@
-import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends
 from fastapi_pagination import Params, Page
-from fastapi_pagination.ext.ormar import paginate
 from ormar import Model
-
-from src.logger import logger
 from src.players.dependencies import (
     get_valid_player_by_steamid,
     get_players_service,
 )
-from src.players.models import Player
-from src.players.schemas import UpdatePlayerStatsSchema
 from src.players.services import  PlayerService
 from src.servers.dependencies import (
     get_servers_service,

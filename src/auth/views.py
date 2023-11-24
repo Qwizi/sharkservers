@@ -29,7 +29,7 @@ from src.auth.schemas import (
 from src.auth.services.auth import AuthService, OAuth2ClientSecretRequestForm
 from src.auth.services.code import CodeService
 from src.auth.services.jwt import JWTService
-from src.dependencies import Limiter, get_email_service, get_limiter
+from src.dependencies import get_email_service
 from src.enums import ActivationEmailTypeEnum
 from src.logger import logger
 from src.players.dependencies import get_players_service

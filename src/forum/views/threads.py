@@ -1,11 +1,8 @@
-from fastapi import Security, Depends, APIRouter, HTTPException
+from fastapi import Security, Depends, APIRouter
 from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Params, Page
-from starlette import status
 from fastapi_limiter.depends import RateLimiter
-from src.dependencies import Limiter
 from src.settings import get_settings
-from src.logger import logger
 from src.auth.dependencies import get_current_active_user
 from src.forum.dependencies import (
     get_valid_thread,
@@ -13,7 +10,7 @@ from src.forum.dependencies import (
     get_threads_service,
     get_categories_service, get_thread_meta_service,
 )
-from src.forum.enums import ThreadEventEnum, CategoryTypeEnum, ThreadStatusEnum
+from src.forum.enums import ThreadEventEnum, ThreadStatusEnum
 from src.forum.models import Thread
 from src.forum.schemas import (
     ThreadOut,

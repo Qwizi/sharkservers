@@ -1,20 +1,17 @@
 import random
 import string
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from sqlite3 import IntegrityError
 from sqlite3 import IntegrityError as SQLIntegrityError
 from typing import Optional
 from urllib import parse
-from zoneinfo import ZoneInfo
 
 import httpx
 from asyncpg import UniqueViolationError
-from cryptography.fernet import Fernet
 from fastapi import HTTPException, Form
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError
 from ormar import NoMatch
-from passlib.context import CryptContext
 from pydantic import EmailStr
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
@@ -39,7 +36,7 @@ from src.auth.schemas import (
 )
 from src.auth.services.code import CodeService
 from src.auth.services.jwt import JWTService
-from src.auth.utils import now_datetime, pwd_context, verify_password, get_password_hash
+from src.auth.utils import now_datetime, verify_password, get_password_hash
 from src.enums import ActivationEmailTypeEnum
 from src.logger import logger
 from src.players.services import PlayerService

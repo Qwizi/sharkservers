@@ -1,12 +1,11 @@
 import json
 import os
 import uuid
-from io import BytesIO
 from pathlib import Path
 
 import httpx
 from PIL import Image, UnidentifiedImageError
-from fastapi import HTTPException, UploadFile, Request
+from fastapi import HTTPException, UploadFile
 from fastapi_mail import FastMail, MessageSchema, MessageType
 from fastapi_mail.email_utils import DefaultChecker
 from pydantic import EmailStr

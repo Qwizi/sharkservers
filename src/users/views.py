@@ -1,4 +1,3 @@
-from click import UUID
 from fastapi import (
     APIRouter,
     Depends,
@@ -19,12 +18,10 @@ from src.apps.schemas import CreateAppSchema
 from src.apps.services import AppService
 from src.auth.dependencies import (
     get_current_active_user,
-    get_auth_service,
     get_change_account_email_code_service,
     get_steam_auth_service,
 )
 from src.auth.schemas import ActivateUserCodeSchema, SteamAuthSchema
-from src.auth.services.auth import AuthService
 from src.auth.services.code import CodeService
 from src.dependencies import get_email_service, get_upload_service
 from src.enums import ActivationEmailTypeEnum

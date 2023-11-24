@@ -1,7 +1,4 @@
 from fastapi import Depends
-from ormar import Model
-
-from src.scopes.models import Scope
 from src.scopes.services import ScopeService
 
 

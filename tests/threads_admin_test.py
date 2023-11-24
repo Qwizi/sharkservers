@@ -1,11 +1,5 @@
 import pytest
-from fastapi import Security
-
-from src.auth.dependencies import get_admin_user
 from src.auth.schemas import RegisterUserSchema
-from src.forum.exceptions import thread_not_found_exception
-from src.forum.models import Thread
-from src.forum.views.admin.threads import admin_delete_thread
 from src.users.dependencies import get_users_service
 from tests.conftest import _get_auth_service, create_fake_categories, create_fake_threads, TEST_ADMIN_USER
 

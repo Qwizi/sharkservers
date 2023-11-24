@@ -1,9 +1,5 @@
 from fastapi import Depends
 from ormar import Model
-
-from src.players.dependencies import get_valid_player_by_steamid
-from src.players.models import Player
-from src.servers.models import Server
 from src.servers.services import (
     ServerService,
     ChatColorModuleService,

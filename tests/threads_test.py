@@ -1,17 +1,12 @@
-import asyncio
 from httpx import AsyncClient
 import pytest
 from src.enums import OrderEnum
-from src.main import app
 from src.auth.schemas import RegisterUserSchema
-from src.forum.dependencies import get_threads_service, get_thread_meta_service, get_categories_service
+from src.forum.dependencies import get_threads_service, get_thread_meta_service
 from src.forum.enums import CategoryTypeEnum, ThreadStatusEnum
-from src.forum.schemas import CreateThreadSchema
-from src.servers.dependencies import get_servers_service
 from src.users.dependencies import get_users_service
 from tests.conftest import create_fake_threads, TEST_USER, create_fake_categories, TEST_THREAD, _get_auth_service, \
     create_fake_users, create_fake_servers
-from fastapi_limiter.depends import RateLimiter
 
 THREADS_ENDPOINT = "/v1/forum/threads"
 

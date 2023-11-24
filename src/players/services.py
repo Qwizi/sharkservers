@@ -8,12 +8,10 @@ from src.db import BaseService
 from src.logger import logger
 from src.players.exceptions import (
     player_not_found_exception,
-    player_server_stats_not_found_exception,
-)
+    )
 from src.players.models import SteamRepProfile, Player
 from src.players.schemas import SteamPlayer
 from src.settings import get_settings
-from src.users.models import User
 
 settings = get_settings()
 
