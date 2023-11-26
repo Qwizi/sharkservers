@@ -220,3 +220,5 @@ openapi.json
 static/uploads/*
 .idea/*
 .vscode/*
+
+requests/*

@@ -45,7 +45,7 @@ def create_app() -> FastAPI:
     _app.state.database = database
 
     
-    _app.include_router(admins_router, prefix="/v1/admins", tags=['admins'])
+    _app.include_router(admins_router, prefix="/v1/admins", tags=['adminss'])
     _app.include_router(groups_router, prefix="/v1/admins/groups", tags=["admins-groups"])
 
     return _app

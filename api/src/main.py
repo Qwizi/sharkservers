@@ -380,7 +380,7 @@ def create_app():
         x_forwarded_for = request.headers.get("X-Forwarded-For", None)
         x_real_ip = request.headers.get("X-Real-Ip", None)
         return {
-            "user_ip": client_host,
+            "user_ip": "dupaaa",
             "user_agent": user_agent,
             "X-Forwarded-For": x_forwarded_for,
             "X-Real-Ip": x_real_ip,

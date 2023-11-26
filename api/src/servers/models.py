@@ -2,10 +2,14 @@ from typing import Optional
 
 import ormar
 from pydantic.color import Color
+from src.roles.enums import ProtectedDefaultRolesEnum
+from src.roles.dependencies import get_roles_service
+from src.scopes.dependencies import get_scopes_service
+from src.roles.models import Role
 
 from src.db import BaseMeta, DateFieldsMixins
 from src.players.models import Player
-
+from src.logger import logger
 
 class Server(ormar.Model, DateFieldsMixins):
     class Meta(BaseMeta):
@@ -15,6 +19,7 @@ class Server(ormar.Model, DateFieldsMixins):
     name: str = ormar.String(max_length=64, unique=True)
     ip: str = ormar.String(max_length=64)
     port: int = ormar.Integer(unique=True)
+    admin_role: Optional[Role] = ormar.ForeignKey(Role)
 
 
 """
@@ -45,6 +50,26 @@ class ChatColorModule(ormar.Model, DateFieldsMixins):
     name_color: Color = ormar.String(max_length=8)
     text_color: Color = ormar.String(max_length=8)
 
+@ormar.post_save(Server)
+async def on_server_created(sender, instance: Server, **kwargs):
+    roles_service = await get_roles_service()
+    scopes_service = await get_scopes_service()
+    role_name = f"Admin {instance.name}".capitalize()
+    scopes = await scopes_service.get_default_scopes_for_role(
+        ProtectedDefaultRolesEnum.USER.value
+    )
+    role_obj, created = await roles_service.Meta.model.objects.get_or_create(
+        name=role_name,
+        _defaults={
+            "name": role_name,
+            "color": "#fea500",
+            "is_staff": True,
+        },
+    )
+    if created:
+        for scope in scopes:
+            await role_obj.scopes.add(scope)
+    logger.info(role_obj)
 
 """
 @post_save(Server)
