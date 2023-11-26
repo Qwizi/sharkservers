@@ -5,11 +5,11 @@ services:
       dockerfile: Dockerfile
     cpus: '0.50'
     mem_limit: 1g
-    command: uvicorn src.main:app --reload --host 0.0.0.0 --port 8000 --ws  wsproto --proxy-headers
+    command: uvicorn src.main:app --reload --host 0.0.0.0 --port 8080 --ws  wsproto --proxy-headers
     ports:
-      - "8000:8000"
+      - "8080:8080"
     volumes:
-      - ./api:/code/
+      - ./api/:/app/
     env_file:
       - ./api/.env
     depends_on:
@@ -61,11 +61,11 @@ services:
       dockerfile: Dockerfile
     cpus: '0.50'
     mem_limit: 1g
-    command: uvicorn src.main:app --reload --host 0.0.0.0 --port 8001 --proxy-headers
+    command: uvicorn src.main:app --reload --host 0.0.0.0 --port 8081 --proxy-headers
     ports:
-      - "8001:8001"
+      - "8081:8081"
     volumes:
-      - ./sourcemod_api:/code/
+      - ./sourcemod_api/:/app/
     env_file:
       - ./sourcemod_api/.env
     depends_on:
