@@ -36,6 +36,7 @@ install:
 	docker compose up -d
 	sleep 2
 	docker compose exec app alembic upgrade head
+	docker compose exec jailbreak_app alembic upgrade head
 	sleep 2
 	@curl -X POST http://localhost:8080/install \
    		-H 'Content-Type: application/json' \

@@ -2,6 +2,7 @@ import json
 import os
 import uuid
 from pathlib import Path
+from fastapi_pagination import Page
 
 import httpx
 from PIL import Image, UnidentifiedImageError
@@ -293,3 +294,26 @@ class UploadService:
             avatar_full_path.unlink()
             return True
         return False
+
+class SourceModApiClient:
+    def __init__(self, tag: str, url: str):
+        self.tag = tag
+        self.url = url
+
+    async def get_admins(self):
+        async with httpx.AsyncClient() as client:
+            url = f"{self.url}/v1/admins/"
+            r = await client.get(url)
+            return r.json()
+        
+
+    async def create_admin(self, data):
+        async with httpx.AsyncClient() as client:
+            url = f"{self.url}/v1/admins/"
+            r = await client.post(url, json=data.dict())
+            return r.json()
+
+    async def get_admins_groups(self):
+        async with httpx.AsyncClient() as client:
+            r = await client.get(f"{self.url}/v1/admins/groups")
+            return r.json()

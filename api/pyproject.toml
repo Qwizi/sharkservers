@@ -29,10 +29,11 @@ fastapi-limiter = "^0.1.5"
 fakeredis = {extras = ["lua"], version = "^2.17.0"}
 websockets = "^11.0.3"
 uvicorn = {extras = ["standard"], version = "^0.23.2"}
-httpx = "^0.25.0"
+httpx = "^0.23.0"
 wsproto = "^1.2.0"
 broadcaster = {extras = ["redis"], version = "^0.2.0"}
 stripe = "^6.6.0"
+sourcemod-api-client = "^0.0.1"
 
 
 [tool.poetry.group.dev.dependencies]

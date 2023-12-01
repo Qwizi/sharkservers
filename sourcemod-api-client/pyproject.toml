@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "sourcemod-api-client"
+version = "0.0.1"
+description = ""
+authors = ["Adrian Ciolek <ciolek.adrian@protonmail.com>"]
+readme = "README.md"
+packages = [{include = "sourcemod_api_client"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+openapi-python-generator = "^0.4.8"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

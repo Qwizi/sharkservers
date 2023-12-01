@@ -12,6 +12,7 @@ class ServerOut(serverOut):
 
 
 class CreateServerSchema(BaseModel):
+    tag: str
     name: str
     ip: str
     port: int = Field(gt=0, lt=65536)

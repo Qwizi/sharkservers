@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     STRIPE_API_KEY: str
     STRIPE_WEBHOOK_SECRET: str
     SITE_URL: str = "http://localhost:80"
+    SOURCEMOD_API_URLS: list
 
     class Config:
         env_file = ".env"
