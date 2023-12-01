@@ -1,7 +1,10 @@
+from enum import unique
+from re import L
 from typing import Optional
 
 import ormar
 from pydantic.color import Color
+from src.settings import get_settings
 from src.roles.enums import ProtectedDefaultRolesEnum
 from src.roles.dependencies import get_roles_service
 from src.scopes.dependencies import get_scopes_service
@@ -12,6 +15,11 @@ from src.players.models import Player
 from src.roles.models import Role
 from src.logger import logger
 
+from sourcemod_api_client import APIConfig
+from sourcemod_api_client.services.async_admins_groups_service import (
+    admins_groups_create_group
+)
+from sourcemod_api_client.models.CreateGroupSchema import CreateGroupSchema
 
 class Server(ormar.Model, DateFieldsMixins):
     class Meta(BaseMeta):
@@ -19,6 +27,7 @@ class Server(ormar.Model, DateFieldsMixins):
 
     id: int = ormar.Integer(primary_key=True)
     name: Optional[str] = ormar.String(max_length=64)
+    tag: Optional[str] = ormar.String(max_length=64, unique=True)
     ip: Optional[str]  = ormar.String(max_length=64)
     port: Optional[str]  = ormar.Integer()
     admin_role: Optional[Role] = ormar.ForeignKey(Role)
@@ -46,15 +55,14 @@ class ChatColorModule(ormar.Model, DateFieldsMixins):
     player: Optional[Player] = ormar.ForeignKey(
         Player, related_name="player_chat_color_module", nullable=True
     )
-    tag: str = ormar.String(max_length=32, unique=True)
+    tag: str = ormar.String(max_length=64, unique=True)
     flag: Optional[str] = ormar.String(max_length=1, unique=True)
     tag_color: Color = ormar.String(max_length=8)
     name_color: Color = ormar.String(max_length=8)
     text_color: Color = ormar.String(max_length=8)
 
 
-@ormar.post_save(Server)
-async def on_server_created(sender, instance: Server, **kwargs):
+async def create_admin_role(instance: Server):
     roles_service = await get_roles_service()
     scopes_service = await get_scopes_service()
     role_name = f"Admin {instance.name.capitalize()}"
@@ -72,8 +80,32 @@ async def on_server_created(sender, instance: Server, **kwargs):
     )
     for scope in scopes:
         await new_admin_role.scopes.add(scope)
-    await instance.update(admin_role=new_admin_role)
+    return new_admin_role
 
+async def create_sourcemod_server_admin_group(instance: Server):
+    settings = get_settings()
+    api_url = None
+    for api in settings.SOURCEMOD_API_URLS:
+        if api["tag"] == instance.tag:
+            api_url = api["url"]
+            break
+    
+    api_config = APIConfig(
+        base_path=api_url,
+    )
+    return await admins_groups_create_group(data=CreateGroupSchema(
+        name=f"Admin",
+        immunity_level=100,
+        flags="z",
+    ), api_config_override=api_config)
+
+
+@ormar.post_save(Server)
+async def on_server_created(sender, instance: Server, **kwargs):
+    new_admin_role = await create_admin_role(instance)
+    await instance.update(admin_role=new_admin_role)
+    admins_groups = await create_sourcemod_server_admin_group(instance)
+    print(admins_groups)
 
 """
 @post_save(Server)

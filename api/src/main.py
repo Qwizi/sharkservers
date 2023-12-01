@@ -23,6 +23,7 @@ from jose import JWTError
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.staticfiles import StaticFiles
+from src.settings import Settings, get_settings
 from src.chat.enums import WebsocketEventEnum
 from src.chat.schemas import ChatEventSchema
 from src.chat.dependencies import get_chat_service
@@ -63,7 +64,7 @@ from src.scopes.views import router as scopes_router
 from src.scopes.views_admin import router as admin_scopes_router
 from src.servers.views import router as servers_router
 from src.servers.views_admin import router as admin_servers_router
-from src.services import MainService
+from src.services import MainService, SourceModApiClient
 from src.chat.views import router as chat_router
 from src.subscryptions.views import router as subscryptions_router
 from aiocron import crontab
@@ -91,6 +92,9 @@ from .auth.handlers import create_activate_code_after_register
 from .logger import logger
 from .users.dependencies import get_users_service
 from .handlers import generate_random_data
+
+from sourcemod_api_client import APIConfig
+from sourcemod_api_client.services.async_adminss_service import adminss_get_admins
 
 script_dir = os.path.dirname(__file__)
 st_abs_file_path = os.path.join(script_dir, "../static/")
@@ -375,18 +379,15 @@ def create_app():
     @_app.get("/test", tags=["root"])
     async def test(
         request: Request,
+        settings: Settings = Depends(get_settings),
     ):
-        client_host = request.client.host
-        user_agent = request.headers.get("User-Agent", None)
-        x_forwarded_for = request.headers.get("X-Forwarded-For", None)
-        x_real_ip = request.headers.get("X-Real-Ip", None)
-        return {
-            "user_ip": "dupaaa",
-            "user_agent": user_agent,
-            "X-Forwarded-For": x_forwarded_for,
-            "X-Real-Ip": x_real_ip,
-        }
-
+        microservices_list = settings.SOURCEMOD_API_URLS
+        tag = microservices_list[0]["tag"]
+        url = microservices_list[0]["url"]
+        
+        api_config = APIConfig(base_path=url)
+        admins = await adminss_get_admins(api_config_override=api_config)
+        return admins
     @_app.websocket("/ws")
     async def websocket_endpoint(
         websocket: WebSocket,
