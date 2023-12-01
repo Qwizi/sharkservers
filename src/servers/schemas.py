@@ -7,6 +7,7 @@ from src.servers.models import Server
 
 serverOut = Server.get_pydantic()
 
+
 class ServerOut(serverOut):
     pass
 
