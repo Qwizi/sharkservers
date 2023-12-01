@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from starlette import status as starlette_status
+from src.roles.enums import ProtectedDefaultRolesTagEnum
 from src.db import BaseService
 from src.forum.enums import ThreadStatusEnum, ThreadActionEnum, CategoryTypeEnum
 from src.forum.exceptions import (
@@ -65,6 +66,7 @@ class ThreadService(BaseService):
         return thread
 
     async def approve(self, thread: Thread):
+        await self.set_author_role(thread)
         await self.change_status(thread, ThreadStatusEnum.APPROVED)
         await self.close_thread(thread)
         return thread
@@ -181,6 +183,16 @@ class ThreadService(BaseService):
             logger.info(f"Finished sync counters to thread posts -> {len(threads)}")
         except Exception as e:
             logger.error(e)
+
+    async def set_author_role(self, thread: Thread):
+        user = thread.author
+        admin_role = thread.server.admin_role
+        if user.display_role.tag == ProtectedDefaultRolesTagEnum.USER.value:
+            await user.update(display_role=admin_role)
+            await user.roles.add(admin_role)
+        else:
+            await user.roles.add(admin_role)
+
 
 
 class PostService(BaseService):

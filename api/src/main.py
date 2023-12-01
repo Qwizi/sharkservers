@@ -90,6 +90,7 @@ from broadcaster import Broadcast
 from .auth.handlers import create_activate_code_after_register
 from .logger import logger
 from .users.dependencies import get_users_service
+from .handlers import generate_random_data
 
 script_dir = os.path.dirname(__file__)
 st_abs_file_path = os.path.join(script_dir, "../static/")
