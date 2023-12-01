@@ -1,4 +1,3 @@
-
 from fastapi import HTTPException
 from src.db import BaseService
 from src.admins.models import Admin, Group, GroupOverride
@@ -15,12 +14,11 @@ group_not_found_exception = HTTPException(
     detail="Group not found",
 )
 
+
 class AdminService(BaseService):
-    
     class Meta:
         model = Admin
         not_found_exception = admin_not_found_exception
-
 
     async def _create(self, data: CreateAdminSchema, groups_list: list[Group] | None):
         data_dict = data.dict()
@@ -30,8 +28,13 @@ class AdminService(BaseService):
             for group in groups_list:
                 await new_admin.groups.add(group)
         return new_admin
-    
-    async def _update(self, admin: Admin, updated_data: UpdateAdminSchema, groups_list: list[Group] | None):
+
+    async def _update(
+        self,
+        admin: Admin,
+        updated_data: UpdateAdminSchema,
+        groups_list: list[Group] | None,
+    ):
         data_dict = updated_data.dict(exclude_none=True)
         group_id = data_dict.pop("groups_id", None)
         if admin.identity == updated_data.identity:
@@ -40,16 +43,14 @@ class AdminService(BaseService):
         if groups_list:
             for group in admin.groups:
                 await admin.groups.remove(group)
-            
+
             for group in groups_list:
                 await admin.groups.add(group)
 
         return admin
 
 
-
 class GroupService(BaseService):
-    
     class Meta:
         model = Group
         not_found_exception = group_not_found_exception

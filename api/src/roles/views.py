@@ -16,7 +16,7 @@ router = APIRouter()
 
 @router.get("")
 async def get_roles(
-        params: Params = Depends(), roles_service: RoleService = Depends(get_roles_service)
+    params: Params = Depends(), roles_service: RoleService = Depends(get_roles_service)
 ) -> Page[RoleOut]:
     """
     Get roles

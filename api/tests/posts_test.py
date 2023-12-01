@@ -3,7 +3,13 @@ import pytest
 from src.auth.schemas import RegisterUserSchema
 from src.forum.dependencies import get_threads_service
 from src.users.dependencies import get_users_service
-from tests.conftest import create_fake_posts, create_fake_categories, create_fake_threads, TEST_USER, _get_auth_service
+from tests.conftest import (
+    create_fake_posts,
+    create_fake_categories,
+    create_fake_threads,
+    TEST_USER,
+    _get_auth_service,
+)
 
 POSTS_ENDPOINT = "/v1/forum/posts"
 
@@ -69,10 +75,9 @@ async def test_create_post_in_closed_thread(logged_client):
     categories = await create_fake_categories(1)
     threads = await create_fake_threads(1, author, categories[0])
     await threads[0].update(is_closed=True)
-    r = await logged_client.post(POSTS_ENDPOINT, json={
-        "thread_id": threads[0].id,
-        "content": "test"
-    })
+    r = await logged_client.post(
+        POSTS_ENDPOINT, json={"thread_id": threads[0].id, "content": "test"}
+    )
 
     assert r.status_code == 400
 
@@ -84,14 +89,13 @@ async def test_create_post(logged_client):
     categories = await create_fake_categories(1)
     threads = await create_fake_threads(1, author, categories[0])
     threads_service = await get_threads_service()
-    r = await logged_client.post(POSTS_ENDPOINT, json={
-        "thread_id": threads[0].id,
-        "content": "test"
-    })
+    r = await logged_client.post(
+        POSTS_ENDPOINT, json={"thread_id": threads[0].id, "content": "test"}
+    )
     assert r.status_code == 200
     assert r.json()["content"] == "test"
     assert r.json()["author"]["id"] == author.id
-    thread = await threads_service.get_one(id=threads[0].id, related=['posts'])
+    thread = await threads_service.get_one(id=threads[0].id, related=["posts"])
     assert len(thread.posts) == 1
     assert thread.posts[0].content == "test"
 
@@ -105,7 +109,9 @@ async def test_unauthorized_update_post(client):
             email=TEST_USER.get("email"),
             password=TEST_USER.get("password"),
             password2=TEST_USER.get("password"),
-        ), is_activated=True)
+        ),
+        is_activated=True,
+    )
     categories = await create_fake_categories(1)
     threads = await create_fake_threads(1, author, categories[0])
     posts = await create_fake_posts(1, author, threads[0])
@@ -122,7 +128,9 @@ async def test_update_post_when_logged_client_is_not_a_author(logged_client):
             email="test@email.pl",
             password=TEST_USER.get("password"),
             password2=TEST_USER.get("password"),
-        ), is_activated=True)
+        ),
+        is_activated=True,
+    )
     categories = await create_fake_categories(1)
     threads = await create_fake_threads(1, author, categories[0])
     posts = await create_fake_posts(1, author, threads[0])
@@ -138,9 +146,9 @@ async def test_update_post(logged_client):
     threads = await create_fake_threads(1, author, categories[0])
     posts = await create_fake_posts(1, author, threads[0])
     old_content = posts[0].content
-    r = await logged_client.put(f"{POSTS_ENDPOINT}/{posts[0].id}", json={
-        "content": "New content"
-    })
+    r = await logged_client.put(
+        f"{POSTS_ENDPOINT}/{posts[0].id}", json={"content": "New content"}
+    )
     assert r.status_code == 200
     assert r.json()["content"] != old_content
     assert r.json()["author"]["id"] == author.id
@@ -153,10 +161,9 @@ async def test_create_post_when_thread_is_closed(logged_client):
     categories = await create_fake_categories(1)
     threads = await create_fake_threads(1, author, categories[0])
     await threads[0].update(is_closed=True)
-    r = await logged_client.post(POSTS_ENDPOINT, json={
-        "thread_id": threads[0].id,
-        "content": "test"
-    })
+    r = await logged_client.post(
+        POSTS_ENDPOINT, json={"thread_id": threads[0].id, "content": "test"}
+    )
     assert r.status_code == 400
 
 
@@ -173,10 +180,13 @@ async def test_get_post_likes(logged_client):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("endpoint", [
-    f"{POSTS_ENDPOINT}/1/like",
-    f"{POSTS_ENDPOINT}/1/dislike",
-])
+@pytest.mark.parametrize(
+    "endpoint",
+    [
+        f"{POSTS_ENDPOINT}/1/like",
+        f"{POSTS_ENDPOINT}/1/dislike",
+    ],
+)
 async def test_unauthorized_like_and_dislike_post(endpoint, client):
     auth_service = await _get_auth_service()
     author = await auth_service.register(
@@ -185,7 +195,9 @@ async def test_unauthorized_like_and_dislike_post(endpoint, client):
             email="test@email.pl",
             password=TEST_USER.get("password"),
             password2=TEST_USER.get("password"),
-        ), is_activated=True)
+        ),
+        is_activated=True,
+    )
     categories = await create_fake_categories(1)
     threads = await create_fake_threads(1, author, categories[0])
     posts = await create_fake_posts(1, author, threads[0])

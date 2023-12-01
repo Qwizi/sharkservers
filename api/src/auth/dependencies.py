@@ -34,7 +34,7 @@ from src.users.services import UserService, UserSessionService
 
 
 async def get_access_token_service(
-        settings: Settings = Depends(get_settings),
+    settings: Settings = Depends(get_settings),
 ) -> JWTService:
     """
     Get access token service
@@ -48,7 +48,7 @@ async def get_access_token_service(
 
 
 async def get_refresh_token_service(
-        settings: Settings = Depends(get_settings),
+    settings: Settings = Depends(get_settings),
 ) -> JWTService:
     """
     Get refresh token service
@@ -62,25 +62,25 @@ async def get_refresh_token_service(
 
 
 async def get_auth_service(
-        users_service: UserService = Depends(get_users_service),
-        roles_service: RoleService = Depends(get_roles_service),
-        scopes_service: ScopeService = Depends(get_scopes_service),
-        users_sessions_service: UserSessionService = Depends(get_users_sessions_service)
+    users_service: UserService = Depends(get_users_service),
+    roles_service: RoleService = Depends(get_roles_service),
+    scopes_service: ScopeService = Depends(get_scopes_service),
+    users_sessions_service: UserSessionService = Depends(get_users_sessions_service),
 ) -> AuthService:
     return AuthService(
         users_service=users_service,
         roles_service=roles_service,
         scopes_service=scopes_service,
-        users_sessions_service=users_sessions_service
+        users_sessions_service=users_sessions_service,
     )
 
 
 async def get_current_user(
-        security_scopes: SecurityScopes,
-        token: str = Depends(AuthService.oauth2_scheme),
-        access_token_service: JWTService = Depends(get_access_token_service),
-        users_service: UserService = Depends(get_users_service),
-        users_sessions_service: UserSessionService = Depends(get_users_sessions_service)
+    security_scopes: SecurityScopes,
+    token: str = Depends(AuthService.oauth2_scheme),
+    access_token_service: JWTService = Depends(get_access_token_service),
+    users_service: UserService = Depends(get_users_service),
+    users_sessions_service: UserSessionService = Depends(get_users_sessions_service),
 ) -> Model:
     """
     Get current user
@@ -99,26 +99,39 @@ async def get_current_user(
             raise no_permissions_exception
     user = await users_service.get_one(
         id=token_data.user_id,
-        related=["roles", "display_role", "roles__scopes", "player", "player__steamrep_profile", "sessions"],
+        related=[
+            "roles",
+            "display_role",
+            "roles__scopes",
+            "player",
+            "player__steamrep_profile",
+            "sessions",
+        ],
     )
     session_exists = await users_sessions_service.Meta.model.objects.filter(
         id=uuid.UUID(session_id)
     ).exists()
     user_session_exists = False
     if session_exists:
-        user_session = await users_sessions_service.Meta.model.objects.get(id=uuid.UUID(session_id))
+        user_session = await users_sessions_service.Meta.model.objects.get(
+            id=uuid.UUID(session_id)
+        )
         for session in user.sessions:
             if session.id == user_session.id:
                 user_session_exists = True
                 break
-    if user.secret_salt != token_data.secret or not session_exists or not user_session_exists:
+    if (
+        user.secret_salt != token_data.secret
+        or not session_exists
+        or not user_session_exists
+    ):
         raise invalid_credentials_exception
-    
+
     return user
 
 
 async def get_current_active_user(
-        current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> User:
     """
     Get current active user
@@ -137,10 +150,10 @@ async def get_admin_user(user: User = Depends(get_current_active_user)):
 
 
 async def get_application(
-        security_scopes: SecurityScopes,
-        token: str = Depends(AuthService.oauth2_scheme),
-        access_token_service: JWTService = Depends(get_access_token_service),
-        apps_service: AppService = Depends(get_app_service),
+    security_scopes: SecurityScopes,
+    token: str = Depends(AuthService.oauth2_scheme),
+    access_token_service: JWTService = Depends(get_access_token_service),
+    apps_service: AppService = Depends(get_app_service),
 ) -> Model:
     """
     Get application
@@ -167,7 +180,9 @@ async def get_application(
         raise invalid_credentials_exception
 
 
-async def get_activation_account_code_service(redis: Redis = Depends(get_redis)) -> CodeService:
+async def get_activation_account_code_service(
+    redis: Redis = Depends(get_redis),
+) -> CodeService:
     """
     Get activation account code service
     :param redis:
@@ -176,7 +191,9 @@ async def get_activation_account_code_service(redis: Redis = Depends(get_redis))
     return CodeService(redis=redis, key=RedisAuthKeyEnum.ACTIVATE_USER.value)
 
 
-async def get_change_account_email_code_service(redis: Redis = Depends(get_redis)) -> CodeService:
+async def get_change_account_email_code_service(
+    redis: Redis = Depends(get_redis),
+) -> CodeService:
     """
     Get change account email code service
     :param redis:
@@ -185,7 +202,9 @@ async def get_change_account_email_code_service(redis: Redis = Depends(get_redis
     return CodeService(redis=redis, key=RedisAuthKeyEnum.CHANGE_EMAIL.value)
 
 
-async def get_reset_account_password_code_service(redis: Redis = Depends(get_redis)) -> CodeService:
+async def get_reset_account_password_code_service(
+    redis: Redis = Depends(get_redis),
+) -> CodeService:
     """
     Get reset account password code service
     :param redis:
@@ -196,6 +215,6 @@ async def get_reset_account_password_code_service(redis: Redis = Depends(get_red
 
 async def get_steam_auth_service(
     users_service: UserService = Depends(get_users_service),
-    players_service: PlayerService = Depends(get_players_service)
+    players_service: PlayerService = Depends(get_players_service),
 ):
     return SteamAuthService(users_service, players_service)

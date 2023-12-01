@@ -5,7 +5,8 @@ from src.forum.enums import (
     CategoryExceptionEnum,
     TagExceptionEnum,
     ThreadExceptionEnum,
-    PostExceptionsEnum, LikeExceptionsEnum,
+    PostExceptionsEnum,
+    LikeExceptionsEnum,
 )
 
 category_not_found_exception = HTTPException(

@@ -78,7 +78,9 @@ class Thread(ormar.Model, DateFieldsMixins):
     category: Optional[Category] = ormar.ForeignKey(Category)
     author: Optional[User] = ormar.ForeignKey(User, related_name="user_threads")
     posts: Optional[List[Post]] = ormar.ManyToMany(Post, related_name="thread_post")
-    meta_fields: Optional[List[ThreadMeta]] = ormar.ManyToMany(ThreadMeta, related_name="thread_meta")
+    meta_fields: Optional[List[ThreadMeta]] = ormar.ManyToMany(
+        ThreadMeta, related_name="thread_meta"
+    )
     post_count: int = ormar.Integer(default=0)
     server: Optional[Server] = ormar.ForeignKey(Server, related_name="thread_server")
 
@@ -119,14 +121,19 @@ async def on_thread_save(sender, instance, **kwargs):
         for meta_field in meta_fields:
             await instance.meta_fields.add(meta_field)
 
+
 @post_delete(Thread)
 async def update_category_thread_counter_after_delete(sender, instance, **kwargs):
     category = await Category.objects.get(id=instance.category.id)
-    await category.update(threads_count=category.threads_count - 1 if category.threads_count > 0 else 0)
+    await category.update(
+        threads_count=category.threads_count - 1 if category.threads_count > 0 else 0
+    )
 
 
 @post_relation_add(Thread)
-async def update_thread_post_counter_after_relation_add(sender, instance, child, **kwargs):
+async def update_thread_post_counter_after_relation_add(
+    sender, instance, child, **kwargs
+):
     if isinstance(child, Post):
         thread = await Thread.objects.get(id=instance.id)
         thread_posts_count = thread.post_count + 1
@@ -137,12 +144,15 @@ async def update_thread_post_counter_after_relation_add(sender, instance, child,
 
 
 @post_relation_remove(Thread)
-async def update_thread_post_counter_after_relation_remove(sender, instance, child, **kwargs):
+async def update_thread_post_counter_after_relation_remove(
+    sender, instance, child, **kwargs
+):
     if isinstance(child, Post):
         thread = await Thread.objects.get(id=instance.id)
-        thread_posts_count=thread.post_count - 1 if thread.post_count > 0 else 0
-        posts_count=child.author.posts_count - 1 if child.author.posts_count > 0 else 0
+        thread_posts_count = thread.post_count - 1 if thread.post_count > 0 else 0
+        posts_count = (
+            child.author.posts_count - 1 if child.author.posts_count > 0 else 0
+        )
         await thread.update(post_count=thread_posts_count)
         logger.info(f"Thread {thread.title} post count updated to {thread.post_count}")
         await child.author.update(posts_count=posts_count)
-

@@ -8,7 +8,9 @@ from ..models import *
 
 
 def adminss_get_admins(
-    page: Optional[int] = None, size: Optional[int] = None, api_config_override: Optional[APIConfig] = None
+    page: Optional[int] = None,
+    size: Optional[int] = None,
+    api_config_override: Optional[APIConfig] = None,
 ) -> Page_AdminOut_:
     api_config = api_config_override if api_config_override else APIConfig()
 
@@ -21,7 +23,9 @@ def adminss_get_admins(
     }
     query_params: Dict[str, Any] = {"page": page, "size": size}
 
-    query_params = {key: value for (key, value) in query_params.items() if value is not None}
+    query_params = {
+        key: value for (key, value) in query_params.items() if value is not None
+    }
 
     with httpx.Client(base_url=base_path, verify=api_config.verify) as client:
         response = client.request(
@@ -32,12 +36,20 @@ def adminss_get_admins(
         )
 
     if response.status_code != 200:
-        raise HTTPException(response.status_code, f" failed with status code: {response.status_code}")
+        raise HTTPException(
+            response.status_code, f" failed with status code: {response.status_code}"
+        )
 
-    return Page_AdminOut_(**response.json()) if response.json() is not None else Page_AdminOut_()
+    return (
+        Page_AdminOut_(**response.json())
+        if response.json() is not None
+        else Page_AdminOut_()
+    )
 
 
-def adminss_create_admin(data: CreateAdminSchema, api_config_override: Optional[APIConfig] = None) -> Any:
+def adminss_create_admin(
+    data: CreateAdminSchema, api_config_override: Optional[APIConfig] = None
+) -> Any:
     api_config = api_config_override if api_config_override else APIConfig()
 
     base_path = api_config.base_path
@@ -49,18 +61,30 @@ def adminss_create_admin(data: CreateAdminSchema, api_config_override: Optional[
     }
     query_params: Dict[str, Any] = {}
 
-    query_params = {key: value for (key, value) in query_params.items() if value is not None}
+    query_params = {
+        key: value for (key, value) in query_params.items() if value is not None
+    }
 
     with httpx.Client(base_url=base_path, verify=api_config.verify) as client:
-        response = client.request("post", httpx.URL(path), headers=headers, params=query_params, json=data.dict())
+        response = client.request(
+            "post",
+            httpx.URL(path),
+            headers=headers,
+            params=query_params,
+            json=data.dict(),
+        )
 
     if response.status_code != 200:
-        raise HTTPException(response.status_code, f" failed with status code: {response.status_code}")
+        raise HTTPException(
+            response.status_code, f" failed with status code: {response.status_code}"
+        )
 
     return response.json()
 
 
-def adminss_get_admin(identity: str, api_config_override: Optional[APIConfig] = None) -> AdminOut:
+def adminss_get_admin(
+    identity: str, api_config_override: Optional[APIConfig] = None
+) -> AdminOut:
     api_config = api_config_override if api_config_override else APIConfig()
 
     base_path = api_config.base_path
@@ -72,7 +96,9 @@ def adminss_get_admin(identity: str, api_config_override: Optional[APIConfig] = 
     }
     query_params: Dict[str, Any] = {}
 
-    query_params = {key: value for (key, value) in query_params.items() if value is not None}
+    query_params = {
+        key: value for (key, value) in query_params.items() if value is not None
+    }
 
     with httpx.Client(base_url=base_path, verify=api_config.verify) as client:
         response = client.request(
@@ -83,13 +109,17 @@ def adminss_get_admin(identity: str, api_config_override: Optional[APIConfig] = 
         )
 
     if response.status_code != 200:
-        raise HTTPException(response.status_code, f" failed with status code: {response.status_code}")
+        raise HTTPException(
+            response.status_code, f" failed with status code: {response.status_code}"
+        )
 
     return AdminOut(**response.json()) if response.json() is not None else AdminOut()
 
 
 def adminss_update_admin(
-    identity: str, data: UpdateAdminSchema, api_config_override: Optional[APIConfig] = None
+    identity: str,
+    data: UpdateAdminSchema,
+    api_config_override: Optional[APIConfig] = None,
 ) -> Any:
     api_config = api_config_override if api_config_override else APIConfig()
 
@@ -102,18 +132,30 @@ def adminss_update_admin(
     }
     query_params: Dict[str, Any] = {}
 
-    query_params = {key: value for (key, value) in query_params.items() if value is not None}
+    query_params = {
+        key: value for (key, value) in query_params.items() if value is not None
+    }
 
     with httpx.Client(base_url=base_path, verify=api_config.verify) as client:
-        response = client.request("put", httpx.URL(path), headers=headers, params=query_params, json=data.dict())
+        response = client.request(
+            "put",
+            httpx.URL(path),
+            headers=headers,
+            params=query_params,
+            json=data.dict(),
+        )
 
     if response.status_code != 200:
-        raise HTTPException(response.status_code, f" failed with status code: {response.status_code}")
+        raise HTTPException(
+            response.status_code, f" failed with status code: {response.status_code}"
+        )
 
     return response.json()
 
 
-def adminss_delete_admin(identity: str, api_config_override: Optional[APIConfig] = None) -> Any:
+def adminss_delete_admin(
+    identity: str, api_config_override: Optional[APIConfig] = None
+) -> Any:
     api_config = api_config_override if api_config_override else APIConfig()
 
     base_path = api_config.base_path
@@ -125,7 +167,9 @@ def adminss_delete_admin(identity: str, api_config_override: Optional[APIConfig]
     }
     query_params: Dict[str, Any] = {}
 
-    query_params = {key: value for (key, value) in query_params.items() if value is not None}
+    query_params = {
+        key: value for (key, value) in query_params.items() if value is not None
+    }
 
     with httpx.Client(base_url=base_path, verify=api_config.verify) as client:
         response = client.request(
@@ -136,6 +180,8 @@ def adminss_delete_admin(identity: str, api_config_override: Optional[APIConfig]
         )
 
     if response.status_code != 200:
-        raise HTTPException(response.status_code, f" failed with status code: {response.status_code}")
+        raise HTTPException(
+            response.status_code, f" failed with status code: {response.status_code}"
+        )
 
     return response.json()

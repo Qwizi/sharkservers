@@ -23,4 +23,6 @@ class Group_WLC(BaseModel):
 
     immunity_level: int = Field(alias="immunity_level")
 
-    groupoverrides: Optional[List[Optional[GroupOverride_PVT]]] = Field(alias="groupoverrides", default=None)
+    groupoverrides: Optional[List[Optional[GroupOverride_PVT]]] = Field(
+        alias="groupoverrides", default=None
+    )

@@ -10,6 +10,7 @@ from src.auth.utils import now_datetime
 from src.db import BaseMeta, DateFieldsMixins
 from src.roles.models import Role
 
+
 class UserSession(ormar.Model, DateFieldsMixins):
     class Meta(BaseMeta):
         tablename = "user_sessions"
@@ -17,6 +18,7 @@ class UserSession(ormar.Model, DateFieldsMixins):
     id: str = ormar.UUID(primary_key=True, default=uuid.uuid4)
     user_ip: str = ormar.String(max_length=255)
     user_agent: str = ormar.String(max_length=255)
+
 
 class User(ormar.Model, DateFieldsMixins):
     class Meta(BaseMeta):
@@ -42,7 +44,9 @@ class User(ormar.Model, DateFieldsMixins):
     posts_count: int = ormar.Integer(default=0)
     likes_count: int = ormar.Integer(default=0)
     player: Optional[Player] = ormar.ForeignKey(Player, related_name="player")
-    sessions: Optional[UserSession] = ormar.ManyToMany(UserSession, related_name="users_sessions")
+    sessions: Optional[UserSession] = ormar.ManyToMany(
+        UserSession, related_name="users_sessions"
+    )
 
 
 class Ban(ormar.Model, DateFieldsMixins):
@@ -54,7 +58,6 @@ class Ban(ormar.Model, DateFieldsMixins):
     reason: Optional[str] = ormar.String(max_length=255)
     ban_time: Optional[datetime.datetime] = ormar.DateTime(nullable=True, timezone=True)
     banned_by: Optional[User] = ormar.ForeignKey(User, related_name="banned_by")
-
 
 
 @ormar.pre_update(User)

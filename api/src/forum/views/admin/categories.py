@@ -13,10 +13,14 @@ from src.users.models import User
 router = APIRouter()
 
 
-@router.get("", response_model=Page[CategoryOut], dependencies=[Security(get_admin_user, scopes=["categories:all"])])
+@router.get(
+    "",
+    response_model=Page[CategoryOut],
+    dependencies=[Security(get_admin_user, scopes=["categories:all"])],
+)
 async def admin_get_categories(
-        params: Params = Depends(),
-        categories_service: CategoryService = Depends(get_categories_service),
+    params: Params = Depends(),
+    categories_service: CategoryService = Depends(get_categories_service),
 ):
     """
     Get all categories.
@@ -27,8 +31,11 @@ async def admin_get_categories(
     return categories_service.get_all(params=params)
 
 
-@router.get("/{category_id}", response_model=CategoryOut,
-            dependencies=[Security(get_admin_user, scopes=["categories:retrieve"])])
+@router.get(
+    "/{category_id}",
+    response_model=CategoryOut,
+    dependencies=[Security(get_admin_user, scopes=["categories:retrieve"])],
+)
 async def admin_get_category(category: Category = Depends(get_valid_category)):
     """
     Get category
@@ -40,9 +47,9 @@ async def admin_get_category(category: Category = Depends(get_valid_category)):
 
 @router.post("")
 async def admin_create_category(
-        category_data: CreateCategorySchema,
-        user: User = Security(get_admin_user, scopes=["categories:create"]),
-        categories_service: CategoryService = Depends(get_categories_service),
+    category_data: CreateCategorySchema,
+    user: User = Security(get_admin_user, scopes=["categories:create"]),
+    categories_service: CategoryService = Depends(get_categories_service),
 ):
     """
     Create category
@@ -58,9 +65,9 @@ async def admin_create_category(
 
 @router.delete("/{category_id}")
 async def admin_delete_category(
-        category: Category = Depends(get_valid_category),
-        user: User = Security(get_admin_user, scopes=["categories:delete"]),
-        categories_service: CategoryService = Depends(get_categories_service),
+    category: Category = Depends(get_valid_category),
+    user: User = Security(get_admin_user, scopes=["categories:delete"]),
+    categories_service: CategoryService = Depends(get_categories_service),
 ):
     """
     Delete category

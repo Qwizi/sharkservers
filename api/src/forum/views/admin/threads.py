@@ -4,7 +4,8 @@ from fastapi_events.dispatcher import dispatch
 from src.auth.dependencies import get_admin_user
 from src.forum.dependencies import (
     get_valid_thread,
-    get_threads_service, get_categories_service,
+    get_threads_service,
+    get_categories_service,
 )
 from src.forum.enums import ThreadAdminEventEnum, ThreadActionEnum
 from src.forum.models import Thread
@@ -19,9 +20,9 @@ router = APIRouter()
 
 @router.delete("/{thread_id}")
 async def admin_delete_thread(
-        thread: Thread = Depends(get_valid_thread),
-        user: User = Security(get_admin_user, scopes=["threads:delete"]),
-        threads_service: ThreadService = Depends(get_threads_service),
+    thread: Thread = Depends(get_valid_thread),
+    user: User = Security(get_admin_user, scopes=["threads:delete"]),
+    threads_service: ThreadService = Depends(get_threads_service),
 ):
     thread = await threads_service.delete(thread.id)
     dispatch(ThreadAdminEventEnum.DELETE_POST, payload={"data": thread.id})
@@ -30,12 +31,12 @@ async def admin_delete_thread(
 
 @router.put("/{thread_id}")
 async def admin_update_thread(
-        update_thread_data: AdminUpdateThreadSchema,
-        thread: Thread = Depends(get_valid_thread),
-        user: User = Security(get_admin_user, scopes=["threads:update"]),
-        threads_service: ThreadService = Depends(get_threads_service),
-        users_service: UserService = Depends(get_users_service),
-        categories_service: CategoryService = Depends(get_categories_service),
+    update_thread_data: AdminUpdateThreadSchema,
+    thread: Thread = Depends(get_valid_thread),
+    user: User = Security(get_admin_user, scopes=["threads:update"]),
+    threads_service: ThreadService = Depends(get_threads_service),
+    users_service: UserService = Depends(get_users_service),
+    categories_service: CategoryService = Depends(get_categories_service),
 ):
     update_thread_data_dict = update_thread_data.dict(exclude_unset=True)
     author_id = update_thread_data_dict.pop("author", None)
@@ -56,9 +57,9 @@ async def admin_update_thread(
 
 @router.post("/{thread_id}/close")
 async def admin_close_thread(
-        thread: Thread = Depends(get_valid_thread),
-        user: User = Security(get_admin_user, scopes=["threads:close"]),
-        threads_service: ThreadService = Depends(get_threads_service),
+    thread: Thread = Depends(get_valid_thread),
+    user: User = Security(get_admin_user, scopes=["threads:close"]),
+    threads_service: ThreadService = Depends(get_threads_service),
 ):
     thread = await threads_service.close_thread(thread)
     return thread
@@ -66,20 +67,23 @@ async def admin_close_thread(
 
 @router.post("/{thread_id}/open")
 async def admin_open_thread(
-        thread: Thread = Depends(get_valid_thread),
-        user: User = Security(get_admin_user, scopes=["threads:open"]),
-        threads_service: ThreadService = Depends(get_threads_service),
+    thread: Thread = Depends(get_valid_thread),
+    user: User = Security(get_admin_user, scopes=["threads:open"]),
+    threads_service: ThreadService = Depends(get_threads_service),
 ):
     thread = await threads_service.open_thread(thread)
     return thread
 
 
-@router.post("/{thread_id}/action", dependencies=[Security(get_admin_user, scopes=["threads:close"])])
+@router.post(
+    "/{thread_id}/action",
+    dependencies=[Security(get_admin_user, scopes=["threads:close"])],
+)
 async def run_thread_action(
-        data: AdminThreadActionSchema,
-        thread: Thread = Depends(get_valid_thread),
-        threads_service: ThreadService = Depends(get_threads_service),
-        categories_service: CategoryService = Depends(get_categories_service),
+    data: AdminThreadActionSchema,
+    thread: Thread = Depends(get_valid_thread),
+    threads_service: ThreadService = Depends(get_threads_service),
+    categories_service: CategoryService = Depends(get_categories_service),
 ):
     """
     Run thread action
@@ -88,7 +92,11 @@ async def run_thread_action(
 
     if data.action == ThreadActionEnum.MOVE:
         if not data.category:
-            raise HTTPException(status_code=400, detail="Category is required for move action")
+            raise HTTPException(
+                status_code=400, detail="Category is required for move action"
+            )
         category = await categories_service.get_one(id=data.category)
-        return await threads_service.run_action(thread=thread, action=data.action, new_category=category)
+        return await threads_service.run_action(
+            thread=thread, action=data.action, new_category=category
+        )
     return await threads_service.run_action(thread=thread, action=data.action)

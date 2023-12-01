@@ -9,7 +9,15 @@ from sqlalchemy.ext.asyncio import async_engine_from_config, create_async_engine
 from alembic import context
 
 from src.db import BaseMeta
-from src.admins.models import AdminGroup, Admin, Group, GroupImmunity, GroupOverride, Override, Config
+from src.admins.models import (
+    AdminGroup,
+    Admin,
+    Group,
+    GroupImmunity,
+    GroupOverride,
+    Override,
+    Config,
+)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -31,6 +39,7 @@ target_metadata = BaseMeta.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+
 def get_url() -> str:
     POSTGRES_USER = os.getenv("POSTGRES_USER", "")
     POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "")
@@ -38,6 +47,7 @@ def get_url() -> str:
     POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
     POSTGRES_DB = os.getenv("POSTGRES_DB", "")
     return f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
@@ -77,9 +87,7 @@ async def run_async_migrations() -> None:
 
     """
 
-    connectable = create_async_engine(
-        get_url()
-    )
+    connectable = create_async_engine(get_url())
 
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)

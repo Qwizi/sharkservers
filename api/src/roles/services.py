@@ -38,15 +38,21 @@ class RoleService(BaseService):
                         await default_role.scopes.add(scope)
 
     async def get_staff_roles(self, params):
-        return await self.get_all(params=params, related=["user_display_role"], is_staff=True)
+        return await self.get_all(
+            params=params, related=["user_display_role"], is_staff=True
+        )
 
-    async def admin_create_role(self, role_data: CreateRoleSchema, scopes_service: ScopeService) -> Role:
-        """ Create role with scopes """
+    async def admin_create_role(
+        self, role_data: CreateRoleSchema, scopes_service: ScopeService
+    ) -> Role:
+        """Create role with scopes"""
         scopes = []
         role_data_dict = role_data.dict()
         scopes_from_role_data = role_data_dict.pop("scopes", None)
         if scopes_from_role_data:
-            scopes = await scopes_service.Meta.model.objects.filter(id__in=role_data.scopes).all()
+            scopes = await scopes_service.Meta.model.objects.filter(
+                id__in=role_data.scopes
+            ).all()
         role = await self.create(**role_data_dict)
         if scopes:
             for scope in scopes:

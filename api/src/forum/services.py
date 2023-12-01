@@ -29,7 +29,9 @@ class CategoryService(BaseService):
             for category in categories:
                 threads_count = await category.threads.count()
                 await category.update(threads_count=threads_count)
-            logger.info(f"Finished sync counters to category threads -> {len(categories)}")
+            logger.info(
+                f"Finished sync counters to category threads -> {len(categories)}"
+            )
         except Exception as e:
             logger.error(e)
 
@@ -117,7 +119,7 @@ class ThreadService(BaseService):
         status: ThreadStatusEnum = ThreadStatusEnum.PENDING.value,
         thread_meta_service: ThreadMetaService = None,
         servers_service: ServerService = None,
-        **kwargs
+        **kwargs,
     ):
         if category.type == CategoryTypeEnum.APPLICATION:
             if not data.server_id:
@@ -148,7 +150,7 @@ class ThreadService(BaseService):
                 author=author,
                 status=status,
                 server=server,
-                **kwargs
+                **kwargs,
             )
             await thread_meta_service.fill_meta(
                 thread_id=new_thread.id,
@@ -159,10 +161,16 @@ class ThreadService(BaseService):
                     "question_reason": data.question_reason,
                 },
             )
-            
+
             return await self.get_one(
                 id=new_thread.id,
-                related=["category", "author", "author__display_role", "meta_fields", "server"],
+                related=[
+                    "category",
+                    "author",
+                    "author__display_role",
+                    "meta_fields",
+                    "server",
+                ],
             )
         new_thread = await self.create(
             title=data.title,
@@ -170,10 +178,10 @@ class ThreadService(BaseService):
             category=category,
             author=author,
             status=status,
-            **kwargs
+            **kwargs,
         )
         return new_thread
-    
+
     async def sync_counters(self):
         try:
             threads = await self.Meta.model.objects.select_related("posts").all()
@@ -194,7 +202,6 @@ class ThreadService(BaseService):
             await user.roles.add(admin_role)
 
 
-
 class PostService(BaseService):
     class Meta:
         model = Post
@@ -207,7 +214,7 @@ class PostService(BaseService):
                 likes_count = await post.likes.count()
                 await post.update(likes_count=likes_count)
             logger.info(f"Finished sync counters to post likes -> {len(posts)}")
-        except Exception as  e:
+        except Exception as e:
             logger.error(e)
 
 

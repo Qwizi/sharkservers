@@ -54,22 +54,39 @@ async def generate_random_data(event: Event):
             logger.info(f"Created user {new_user.username}")
         return users_list
 
-    async def generate_categories(categories_service, num: int = 10, type: CategoryTypeEnum = CategoryTypeEnum.PUBLIC):
+    async def generate_categories(
+        categories_service,
+        num: int = 10,
+        type: CategoryTypeEnum = CategoryTypeEnum.PUBLIC,
+    ):
         categories_list = []
         for i in range(num):
-            name = f"TestCategory{i}" if type == CategoryTypeEnum.PUBLIC else f"TestApplicationCategory{i}"
+            name = (
+                f"TestCategory{i}"
+                if type == CategoryTypeEnum.PUBLIC
+                else f"TestApplicationCategory{i}"
+            )
             new_category = await categories_service.create(
                 name=name, description=f"Test description {i}", type=type
             )
             categories_list.append(new_category)
             logger.info(f"Created category {new_category.name}")
         return categories_list
-    
-    async def generate_threads(threads_service, num=100, category=None, is_closed=False, is_pinned=False, status=ThreadStatusEnum.PENDING):
+
+    async def generate_threads(
+        threads_service,
+        num=100,
+        category=None,
+        is_closed=False,
+        is_pinned=False,
+        status=ThreadStatusEnum.PENDING,
+    ):
         threads_list = []
         for i in range(num):
             user = random.choice(list(users_list))
-            category = random.choice(list(categories_list)) if not category else category
+            category = (
+                random.choice(list(categories_list)) if not category else category
+            )
             kwargs = {}
             if category.type == CategoryTypeEnum.PUBLIC:
                 kwargs["title"] = f"Test normal thread {i}"
@@ -81,16 +98,16 @@ async def generate_random_data(event: Event):
                 kwargs["status"] = ThreadStatusEnum.PENDING.value
 
             new_thread = await threads_service.create(
-                    category=category,
-                    author=user,
-                    is_closed=is_closed,
-                    is_pinned=is_pinned,
-                    **kwargs
-                )
+                category=category,
+                author=user,
+                is_closed=is_closed,
+                is_pinned=is_pinned,
+                **kwargs,
+            )
             threads_list.append(new_thread)
             logger.info(f"Created thread {new_thread.title}")
         return threads_list
-    
+
     async def generate_posts(posts_service, num=100):
         for i in range(num):
             user = random.choice(list(users_list))
@@ -106,9 +123,7 @@ async def generate_random_data(event: Event):
         servers_list = []
         for i in range(num):
             server = await servers_service.create(
-                ip="127.0.0.1",
-                name=f"Test server {i}",
-                port=i + 1
+                ip="127.0.0.1", name=f"Test server {i}", port=i + 1
             )
             servers_list.append(server)
         return servers_list
@@ -116,21 +131,17 @@ async def generate_random_data(event: Event):
     users_list = await generate_users(auth_service)
     servers_list = await generate_servers(servers_service)
     categories_list = await generate_categories(categories_service)
-    application_categories_list = await generate_categories(categories_service=categories_service, num=2, type=CategoryTypeEnum.APPLICATION.value)
-    normal_threads_list = await generate_threads(
-        threads_service=threads_service
+    application_categories_list = await generate_categories(
+        categories_service=categories_service,
+        num=2,
+        type=CategoryTypeEnum.APPLICATION.value,
     )
+    normal_threads_list = await generate_threads(threads_service=threads_service)
     closed_threads_list = await generate_threads(
-        threads_service=threads_service,
-        num=5,
-        category=None,
-        is_closed=True
+        threads_service=threads_service, num=5, category=None, is_closed=True
     )
     pinned_threads_list = await generate_threads(
-        threads_service=threads_service,
-        num=5,
-        category=None,
-        is_pinned=True
+        threads_service=threads_service, num=5, category=None, is_pinned=True
     )
     application_threads_list = await generate_threads(
         threads_service=threads_service,

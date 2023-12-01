@@ -8,7 +8,9 @@ from ..models import *
 
 
 async def adminss_get_admins(
-    page: Optional[int] = None, size: Optional[int] = None, api_config_override: Optional[APIConfig] = None
+    page: Optional[int] = None,
+    size: Optional[int] = None,
+    api_config_override: Optional[APIConfig] = None,
 ) -> Page_AdminOut_:
     api_config = api_config_override if api_config_override else APIConfig()
 
@@ -21,9 +23,13 @@ async def adminss_get_admins(
     }
     query_params: Dict[str, Any] = {"page": page, "size": size}
 
-    query_params = {key: value for (key, value) in query_params.items() if value is not None}
+    query_params = {
+        key: value for (key, value) in query_params.items() if value is not None
+    }
 
-    async with httpx.AsyncClient(base_url=base_path, verify=api_config.verify) as client:
+    async with httpx.AsyncClient(
+        base_url=base_path, verify=api_config.verify
+    ) as client:
         response = await client.request(
             "get",
             httpx.URL(path),
@@ -32,12 +38,20 @@ async def adminss_get_admins(
         )
 
     if response.status_code != 200:
-        raise HTTPException(response.status_code, f" failed with status code: {response.status_code}")
+        raise HTTPException(
+            response.status_code, f" failed with status code: {response.status_code}"
+        )
 
-    return Page_AdminOut_(**response.json()) if response.json() is not None else Page_AdminOut_()
+    return (
+        Page_AdminOut_(**response.json())
+        if response.json() is not None
+        else Page_AdminOut_()
+    )
 
 
-async def adminss_create_admin(data: CreateAdminSchema, api_config_override: Optional[APIConfig] = None) -> Any:
+async def adminss_create_admin(
+    data: CreateAdminSchema, api_config_override: Optional[APIConfig] = None
+) -> Any:
     api_config = api_config_override if api_config_override else APIConfig()
 
     base_path = api_config.base_path
@@ -49,18 +63,32 @@ async def adminss_create_admin(data: CreateAdminSchema, api_config_override: Opt
     }
     query_params: Dict[str, Any] = {}
 
-    query_params = {key: value for (key, value) in query_params.items() if value is not None}
+    query_params = {
+        key: value for (key, value) in query_params.items() if value is not None
+    }
 
-    async with httpx.AsyncClient(base_url=base_path, verify=api_config.verify) as client:
-        response = await client.request("post", httpx.URL(path), headers=headers, params=query_params, json=data.dict())
+    async with httpx.AsyncClient(
+        base_url=base_path, verify=api_config.verify
+    ) as client:
+        response = await client.request(
+            "post",
+            httpx.URL(path),
+            headers=headers,
+            params=query_params,
+            json=data.dict(),
+        )
 
     if response.status_code != 200:
-        raise HTTPException(response.status_code, f" failed with status code: {response.status_code}")
+        raise HTTPException(
+            response.status_code, f" failed with status code: {response.status_code}"
+        )
 
     return response.json()
 
 
-async def adminss_get_admin(identity: str, api_config_override: Optional[APIConfig] = None) -> AdminOut:
+async def adminss_get_admin(
+    identity: str, api_config_override: Optional[APIConfig] = None
+) -> AdminOut:
     api_config = api_config_override if api_config_override else APIConfig()
 
     base_path = api_config.base_path
@@ -72,9 +100,13 @@ async def adminss_get_admin(identity: str, api_config_override: Optional[APIConf
     }
     query_params: Dict[str, Any] = {}
 
-    query_params = {key: value for (key, value) in query_params.items() if value is not None}
+    query_params = {
+        key: value for (key, value) in query_params.items() if value is not None
+    }
 
-    async with httpx.AsyncClient(base_url=base_path, verify=api_config.verify) as client:
+    async with httpx.AsyncClient(
+        base_url=base_path, verify=api_config.verify
+    ) as client:
         response = await client.request(
             "get",
             httpx.URL(path),
@@ -83,13 +115,17 @@ async def adminss_get_admin(identity: str, api_config_override: Optional[APIConf
         )
 
     if response.status_code != 200:
-        raise HTTPException(response.status_code, f" failed with status code: {response.status_code}")
+        raise HTTPException(
+            response.status_code, f" failed with status code: {response.status_code}"
+        )
 
     return AdminOut(**response.json()) if response.json() is not None else AdminOut()
 
 
 async def adminss_update_admin(
-    identity: str, data: UpdateAdminSchema, api_config_override: Optional[APIConfig] = None
+    identity: str,
+    data: UpdateAdminSchema,
+    api_config_override: Optional[APIConfig] = None,
 ) -> Any:
     api_config = api_config_override if api_config_override else APIConfig()
 
@@ -102,18 +138,32 @@ async def adminss_update_admin(
     }
     query_params: Dict[str, Any] = {}
 
-    query_params = {key: value for (key, value) in query_params.items() if value is not None}
+    query_params = {
+        key: value for (key, value) in query_params.items() if value is not None
+    }
 
-    async with httpx.AsyncClient(base_url=base_path, verify=api_config.verify) as client:
-        response = await client.request("put", httpx.URL(path), headers=headers, params=query_params, json=data.dict())
+    async with httpx.AsyncClient(
+        base_url=base_path, verify=api_config.verify
+    ) as client:
+        response = await client.request(
+            "put",
+            httpx.URL(path),
+            headers=headers,
+            params=query_params,
+            json=data.dict(),
+        )
 
     if response.status_code != 200:
-        raise HTTPException(response.status_code, f" failed with status code: {response.status_code}")
+        raise HTTPException(
+            response.status_code, f" failed with status code: {response.status_code}"
+        )
 
     return response.json()
 
 
-async def adminss_delete_admin(identity: str, api_config_override: Optional[APIConfig] = None) -> Any:
+async def adminss_delete_admin(
+    identity: str, api_config_override: Optional[APIConfig] = None
+) -> Any:
     api_config = api_config_override if api_config_override else APIConfig()
 
     base_path = api_config.base_path
@@ -125,9 +175,13 @@ async def adminss_delete_admin(identity: str, api_config_override: Optional[APIC
     }
     query_params: Dict[str, Any] = {}
 
-    query_params = {key: value for (key, value) in query_params.items() if value is not None}
+    query_params = {
+        key: value for (key, value) in query_params.items() if value is not None
+    }
 
-    async with httpx.AsyncClient(base_url=base_path, verify=api_config.verify) as client:
+    async with httpx.AsyncClient(
+        base_url=base_path, verify=api_config.verify
+    ) as client:
         response = await client.request(
             "delete",
             httpx.URL(path),
@@ -136,6 +190,8 @@ async def adminss_delete_admin(identity: str, api_config_override: Optional[APIC
         )
 
     if response.status_code != 200:
-        raise HTTPException(response.status_code, f" failed with status code: {response.status_code}")
+        raise HTTPException(
+            response.status_code, f" failed with status code: {response.status_code}"
+        )
 
     return response.json()

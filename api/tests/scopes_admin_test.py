@@ -6,10 +6,13 @@ ADMIN_SCOPES_ENDPOINT = "/v1/admin/scopes"
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("endpoint", [
-    ADMIN_SCOPES_ENDPOINT,
-    ADMIN_SCOPES_ENDPOINT + "/1",
-])
+@pytest.mark.parametrize(
+    "endpoint",
+    [
+        ADMIN_SCOPES_ENDPOINT,
+        ADMIN_SCOPES_ENDPOINT + "/1",
+    ],
+)
 async def test_unauthorized_admin_get_scopes(endpoint, client):
     r = await client.get(endpoint)
     assert r.status_code == 401
@@ -48,12 +51,15 @@ async def test_admin_get_scope(admin_client):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("protected", [True, False])
 async def test_admin_create_scope(protected, admin_client):
-    r = await admin_client.post(ADMIN_SCOPES_ENDPOINT, json={
-        "app_name": TEST_SCOPE.get("app_name"),
-        "value": TEST_SCOPE.get("value"),
-        "description": TEST_SCOPE.get("description"),
-        "protected": protected,
-    })
+    r = await admin_client.post(
+        ADMIN_SCOPES_ENDPOINT,
+        json={
+            "app_name": TEST_SCOPE.get("app_name"),
+            "value": TEST_SCOPE.get("value"),
+            "description": TEST_SCOPE.get("description"),
+            "protected": protected,
+        },
+    )
     assert r.status_code == 200
     assert r.json()["app_name"] == TEST_SCOPE.get("app_name")
     assert r.json()["value"] == TEST_SCOPE.get("value")
@@ -76,8 +82,11 @@ async def test_admin_update_scope(admin_client):
     scopes = await create_fake_scopes(1)
     old_app_name = scopes[0].app_name
     new_app_name = "new_app_name"
-    r = await admin_client.put(ADMIN_SCOPES_ENDPOINT + f"/{scopes[0].id}", json={
-        "app_name": new_app_name,
-    })
+    r = await admin_client.put(
+        ADMIN_SCOPES_ENDPOINT + f"/{scopes[0].id}",
+        json={
+            "app_name": new_app_name,
+        },
+    )
     assert r.status_code == 200
     assert r.json()["app_name"] != old_app_name

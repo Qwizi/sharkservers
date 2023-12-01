@@ -29,4 +29,6 @@ class HTTPError401Schema(HTTPErrorSchema):
 
 
 class OrderQuery(BaseModel):
-    order_by: Optional[str] = Query(OrderEnum.ID_DESC, description="Order by", enum=OrderEnum)
+    order_by: Optional[str] = Query(
+        OrderEnum.ID_DESC, description="Order by", enum=OrderEnum
+    )

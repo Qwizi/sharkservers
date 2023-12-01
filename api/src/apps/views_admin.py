@@ -8,6 +8,3 @@ router = APIRouter()
 @router.get("/")
 async def admin_index():
     return {"message": "Hello from apps module"}
-
-
-

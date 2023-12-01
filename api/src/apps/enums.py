@@ -19,6 +19,3 @@ class AppsEventsEnum(str, Enum):
     ADMIN_CREATE = "APPS_ADMIN_CREATE"
     ADMIN_UPDATE = "APPS_ADMIN_UPDATE"
     ADMIN_DELETE = "APPS_ADMIN_DELETE"
-
-
-

@@ -8,7 +8,9 @@ from ..models import *
 
 
 async def admins_groups_get_groups(
-    page: Optional[int] = None, size: Optional[int] = None, api_config_override: Optional[APIConfig] = None
+    page: Optional[int] = None,
+    size: Optional[int] = None,
+    api_config_override: Optional[APIConfig] = None,
 ) -> Page_GroupOut_:
     api_config = api_config_override if api_config_override else APIConfig()
 
@@ -21,9 +23,13 @@ async def admins_groups_get_groups(
     }
     query_params: Dict[str, Any] = {"page": page, "size": size}
 
-    query_params = {key: value for (key, value) in query_params.items() if value is not None}
+    query_params = {
+        key: value for (key, value) in query_params.items() if value is not None
+    }
 
-    async with httpx.AsyncClient(base_url=base_path, verify=api_config.verify) as client:
+    async with httpx.AsyncClient(
+        base_url=base_path, verify=api_config.verify
+    ) as client:
         response = await client.request(
             "get",
             httpx.URL(path),
@@ -32,9 +38,15 @@ async def admins_groups_get_groups(
         )
 
     if response.status_code != 200:
-        raise HTTPException(response.status_code, f" failed with status code: {response.status_code}")
+        raise HTTPException(
+            response.status_code, f" failed with status code: {response.status_code}"
+        )
 
-    return Page_GroupOut_(**response.json()) if response.json() is not None else Page_GroupOut_()
+    return (
+        Page_GroupOut_(**response.json())
+        if response.json() is not None
+        else Page_GroupOut_()
+    )
 
 
 async def admins_groups_create_group(
@@ -51,18 +63,32 @@ async def admins_groups_create_group(
     }
     query_params: Dict[str, Any] = {}
 
-    query_params = {key: value for (key, value) in query_params.items() if value is not None}
+    query_params = {
+        key: value for (key, value) in query_params.items() if value is not None
+    }
 
-    async with httpx.AsyncClient(base_url=base_path, verify=api_config.verify) as client:
-        response = await client.request("post", httpx.URL(path), headers=headers, params=query_params, json=data.dict())
+    async with httpx.AsyncClient(
+        base_url=base_path, verify=api_config.verify
+    ) as client:
+        response = await client.request(
+            "post",
+            httpx.URL(path),
+            headers=headers,
+            params=query_params,
+            json=data.dict(),
+        )
 
     if response.status_code != 200:
-        raise HTTPException(response.status_code, f" failed with status code: {response.status_code}")
+        raise HTTPException(
+            response.status_code, f" failed with status code: {response.status_code}"
+        )
 
     return GroupOut(**response.json()) if response.json() is not None else GroupOut()
 
 
-async def admins_groups_get_group(group_id: int, api_config_override: Optional[APIConfig] = None) -> GroupOut:
+async def admins_groups_get_group(
+    group_id: int, api_config_override: Optional[APIConfig] = None
+) -> GroupOut:
     api_config = api_config_override if api_config_override else APIConfig()
 
     base_path = api_config.base_path
@@ -74,9 +100,13 @@ async def admins_groups_get_group(group_id: int, api_config_override: Optional[A
     }
     query_params: Dict[str, Any] = {}
 
-    query_params = {key: value for (key, value) in query_params.items() if value is not None}
+    query_params = {
+        key: value for (key, value) in query_params.items() if value is not None
+    }
 
-    async with httpx.AsyncClient(base_url=base_path, verify=api_config.verify) as client:
+    async with httpx.AsyncClient(
+        base_url=base_path, verify=api_config.verify
+    ) as client:
         response = await client.request(
             "get",
             httpx.URL(path),
@@ -85,12 +115,16 @@ async def admins_groups_get_group(group_id: int, api_config_override: Optional[A
         )
 
     if response.status_code != 200:
-        raise HTTPException(response.status_code, f" failed with status code: {response.status_code}")
+        raise HTTPException(
+            response.status_code, f" failed with status code: {response.status_code}"
+        )
 
     return GroupOut(**response.json()) if response.json() is not None else GroupOut()
 
 
-async def admins_groups_delete_group(group_id: int, api_config_override: Optional[APIConfig] = None) -> GroupOut:
+async def admins_groups_delete_group(
+    group_id: int, api_config_override: Optional[APIConfig] = None
+) -> GroupOut:
     api_config = api_config_override if api_config_override else APIConfig()
 
     base_path = api_config.base_path
@@ -102,9 +136,13 @@ async def admins_groups_delete_group(group_id: int, api_config_override: Optiona
     }
     query_params: Dict[str, Any] = {}
 
-    query_params = {key: value for (key, value) in query_params.items() if value is not None}
+    query_params = {
+        key: value for (key, value) in query_params.items() if value is not None
+    }
 
-    async with httpx.AsyncClient(base_url=base_path, verify=api_config.verify) as client:
+    async with httpx.AsyncClient(
+        base_url=base_path, verify=api_config.verify
+    ) as client:
         response = await client.request(
             "delete",
             httpx.URL(path),
@@ -113,6 +151,8 @@ async def admins_groups_delete_group(group_id: int, api_config_override: Optiona
         )
 
     if response.status_code != 200:
-        raise HTTPException(response.status_code, f" failed with status code: {response.status_code}")
+        raise HTTPException(
+            response.status_code, f" failed with status code: {response.status_code}"
+        )
 
     return GroupOut(**response.json()) if response.json() is not None else GroupOut()

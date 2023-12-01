@@ -58,8 +58,6 @@ class SteamAuthService:
                 return player
             else:
                 raise HTTPException(400, "User have already connected profile")
-        new_player = await self.players_service.create_player(
-            steamid64=steamid64
-        )
+        new_player = await self.players_service.create_player(steamid64=steamid64)
         await user.update(player=new_player)
         return new_player

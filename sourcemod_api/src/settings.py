@@ -16,7 +16,7 @@ class Settings(BaseSettings):
         if self.TESTING:
             return "sqlite:///../test.db"
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}/{self.POSTGRES_DB}"
-    
+
 
 @lru_cache()
 def get_settings():

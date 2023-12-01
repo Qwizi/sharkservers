@@ -8,7 +8,9 @@ from ..models import *
 
 
 def admins_groups_get_groups(
-    page: Optional[int] = None, size: Optional[int] = None, api_config_override: Optional[APIConfig] = None
+    page: Optional[int] = None,
+    size: Optional[int] = None,
+    api_config_override: Optional[APIConfig] = None,
 ) -> Page_GroupOut_:
     api_config = api_config_override if api_config_override else APIConfig()
 
@@ -21,7 +23,9 @@ def admins_groups_get_groups(
     }
     query_params: Dict[str, Any] = {"page": page, "size": size}
 
-    query_params = {key: value for (key, value) in query_params.items() if value is not None}
+    query_params = {
+        key: value for (key, value) in query_params.items() if value is not None
+    }
 
     with httpx.Client(base_url=base_path, verify=api_config.verify) as client:
         response = client.request(
@@ -32,12 +36,20 @@ def admins_groups_get_groups(
         )
 
     if response.status_code != 200:
-        raise HTTPException(response.status_code, f" failed with status code: {response.status_code}")
+        raise HTTPException(
+            response.status_code, f" failed with status code: {response.status_code}"
+        )
 
-    return Page_GroupOut_(**response.json()) if response.json() is not None else Page_GroupOut_()
+    return (
+        Page_GroupOut_(**response.json())
+        if response.json() is not None
+        else Page_GroupOut_()
+    )
 
 
-def admins_groups_create_group(data: CreateGroupSchema, api_config_override: Optional[APIConfig] = None) -> GroupOut:
+def admins_groups_create_group(
+    data: CreateGroupSchema, api_config_override: Optional[APIConfig] = None
+) -> GroupOut:
     api_config = api_config_override if api_config_override else APIConfig()
 
     base_path = api_config.base_path
@@ -49,18 +61,30 @@ def admins_groups_create_group(data: CreateGroupSchema, api_config_override: Opt
     }
     query_params: Dict[str, Any] = {}
 
-    query_params = {key: value for (key, value) in query_params.items() if value is not None}
+    query_params = {
+        key: value for (key, value) in query_params.items() if value is not None
+    }
 
     with httpx.Client(base_url=base_path, verify=api_config.verify) as client:
-        response = client.request("post", httpx.URL(path), headers=headers, params=query_params, json=data.dict())
+        response = client.request(
+            "post",
+            httpx.URL(path),
+            headers=headers,
+            params=query_params,
+            json=data.dict(),
+        )
 
     if response.status_code != 200:
-        raise HTTPException(response.status_code, f" failed with status code: {response.status_code}")
+        raise HTTPException(
+            response.status_code, f" failed with status code: {response.status_code}"
+        )
 
     return GroupOut(**response.json()) if response.json() is not None else GroupOut()
 
 
-def admins_groups_get_group(group_id: int, api_config_override: Optional[APIConfig] = None) -> GroupOut:
+def admins_groups_get_group(
+    group_id: int, api_config_override: Optional[APIConfig] = None
+) -> GroupOut:
     api_config = api_config_override if api_config_override else APIConfig()
 
     base_path = api_config.base_path
@@ -72,7 +96,9 @@ def admins_groups_get_group(group_id: int, api_config_override: Optional[APIConf
     }
     query_params: Dict[str, Any] = {}
 
-    query_params = {key: value for (key, value) in query_params.items() if value is not None}
+    query_params = {
+        key: value for (key, value) in query_params.items() if value is not None
+    }
 
     with httpx.Client(base_url=base_path, verify=api_config.verify) as client:
         response = client.request(
@@ -83,12 +109,16 @@ def admins_groups_get_group(group_id: int, api_config_override: Optional[APIConf
         )
 
     if response.status_code != 200:
-        raise HTTPException(response.status_code, f" failed with status code: {response.status_code}")
+        raise HTTPException(
+            response.status_code, f" failed with status code: {response.status_code}"
+        )
 
     return GroupOut(**response.json()) if response.json() is not None else GroupOut()
 
 
-def admins_groups_delete_group(group_id: int, api_config_override: Optional[APIConfig] = None) -> GroupOut:
+def admins_groups_delete_group(
+    group_id: int, api_config_override: Optional[APIConfig] = None
+) -> GroupOut:
     api_config = api_config_override if api_config_override else APIConfig()
 
     base_path = api_config.base_path
@@ -100,7 +130,9 @@ def admins_groups_delete_group(group_id: int, api_config_override: Optional[APIC
     }
     query_params: Dict[str, Any] = {}
 
-    query_params = {key: value for (key, value) in query_params.items() if value is not None}
+    query_params = {
+        key: value for (key, value) in query_params.items() if value is not None
+    }
 
     with httpx.Client(base_url=base_path, verify=api_config.verify) as client:
         response = client.request(
@@ -111,6 +143,8 @@ def admins_groups_delete_group(group_id: int, api_config_override: Optional[APIC
         )
 
     if response.status_code != 200:
-        raise HTTPException(response.status_code, f" failed with status code: {response.status_code}")
+        raise HTTPException(
+            response.status_code, f" failed with status code: {response.status_code}"
+        )
 
     return GroupOut(**response.json()) if response.json() is not None else GroupOut()

@@ -11,4 +11,6 @@ class HTTPValidationError(BaseModel):
 
     """
 
-    detail: Optional[List[Optional[ValidationError]]] = Field(alias="detail", default=None)
+    detail: Optional[List[Optional[ValidationError]]] = Field(
+        alias="detail", default=None
+    )
