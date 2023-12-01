@@ -1,4 +1,10 @@
 from fastapi import APIRouter, Depends
+from src.roles.schemas import CreateRoleSchema
+from src.roles.enums import ProtectedDefaultRolesEnum
+from src.roles.dependencies import get_roles_service
+from src.roles.services import RoleService
+from src.scopes.dependencies import get_scopes_service
+from src.scopes.services import ScopeService
 
 from src.auth.dependencies import get_admin_user
 from src.servers.dependencies import get_servers_service
@@ -12,6 +18,8 @@ router = APIRouter(dependencies=[Depends(get_admin_user)])
 async def admin_create_server(
     server_data: CreateServerSchema,
     servers_service: ServerService = Depends(get_servers_service),
+    scopes_service: ScopeService = Depends(get_scopes_service),
+    roles_service: RoleService = Depends(get_roles_service),
 ):
     """
     Create a new server

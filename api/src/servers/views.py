@@ -38,7 +38,7 @@ async def get_servers(
     """
     if ip and port:
         return await servers_service.get_one(ip=ip, port=port)
-    return await servers_service.get_all(params=params)
+    return await servers_service.get_all(params=params, related=["admin_role"])
 
 
 @router.get("/status")

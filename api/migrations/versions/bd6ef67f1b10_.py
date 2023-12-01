@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 39d39fb20444
+Revision ID: bd6ef67f1b10
 Revises: 
-Create Date: 2023-08-10 16:09:53.390611
+Create Date: 2023-11-26 17:12:28.571224
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import ormar
 
 
 # revision identifiers, used by Alembic.
-revision = '39d39fb20444'
+revision = 'bd6ef67f1b10'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -65,17 +65,6 @@ def upgrade() -> None:
     sa.Column('protected', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('servers',
-    sa.Column('created_at', sa.DateTime(), nullable=True),
-    sa.Column('updated_at', sa.DateTime(), nullable=True),
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('name', sa.String(length=64), nullable=False),
-    sa.Column('ip', sa.String(length=64), nullable=False),
-    sa.Column('port', sa.Integer(), nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('ip'),
-    sa.UniqueConstraint('name')
-    )
     op.create_table('steamrep_profiles',
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
@@ -87,6 +76,34 @@ def upgrade() -> None:
     sa.UniqueConstraint('profile_url'),
     sa.UniqueConstraint('steamid64')
     )
+    op.create_table('user_sessions',
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.Column('id', ormar.fields.sqlalchemy_uuid.CHAR(32), nullable=False),
+    sa.Column('user_ip', sa.String(length=255), nullable=False),
+    sa.Column('user_agent', sa.String(length=255), nullable=False),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('players',
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('steamrep_profile', sa.Integer(), nullable=True),
+    sa.Column('username', sa.String(length=32), nullable=False),
+    sa.Column('steamid3', sa.String(length=255), nullable=False),
+    sa.Column('steamid32', sa.String(length=255), nullable=False),
+    sa.Column('steamid64', sa.String(length=255), nullable=False),
+    sa.Column('profile_url', sa.String(length=255), nullable=True),
+    sa.Column('avatar', sa.String(length=255), nullable=True),
+    sa.Column('country_code', sa.String(length=15), nullable=False),
+    sa.Column('reputation', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['steamrep_profile'], ['steamrep_profiles.id'], name='fk_players_steamrep_profiles_id_steamrep_profile'),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('profile_url'),
+    sa.UniqueConstraint('steamid3'),
+    sa.UniqueConstraint('steamid32'),
+    sa.UniqueConstraint('steamid64')
+    )
     op.create_table('roles_scopes',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('scope', sa.Integer(), nullable=True),
@@ -94,6 +111,34 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['role'], ['roles.id'], name='fk_roles_scopes_roles_role_id', onupdate='CASCADE', ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['scope'], ['scopes.id'], name='fk_roles_scopes_scopes_scope_id', onupdate='CASCADE', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('servers',
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(length=64), nullable=False),
+    sa.Column('ip', sa.String(length=64), nullable=False),
+    sa.Column('port', sa.Integer(), nullable=False),
+    sa.Column('admin_role', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['admin_role'], ['roles.id'], name='fk_servers_roles_id_admin_role'),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('chat_color_module',
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('server', sa.Integer(), nullable=True),
+    sa.Column('player', sa.Integer(), nullable=True),
+    sa.Column('tag', sa.String(length=32), nullable=False),
+    sa.Column('flag', sa.String(length=1), nullable=False),
+    sa.Column('tag_color', sa.String(length=8), nullable=False),
+    sa.Column('name_color', sa.String(length=8), nullable=False),
+    sa.Column('text_color', sa.String(length=8), nullable=False),
+    sa.ForeignKeyConstraint(['player'], ['players.id'], name='fk_chat_color_module_players_id_player'),
+    sa.ForeignKeyConstraint(['server'], ['servers.id'], name='fk_chat_color_module_servers_id_server'),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('flag'),
+    sa.UniqueConstraint('tag')
     )
     op.create_table('users',
     sa.Column('created_at', sa.DateTime(), nullable=True),
@@ -109,7 +154,12 @@ def upgrade() -> None:
     sa.Column('last_login', sa.DateTime(), nullable=True),
     sa.Column('last_online', sa.DateTime(), nullable=True),
     sa.Column('secret_salt', sa.String(length=255), nullable=False),
+    sa.Column('threads_count', sa.Integer(), nullable=True),
+    sa.Column('posts_count', sa.Integer(), nullable=True),
+    sa.Column('likes_count', sa.Integer(), nullable=True),
+    sa.Column('player', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['display_role'], ['roles.id'], name='fk_users_roles_id_display_role'),
+    sa.ForeignKeyConstraint(['player'], ['players.id'], name='fk_users_players_id_player'),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email'),
     sa.UniqueConstraint('secret_salt'),
@@ -180,31 +230,27 @@ def upgrade() -> None:
     sa.Column('category', sa.Integer(), nullable=True),
     sa.Column('author', sa.Integer(), nullable=True),
     sa.Column('post_count', sa.Integer(), nullable=True),
+    sa.Column('server', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['author'], ['users.id'], name='fk_forum_threads_users_id_author'),
     sa.ForeignKeyConstraint(['category'], ['forum_categories.id'], name='fk_forum_threads_forum_categories_id_category'),
+    sa.ForeignKeyConstraint(['server'], ['servers.id'], name='fk_forum_threads_servers_id_server'),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('players',
+    op.create_table('user_subscription',
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
-    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('id', ormar.fields.sqlalchemy_uuid.CHAR(32), nullable=False),
     sa.Column('user', sa.Integer(), nullable=True),
-    sa.Column('steamrep_profile', sa.Integer(), nullable=True),
-    sa.Column('username', sa.String(length=32), nullable=False),
-    sa.Column('steamid3', sa.String(length=255), nullable=False),
-    sa.Column('steamid32', sa.String(length=255), nullable=False),
-    sa.Column('steamid64', sa.String(length=255), nullable=False),
-    sa.Column('profile_url', sa.String(length=255), nullable=True),
-    sa.Column('avatar', sa.String(length=255), nullable=True),
-    sa.Column('country_code', sa.String(length=15), nullable=False),
-    sa.Column('reputation', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['steamrep_profile'], ['steamrep_profiles.id'], name='fk_players_steamrep_profiles_id_steamrep_profile'),
-    sa.ForeignKeyConstraint(['user'], ['users.id'], name='fk_players_users_id_user'),
+    sa.Column('stripe_customer_id', sa.String(length=255), nullable=False),
+    sa.Column('stripe_subscription_id', sa.String(length=255), nullable=True),
+    sa.Column('stripe_price_id', sa.String(length=255), nullable=False),
+    sa.Column('stripe_current_period_end', sa.DateTime(), nullable=False),
+    sa.Column('old_display_role', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['old_display_role'], ['roles.id'], name='fk_user_subscription_roles_id_old_display_role'),
+    sa.ForeignKeyConstraint(['user'], ['users.id'], name='fk_user_subscription_users_id_user'),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('profile_url'),
-    sa.UniqueConstraint('steamid3'),
-    sa.UniqueConstraint('steamid32'),
-    sa.UniqueConstraint('steamid64')
+    sa.UniqueConstraint('stripe_customer_id'),
+    sa.UniqueConstraint('stripe_subscription_id')
     )
     op.create_table('users_roles',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -214,6 +260,14 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['user'], ['users.id'], name='fk_users_roles_users_user_id', onupdate='CASCADE', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('users_usersessions',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('usersession', ormar.fields.sqlalchemy_uuid.CHAR(32), nullable=True),
+    sa.Column('user', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['user'], ['users.id'], name='fk_users_usersessions_users_user_id', onupdate='CASCADE', ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['usersession'], ['user_sessions.id'], name='fk_users_usersessions_user_sessions_usersession_id', onupdate='CASCADE', ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('apps_scopes',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('scope', sa.Integer(), nullable=True),
@@ -221,23 +275,6 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['app'], ['apps.id'], name='fk_apps_scopes_apps_app_id', onupdate='CASCADE', ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['scope'], ['scopes.id'], name='fk_apps_scopes_scopes_scope_id', onupdate='CASCADE', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
-    )
-    op.create_table('chat_color_module',
-    sa.Column('created_at', sa.DateTime(), nullable=True),
-    sa.Column('updated_at', sa.DateTime(), nullable=True),
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('server', sa.Integer(), nullable=True),
-    sa.Column('player', sa.Integer(), nullable=True),
-    sa.Column('tag', sa.String(length=32), nullable=False),
-    sa.Column('flag', sa.String(length=1), nullable=False),
-    sa.Column('tag_color', sa.String(length=8), nullable=False),
-    sa.Column('name_color', sa.String(length=8), nullable=False),
-    sa.Column('text_color', sa.String(length=8), nullable=False),
-    sa.ForeignKeyConstraint(['player'], ['players.id'], name='fk_chat_color_module_players_id_player'),
-    sa.ForeignKeyConstraint(['server'], ['servers.id'], name='fk_chat_color_module_servers_id_server'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('flag'),
-    sa.UniqueConstraint('tag')
     )
     op.create_table('posts_likes',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -271,10 +308,10 @@ def downgrade() -> None:
     op.drop_table('threads_threadmetas')
     op.drop_table('threads_posts')
     op.drop_table('posts_likes')
-    op.drop_table('chat_color_module')
     op.drop_table('apps_scopes')
+    op.drop_table('users_usersessions')
     op.drop_table('users_roles')
-    op.drop_table('players')
+    op.drop_table('user_subscription')
     op.drop_table('forum_threads')
     op.drop_table('forum_reputation')
     op.drop_table('forum_posts')
@@ -282,9 +319,12 @@ def downgrade() -> None:
     op.drop_table('banned')
     op.drop_table('apps')
     op.drop_table('users')
-    op.drop_table('roles_scopes')
-    op.drop_table('steamrep_profiles')
+    op.drop_table('chat_color_module')
     op.drop_table('servers')
+    op.drop_table('roles_scopes')
+    op.drop_table('players')
+    op.drop_table('user_sessions')
+    op.drop_table('steamrep_profiles')
     op.drop_table('scopes')
     op.drop_table('roles')
     op.drop_table('forum_threads_meta')
