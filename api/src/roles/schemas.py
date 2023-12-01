@@ -35,6 +35,7 @@ class StaffRolesSchema(BaseModel):
 
 
 class CreateRoleSchema(BaseModel):
+    tag: str
     name: str
     color: str
     is_staff: bool = False

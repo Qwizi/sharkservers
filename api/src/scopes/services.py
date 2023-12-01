@@ -106,7 +106,7 @@ class ScopeService(BaseService):
                     scopes.append(scope.get_string())
         return scopes
 
-    async def get_default_scopes_for_role(self, role_id: int):
+    async def get_default_scopes_for_role(self, role_id: str):
         """
         Get default scopes for role
         :param role_id:

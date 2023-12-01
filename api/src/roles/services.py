@@ -1,6 +1,6 @@
 from src.db import BaseService
 from src.logger import logger_with_filename
-from src.roles.enums import ProtectedDefaultRolesEnum
+from src.roles.enums import ProtectedDefaultRolesTagEnum
 from src.roles.exceptions import role_not_found_exception
 from src.roles.models import Role
 from src.roles.schemas import CreateRoleSchema
@@ -14,27 +14,28 @@ class RoleService(BaseService):
 
     async def create_default_roles(self, scopes_service: ScopeService):
         roles_to_create = [
-            (ProtectedDefaultRolesEnum.ADMIN.value, "Admin", "#C53030"),
-            (ProtectedDefaultRolesEnum.USER.value, "User", "#99999"),
-            (ProtectedDefaultRolesEnum.BANNED.value, "Banned", "#000000"),
-            (ProtectedDefaultRolesEnum.VIP.value, "VIP", "#ffda83"),
+            (ProtectedDefaultRolesTagEnum.ADMIN.value, "Admin", "#C53030"),
+            (ProtectedDefaultRolesTagEnum.USER.value, "User", "#99999"),
+            (ProtectedDefaultRolesTagEnum.BANNED.value, "Banned", "#000000"),
+            (ProtectedDefaultRolesTagEnum.VIP.value, "VIP", "#ffda83"),
         ]
         for role in roles_to_create:
             logger_with_filename(filename=self.__class__.__name__, data=role)
-            default_role, created = await self.Meta.model.objects.get_or_create(
-                id=role[0],
-                name=role[1],
-                color=role[2],
-                is_staff=True
-                if role[0] == ProtectedDefaultRolesEnum.ADMIN.value
-                else False,
-            )
-            scopes = await scopes_service.get_default_scopes_for_role(
-                role_id=default_role.id
-            )
-            if not role[0] == ProtectedDefaultRolesEnum.BANNED.value:
-                for scope in scopes:
-                    await default_role.scopes.add(scope)
+            if not await self.Meta.model.objects.filter(tag=role[0]).exists():
+                default_role = await self.Meta.model.objects.create(
+                    tag=role[0],
+                    name=role[1],
+                    color=role[2],
+                    is_staff=True
+                    if role[0] == ProtectedDefaultRolesTagEnum.ADMIN.value
+                    else False,
+                )
+                scopes = await scopes_service.get_default_scopes_for_role(
+                    role_id=default_role.id
+                )
+                if not role[0] == ProtectedDefaultRolesTagEnum.BANNED.value:
+                    for scope in scopes:
+                        await default_role.scopes.add(scope)
 
     async def get_staff_roles(self, params):
         return await self.get_all(params=params, related=["user_display_role"], is_staff=True)

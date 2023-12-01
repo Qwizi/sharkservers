@@ -9,16 +9,18 @@ from src.roles.models import Role
 
 from src.db import BaseMeta, DateFieldsMixins
 from src.players.models import Player
+from src.roles.models import Role
 from src.logger import logger
+
 
 class Server(ormar.Model, DateFieldsMixins):
     class Meta(BaseMeta):
         tablename = "servers"
 
     id: int = ormar.Integer(primary_key=True)
-    name: str = ormar.String(max_length=64, unique=True)
-    ip: str = ormar.String(max_length=64)
-    port: int = ormar.Integer(unique=True)
+    name: Optional[str] = ormar.String(max_length=64)
+    ip: Optional[str]  = ormar.String(max_length=64)
+    port: Optional[str]  = ormar.Integer()
     admin_role: Optional[Role] = ormar.ForeignKey(Role)
 
 
@@ -50,26 +52,28 @@ class ChatColorModule(ormar.Model, DateFieldsMixins):
     name_color: Color = ormar.String(max_length=8)
     text_color: Color = ormar.String(max_length=8)
 
+
 @ormar.post_save(Server)
 async def on_server_created(sender, instance: Server, **kwargs):
     roles_service = await get_roles_service()
     scopes_service = await get_scopes_service()
-    role_name = f"Admin {instance.name}".capitalize()
+    role_name = f"Admin {instance.name.capitalize()}"
+    logger.info(role_name)
     scopes = await scopes_service.get_default_scopes_for_role(
         ProtectedDefaultRolesEnum.USER.value
     )
-    role_obj, created = await roles_service.Meta.model.objects.get_or_create(
+    logger.info(scopes)
+
+    new_admin_role = await roles_service.create(
+        tag=role_name.replace(" ", "_").lower(),
         name=role_name,
-        _defaults={
-            "name": role_name,
-            "color": "#fea500",
-            "is_staff": True,
-        },
+        color="#fea501",
+        is_staff=True,
     )
-    if created:
-        for scope in scopes:
-            await role_obj.scopes.add(scope)
-    logger.info(role_obj)
+    for scope in scopes:
+        await new_admin_role.scopes.add(scope)
+    await instance.update(admin_role=new_admin_role)
+
 
 """
 @post_save(Server)

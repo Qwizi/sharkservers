@@ -40,7 +40,7 @@ from src.auth.utils import now_datetime, verify_password, get_password_hash
 from src.enums import ActivationEmailTypeEnum
 from src.logger import logger
 from src.players.services import PlayerService
-from src.roles.enums import ProtectedDefaultRolesEnum
+from src.roles.enums import ProtectedDefaultRolesEnum, ProtectedDefaultRolesTagEnum
 from src.roles.services import RoleService
 from src.scopes.services import ScopeService
 from src.services import EmailService
@@ -127,12 +127,12 @@ class AuthService:
             secret_salt = self.generate_secret_salt()
 
             user_role = await self.roles_service.get_one(
-                id=ProtectedDefaultRolesEnum.USER.value
+                tag=ProtectedDefaultRolesTagEnum.USER.value
             )
             role = user_role
             if is_superuser:
                 role = await self.roles_service.get_one(
-                    id=ProtectedDefaultRolesEnum.ADMIN.value
+                    tag=ProtectedDefaultRolesTagEnum.ADMIN.value
                 )
 
             avatar_url = (
