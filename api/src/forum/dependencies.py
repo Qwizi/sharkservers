@@ -6,10 +6,17 @@ from src.auth.dependencies import get_current_active_user
 from src.forum.enums import ThreadEventEnum, CategoryEventEnum, PostEventEnum
 from src.forum.exceptions import (
     thread_is_closed_exception,
-    thread_not_valid_author_exception, post_not_valid_author_exception,
+    thread_not_valid_author_exception,
+    post_not_valid_author_exception,
 )
 from src.forum.models import Thread, Post
-from src.forum.services import CategoryService, ThreadService, PostService, LikeService, ThreadMetaService
+from src.forum.services import (
+    CategoryService,
+    ThreadService,
+    PostService,
+    LikeService,
+    ThreadMetaService,
+)
 from src.users.models import User
 
 
@@ -26,8 +33,8 @@ async def get_posts_service() -> PostService:
 
 
 async def get_valid_category(
-        category_id: int,
-        categories_service: CategoryService = Depends(get_categories_service),
+    category_id: int,
+    categories_service: CategoryService = Depends(get_categories_service),
 ) -> Model:
     """
     Get valid category
@@ -40,7 +47,7 @@ async def get_valid_category(
 
 
 async def get_valid_thread(
-        thread_id: int, threads_service: ThreadService = Depends(get_threads_service)
+    thread_id: int, threads_service: ThreadService = Depends(get_threads_service)
 ) -> Model:
     """
     Get valid thread
@@ -50,7 +57,17 @@ async def get_valid_thread(
     """
     dispatch(ThreadEventEnum.GET_ONE_PRE, payload={"data": thread_id})
     return await threads_service.get_one(
-        id=thread_id, related=["category", "author", "author__display_role", "author__player", "author__player__steamrep_profile", "meta_fields", "server", "server__admin_role"]
+        id=thread_id,
+        related=[
+            "category",
+            "author",
+            "author__display_role",
+            "author__player",
+            "author__player__steamrep_profile",
+            "meta_fields",
+            "server",
+            "server__admin_role",
+        ],
     )
 
 
@@ -67,8 +84,8 @@ async def get_valid_open_thread(thread: Thread = Depends(get_valid_thread)) -> T
 
 
 async def get_valid_thread_with_author(
-        thread: Thread = Depends(get_valid_open_thread),
-        user: User = Security(get_current_active_user, scopes=["threads:update"]),
+    thread: Thread = Depends(get_valid_open_thread),
+    user: User = Security(get_current_active_user, scopes=["threads:update"]),
 ):
     """
     Get valid thread with author
@@ -82,7 +99,7 @@ async def get_valid_thread_with_author(
 
 
 async def get_valid_post(
-        post_id: int, posts_service: PostService = Depends(get_posts_service)
+    post_id: int, posts_service: PostService = Depends(get_posts_service)
 ):
     """
     Get valid post
@@ -92,13 +109,20 @@ async def get_valid_post(
     """
     dispatch(PostEventEnum.GET_ONE_PRE, payload={"data": post_id})
     return await posts_service.get_one(
-        id=post_id, related=["author", "author__display_role", "likes", "author__player", "author__player__steamrep_profile"]
+        id=post_id,
+        related=[
+            "author",
+            "author__display_role",
+            "likes",
+            "author__player",
+            "author__player__steamrep_profile",
+        ],
     )
 
 
 async def get_valid_post_author(
-        post: Post = Depends(get_valid_post),
-        user: User = Security(get_current_active_user, scopes=["posts:update"]),
+    post: Post = Depends(get_valid_post),
+    user: User = Security(get_current_active_user, scopes=["posts:update"]),
 ):
     if post.author != user:
         raise post_not_valid_author_exception

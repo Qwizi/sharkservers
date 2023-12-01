@@ -295,6 +295,7 @@ class UploadService:
             return True
         return False
 
+
 class SourceModApiClient:
     def __init__(self, tag: str, url: str):
         self.tag = tag
@@ -305,7 +306,6 @@ class SourceModApiClient:
             url = f"{self.url}/v1/admins/"
             r = await client.get(url)
             return r.json()
-        
 
     async def create_admin(self, data):
         async with httpx.AsyncClient() as client:

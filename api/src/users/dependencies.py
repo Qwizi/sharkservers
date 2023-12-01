@@ -38,7 +38,7 @@ async def get_users_sessions_service() -> UserSessionService:
 
 async def get_valid_user_session(
     session_id: UUID,
-    users_sessions_service: UserSessionService = Depends(get_users_sessions_service)
+    users_sessions_service: UserSessionService = Depends(get_users_sessions_service),
 ):
     try:
         return await users_sessions_service.get_one(

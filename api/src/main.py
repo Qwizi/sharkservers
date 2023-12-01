@@ -384,10 +384,11 @@ def create_app():
         microservices_list = settings.SOURCEMOD_API_URLS
         tag = microservices_list[0]["tag"]
         url = microservices_list[0]["url"]
-        
+
         api_config = APIConfig(base_path=url)
         admins = await adminss_get_admins(api_config_override=api_config)
         return admins
+
     @_app.websocket("/ws")
     async def websocket_endpoint(
         websocket: WebSocket,

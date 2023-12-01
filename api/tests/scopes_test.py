@@ -12,11 +12,14 @@ async def test_get_all_scopes(client):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("role_id", [
-    ProtectedDefaultRolesEnum.ADMIN.value,
-    ProtectedDefaultRolesEnum.USER.value,
-    ProtectedDefaultRolesEnum.BANNED.value,
-])
+@pytest.mark.parametrize(
+    "role_id",
+    [
+        ProtectedDefaultRolesEnum.ADMIN.value,
+        ProtectedDefaultRolesEnum.USER.value,
+        ProtectedDefaultRolesEnum.BANNED.value,
+    ],
+)
 async def test_get_scopes_by_role_id(role_id, client):
     r = await client.get(SCOPES_ENDPOINT + f"?role_id={role_id}")
     assert r.status_code == 200

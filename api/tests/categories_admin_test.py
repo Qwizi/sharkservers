@@ -8,11 +8,14 @@ ADMIN_CATEGORIES_ENDPOINT = "/v1/admin/forum/categories"
 
 @pytest.mark.asyncio
 async def test_unauthorized_admin_create_category(client):
-    r = await client.post(ADMIN_CATEGORIES_ENDPOINT, json={
-        "name": TEST_CATEGORY.get("name"),
-        "description": TEST_CATEGORY.get("description"),
-        "type": TEST_CATEGORY.get("type")
-    })
+    r = await client.post(
+        ADMIN_CATEGORIES_ENDPOINT,
+        json={
+            "name": TEST_CATEGORY.get("name"),
+            "description": TEST_CATEGORY.get("description"),
+            "type": TEST_CATEGORY.get("type"),
+        },
+    )
     assert r.status_code == 401
 
 
@@ -37,13 +40,18 @@ async def test_admin_delete_invalid_category(admin_client):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("category_type", [CategoryTypeEnum.PUBLIC.value, CategoryTypeEnum.APPLICATION.value])
+@pytest.mark.parametrize(
+    "category_type", [CategoryTypeEnum.PUBLIC.value, CategoryTypeEnum.APPLICATION.value]
+)
 async def test_admin_create_category(admin_client, category_type):
-    r = await admin_client.post(ADMIN_CATEGORIES_ENDPOINT, json={
-        "name": TEST_CATEGORY.get("name"),
-        "description": TEST_CATEGORY.get("description"),
-        "type": category_type
-    })
+    r = await admin_client.post(
+        ADMIN_CATEGORIES_ENDPOINT,
+        json={
+            "name": TEST_CATEGORY.get("name"),
+            "description": TEST_CATEGORY.get("description"),
+            "type": category_type,
+        },
+    )
     assert r.status_code == 200
     assert "id" in r.json()
     assert "name" in r.json()

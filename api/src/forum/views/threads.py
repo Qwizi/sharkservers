@@ -72,7 +72,7 @@ async def get_threads(
             "author__player__steamrep_profile",
             "meta_fields",
             "server",
-            "server__admin_role"
+            "server__admin_role",
         ],
         **kwargs
     )

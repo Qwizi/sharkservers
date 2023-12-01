@@ -1,16 +1,21 @@
-
 from typing import Optional
 from pydantic import BaseModel
-from src.admins.enums import AuthTypeEnum, GroupOverrideAccessEnum, GroupOverrideTypeEnum
+from src.admins.enums import (
+    AuthTypeEnum,
+    GroupOverrideAccessEnum,
+    GroupOverrideTypeEnum,
+)
 from src.admins.models import Admin, Group, GroupOverride
 
 
-admin_out =  Admin.get_pydantic()
+admin_out = Admin.get_pydantic()
 group_out = Group.get_pydantic()
 group_override_out = GroupOverride.get_pydantic()
 
+
 class AdminOut(admin_out):
     pass
+
 
 class GroupOut(group_out):
     pass
@@ -18,6 +23,7 @@ class GroupOut(group_out):
 
 class GroupOverrideOut(group_override_out):
     pass
+
 
 class CreateAdminSchema(BaseModel):
     authtype: Optional[AuthTypeEnum]
@@ -27,6 +33,7 @@ class CreateAdminSchema(BaseModel):
     name: str
     immunity: int
     groups_id: Optional[list[int]]
+
 
 class UpdateAdminSchema(BaseModel):
     authtype: Optional[AuthTypeEnum]

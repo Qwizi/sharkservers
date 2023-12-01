@@ -23,17 +23,23 @@ conf = ConnectionConfig(
 
 
 async def get_email_checker() -> DefaultChecker:
-    checker = DefaultChecker()  # you can pass source argument for your own email domains
+    checker = (
+        DefaultChecker()
+    )  # you can pass source argument for your own email domains
     await checker.fetch_temp_email_domains()  # require to fetch temporary email domains
     return checker
 
 
-async def get_email_service(checker: DefaultChecker = Depends(get_email_checker)) -> EmailService:
+async def get_email_service(
+    checker: DefaultChecker = Depends(get_email_checker),
+) -> EmailService:
     mailer = FastMail(conf)
     return EmailService(_mailer=mailer, checker=checker)
 
 
-async def get_upload_service(settings: Settings = Depends(get_settings)) -> UploadService:
+async def get_upload_service(
+    settings: Settings = Depends(get_settings),
+) -> UploadService:
     return UploadService(settings=settings)
 
 
@@ -44,11 +50,9 @@ def get_limiter(settings_: Settings = Depends(get_settings)):
 
 
 class Limiter:
-
     def __init__(self, times: int = 3, minutes: int = 2):
         self.times = times
         self.minutes = minutes
 
     def __call__(self):
         return RateLimiter(times=self.times, minutes=self.minutes)
-

@@ -14,7 +14,7 @@ ChatOut = Chat.get_pydantic(
         "author__banned_by",
         "author__apps",
         "author__last_login",
-        "author__players"
+        "author__players",
     }
 )
 

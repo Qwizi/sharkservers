@@ -4,7 +4,8 @@ from fastapi_events.typing import Event
 from src.auth.enums import AuthEventsEnum, RedisAuthKeyEnum
 from src.auth.services.code import CodeService
 from src.logger import logger
-#from src.services import email_service
+
+# from src.services import email_service
 from src.settings import get_settings
 
 """
@@ -24,5 +25,5 @@ async def create_activate_code_after_register(event: Event):
     code, _user_id = await code_service.create(data=user_id, code_len=5, expire=900)
     logger.info(f"Activation code - {code} for {user_id}")
     # send only if not testing
-    #if not settings.TESTING:
+    # if not settings.TESTING:
     #    await email_service.send_activation_email(email=email, code=code)

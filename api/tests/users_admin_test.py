@@ -88,8 +88,8 @@ async def test_admin_create_user_not_activated_and_no_superuser(admin_client):
     assert r.status_code == 200
     assert r.json()["username"] == TEST_USER.get("username")
     assert await User.objects.count() == 3
-    assert r.json()['is_activated'] is False
-    assert r.json()['is_superuser'] is False
+    assert r.json()["is_activated"] is False
+    assert r.json()["is_superuser"] is False
     assert "password" not in r.json()
 
 
@@ -107,8 +107,8 @@ async def test_admin_create_user_activated_and_no_superuser(admin_client):
     assert r.status_code == 200
     assert r.json()["username"] == TEST_USER.get("username")
     assert await User.objects.count() == 3
-    assert r.json()['is_activated'] is True
-    assert r.json()['is_superuser'] is False
+    assert r.json()["is_activated"] is True
+    assert r.json()["is_superuser"] is False
     assert "password" not in r.json()
 
 
@@ -127,8 +127,8 @@ async def test_admin_create_user_activated_and_superuser(admin_client):
     assert r.status_code == 200
     assert r.json()["username"] == TEST_USER.get("username")
     assert await User.objects.count() == 3
-    assert r.json()['is_activated'] is True
-    assert r.json()['is_superuser'] is True
+    assert r.json()["is_activated"] is True
+    assert r.json()["is_superuser"] is True
     assert "password" not in r.json()
 
 
@@ -156,7 +156,9 @@ async def test_admin_update_invalid_user(admin_client):
 async def test_admin_update_user_username(admin_client):
     users = await create_fake_users(1)
     updated_username = "updated_username"
-    r = await admin_client.put(ENDPOINT + f"/{users[0].id}", json={"username": updated_username})
+    r = await admin_client.put(
+        ENDPOINT + f"/{users[0].id}", json={"username": updated_username}
+    )
     assert r.status_code == 200
     assert r.json()["username"] == updated_username
 
@@ -165,7 +167,9 @@ async def test_admin_update_user_username(admin_client):
 async def test_admin_update_user_email(admin_client):
     users = await create_fake_users(1)
     updated_email = "updated_email@test.pl"
-    r = await admin_client.put(ENDPOINT + f"/{users[0].id}", json={"email": updated_email})
+    r = await admin_client.put(
+        ENDPOINT + f"/{users[0].id}", json={"email": updated_email}
+    )
     assert r.status_code == 200
     assert r.json()["email"] == updated_email
 
@@ -174,20 +178,26 @@ async def test_admin_update_user_email(admin_client):
 async def test_admin_update_user_invalid_display_role(admin_client):
     users = await create_fake_users(1)
     role_id = 9999
-    r = await admin_client.put(ENDPOINT + f"/{users[0].id}", json={"display_role": role_id})
+    r = await admin_client.put(
+        ENDPOINT + f"/{users[0].id}", json={"display_role": role_id}
+    )
     assert r.status_code == 404
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("role", [
-    ProtectedDefaultRolesEnum.ADMIN.value,
-    ProtectedDefaultRolesEnum.USER.value,
-    ProtectedDefaultRolesEnum.BANNED.value,
-])
+@pytest.mark.parametrize(
+    "role",
+    [
+        ProtectedDefaultRolesEnum.ADMIN.value,
+        ProtectedDefaultRolesEnum.USER.value,
+        ProtectedDefaultRolesEnum.BANNED.value,
+    ],
+)
 async def test_admin_update_user_display_role(role, admin_client):
     users = await create_fake_users(1)
-    r = await admin_client.put(ENDPOINT + f"/{users[0].id}",
-                               json={"display_role": role})
+    r = await admin_client.put(
+        ENDPOINT + f"/{users[0].id}", json={"display_role": role}
+    )
     assert r.status_code == 200
     assert r.json()["display_role"]["id"] == role
 
@@ -201,16 +211,22 @@ async def test_admin_update_user_invalid_roles(roles, admin_client):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("roles", [
-    [ProtectedDefaultRolesEnum.ADMIN.value],
-    [ProtectedDefaultRolesEnum.USER.value],
-    [ProtectedDefaultRolesEnum.BANNED.value],
-    [ProtectedDefaultRolesEnum.ADMIN.value, ProtectedDefaultRolesEnum.USER.value],
-    [ProtectedDefaultRolesEnum.ADMIN.value, ProtectedDefaultRolesEnum.BANNED.value],
-    [ProtectedDefaultRolesEnum.USER.value, ProtectedDefaultRolesEnum.BANNED.value],
-    [ProtectedDefaultRolesEnum.ADMIN.value, ProtectedDefaultRolesEnum.USER.value,
-     ProtectedDefaultRolesEnum.BANNED.value]
-])
+@pytest.mark.parametrize(
+    "roles",
+    [
+        [ProtectedDefaultRolesEnum.ADMIN.value],
+        [ProtectedDefaultRolesEnum.USER.value],
+        [ProtectedDefaultRolesEnum.BANNED.value],
+        [ProtectedDefaultRolesEnum.ADMIN.value, ProtectedDefaultRolesEnum.USER.value],
+        [ProtectedDefaultRolesEnum.ADMIN.value, ProtectedDefaultRolesEnum.BANNED.value],
+        [ProtectedDefaultRolesEnum.USER.value, ProtectedDefaultRolesEnum.BANNED.value],
+        [
+            ProtectedDefaultRolesEnum.ADMIN.value,
+            ProtectedDefaultRolesEnum.USER.value,
+            ProtectedDefaultRolesEnum.BANNED.value,
+        ],
+    ],
+)
 async def test_admin_update_user_roles(roles, admin_client):
     users = await create_fake_users(1)
     r = await admin_client.put(ENDPOINT + f"/{users[0].id}", json={"roles": roles})

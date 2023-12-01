@@ -50,6 +50,7 @@ def get_url() -> str:
     POSTGRES_DB = os.getenv("POSTGRES_DB", "")
     return f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -88,9 +89,7 @@ async def run_async_migrations() -> None:
 
     """
 
-    connectable = create_async_engine(
-        get_url()
-    )
+    connectable = create_async_engine(get_url())
 
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)

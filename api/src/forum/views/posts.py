@@ -10,29 +10,38 @@ from src.forum.dependencies import (
     get_valid_post,
     get_valid_post_author,
     get_posts_service,
-    get_threads_service, get_likes_service,
+    get_threads_service,
+    get_likes_service,
 )
 from src.forum.enums import PostEventEnum
 from src.forum.exceptions import (
     thread_is_closed_exception,
 )
 from src.forum.models import Post
-from src.forum.schemas import PostOut, CreatePostSchema, PostQuery, UpdatePostSchema, LikeOut
+from src.forum.schemas import (
+    PostOut,
+    CreatePostSchema,
+    PostQuery,
+    UpdatePostSchema,
+    LikeOut,
+)
 from src.forum.services import PostService, ThreadService, LikeService
 from src.users.models import User
 
 router = APIRouter()
 
 settings = get_settings()
-limiter = RateLimiter(times=999 if settings.TESTING else 5, minutes=60 if settings.TESTING else 1)
+limiter = RateLimiter(
+    times=999 if settings.TESTING else 5, minutes=60 if settings.TESTING else 1
+)
 
 
 @router.get("")
 async def get_posts(
-        thread_id: int = None,
-        params: Params = Depends(),
-        queries: PostQuery = Depends(),
-        posts_service: PostService = Depends(get_posts_service),
+    thread_id: int = None,
+    params: Params = Depends(),
+    queries: PostQuery = Depends(),
+    posts_service: PostService = Depends(get_posts_service),
 ) -> Page[PostOut]:
     """
     Get all posts by thread id.
@@ -45,11 +54,17 @@ async def get_posts(
     if thread_id:
         kwargs["thread_post__id"] = thread_id
     return await posts_service.get_all(
-            params=params,
-            related = ["author", "author__display_role", "thread_post", "author__player", "author__player__steamrep_profile"],
-            order_by=queries.order_by,
-            **kwargs
-        )
+        params=params,
+        related=[
+            "author",
+            "author__display_role",
+            "thread_post",
+            "author__player",
+            "author__player__steamrep_profile",
+        ],
+        order_by=queries.order_by,
+        **kwargs
+    )
 
 
 @router.get("/{post_id}", response_model=PostOut)
@@ -64,10 +79,10 @@ async def get_post_by_id(post: Post = Depends(get_valid_post)):
 
 @router.post("", dependencies=[Depends(limiter)])
 async def create_post(
-        post_data: CreatePostSchema,
-        user: User = Security(get_current_active_user, scopes=["posts:create"]),
-        posts_service: PostService = Depends(get_posts_service),
-        threads_service: ThreadService = Depends(get_threads_service),
+    post_data: CreatePostSchema,
+    user: User = Security(get_current_active_user, scopes=["posts:create"]),
+    posts_service: PostService = Depends(get_posts_service),
+    threads_service: ThreadService = Depends(get_threads_service),
 ) -> PostOut:
     """
 
@@ -91,8 +106,7 @@ async def create_post(
 
 @router.put("/{post_id}", dependencies=[Depends(limiter)])
 async def update_post(
-        post_data: UpdatePostSchema, 
-        post: Post = Depends(get_valid_post_author)
+    post_data: UpdatePostSchema, post: Post = Depends(get_valid_post_author)
 ):
     post_updated = await post.update(**post_data.dict(exclude_unset=True))
     dispatch(PostEventEnum.UPDATE_POST, payload={"data": post_updated})
@@ -101,9 +115,9 @@ async def update_post(
 
 @router.get("/{post_id}/likes")
 async def get_post_likes(
-        post: Post = Depends(get_valid_post),
-        likes_service: LikeService = Depends(get_likes_service),
-        params: Params = Depends(),
+    post: Post = Depends(get_valid_post),
+    likes_service: LikeService = Depends(get_likes_service),
+    params: Params = Depends(),
 ) -> Page[LikeOut]:
     """
     Get all post likes.
@@ -112,15 +126,18 @@ async def get_post_likes(
     :return:
     """
     return await paginate(
-        likes_service.Meta.model.objects.select_related(["author", "post_likes", "author__display_role"]).filter(post_likes__id=post.id),
-        params)
+        likes_service.Meta.model.objects.select_related(
+            ["author", "post_likes", "author__display_role"]
+        ).filter(post_likes__id=post.id),
+        params,
+    )
 
 
 @router.post("/{post_id}/like", dependencies=[Depends(limiter)])
 async def like_post(
-        post: Post = Depends(get_valid_post),
-        user: User = Security(get_current_active_user, scopes=["posts:create"]),
-        likes_service: LikeService = Depends(get_likes_service),
+    post: Post = Depends(get_valid_post),
+    user: User = Security(get_current_active_user, scopes=["posts:create"]),
+    likes_service: LikeService = Depends(get_likes_service),
 ):
     """
     Like post.
@@ -130,14 +147,17 @@ async def like_post(
     :return:
     """
     new_like, likes = await likes_service.add_like_to_post(post=post, author=user)
-    return {"message": "Post liked successfully", "data": {"new_like": new_like, "likes": likes}}
+    return {
+        "message": "Post liked successfully",
+        "data": {"new_like": new_like, "likes": likes},
+    }
 
 
 @router.post("/{post_id}/dislike", dependencies=[Depends(limiter)])
 async def dislike_post(
-        post: Post = Depends(get_valid_post),
-        user: User = Security(get_current_active_user, scopes=["posts:create"]),
-        likes_service: LikeService = Depends(get_likes_service),
+    post: Post = Depends(get_valid_post),
+    user: User = Security(get_current_active_user, scopes=["posts:create"]),
+    likes_service: LikeService = Depends(get_likes_service),
 ):
     """
     Dislike post.

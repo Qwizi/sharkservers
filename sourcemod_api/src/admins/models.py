@@ -4,7 +4,11 @@ import ormar
 from pydantic import BaseModel
 
 from src.db import BaseMeta, DateFieldsMixins
-from src.admins.enums import AuthTypeEnum, GroupOverrideAccessEnum, GroupOverrideTypeEnum
+from src.admins.enums import (
+    AuthTypeEnum,
+    GroupOverrideAccessEnum,
+    GroupOverrideTypeEnum,
+)
 
 
 class Group(ormar.Model, DateFieldsMixins):
@@ -33,12 +37,17 @@ class GroupOverride(ormar.Model):
     id: int = ormar.Integer(primary_key=True)
     group: Optional[Group] = ormar.ForeignKey(Group, name="group_id")
     type: Optional[str] = ormar.String(
-        max_length=7, choices=list(GroupOverrideTypeEnum), default=GroupOverrideTypeEnum.GROUP.value
+        max_length=7,
+        choices=list(GroupOverrideTypeEnum),
+        default=GroupOverrideTypeEnum.GROUP.value,
     )
     name: Optional[str] = ormar.String(max_length=32)
     access: Optional[str] = ormar.String(
-        max_length=5, choices=list(GroupOverrideAccessEnum), default=GroupOverrideAccessEnum.DENY.value
+        max_length=5,
+        choices=list(GroupOverrideAccessEnum),
+        default=GroupOverrideAccessEnum.DENY.value,
     )
+
 
 class AdminGroup(ormar.Model):
     class Meta(BaseMeta):

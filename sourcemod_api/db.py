@@ -11,8 +11,10 @@ from psycopg2 import IntegrityError
 from asyncpg import UniqueViolationError
 from fastapi_pagination.ext.ormar import paginate
 
+
 def now_datetime() -> datetime:
     return datetime.datetime.now(tz=ZoneInfo("Europe/Warsaw")).replace(tzinfo=None)
+
 
 settings = get_settings()
 DATABASE_URL = settings.get_database_url()
@@ -26,8 +28,12 @@ class BaseMeta(ormar.ModelMeta):
 
 
 class DateFieldsMixins:
-    created_at: datetime.datetime = ormar.DateTime(default=now_datetime().replace(tzinfo=None), timezone=False)
-    updated_at: datetime.datetime = ormar.DateTime(default=now_datetime().replace(tzinfo=None), timezone=False)
+    created_at: datetime.datetime = ormar.DateTime(
+        default=now_datetime().replace(tzinfo=None), timezone=False
+    )
+    updated_at: datetime.datetime = ormar.DateTime(
+        default=now_datetime().replace(tzinfo=None), timezone=False
+    )
 
 
 class BaseService:
@@ -53,7 +59,7 @@ class BaseService:
             raise self.Meta.not_found_exception
 
     async def get_all(
-            self, params: Params = None, related=None, order_by=None, **kwargs
+        self, params: Params = None, related=None, order_by=None, **kwargs
     ):
         """
         if params:
