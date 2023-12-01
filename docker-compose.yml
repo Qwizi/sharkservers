@@ -1,7 +1,7 @@
 services:
   app:
     build:
-      context: api/
+      context: ./
       dockerfile: Dockerfile
     cpus: '0.50'
     mem_limit: 1g
@@ -9,9 +9,9 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./api/:/app/
+      - ./:/app/
     env_file:
-      - ./api/.env
+      - ./.env
     depends_on:
       db:
         condition: service_started
@@ -57,7 +57,7 @@ services:
       test: "exit 1"
   jailbreak_app:
     build:
-      context: sourcemod_api/
+      context: ../fastapi-sourcemod-api/sourcemod_api/
       dockerfile: Dockerfile
     cpus: '0.50'
     mem_limit: 1g
@@ -65,13 +65,11 @@ services:
     ports:
       - "8081:8081"
     volumes:
-      - ./sourcemod_api/:/app/
+      - ../fastapi-sourcemod-api/sourcemod_api/:/app/
     env_file:
-      - ./sourcemod_api/.env
+      - ../fastapi-sourcemod-api/sourcemod_api/.env
     depends_on:
       jailbreak_db:
-        condition: service_started
-      redis:
         condition: service_started
     restart: always
     networks:

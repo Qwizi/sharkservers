@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "shark-api"
-version = "1.0.0"
+version = "1.0.12"
 description = ""
 authors = ["Adrian Ciołek <ciolek.adrian@protonmail.com>"]
 readme = "README.md"
