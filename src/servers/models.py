@@ -17,9 +17,10 @@ from src.logger import logger
 
 from sourcemod_api_client import APIConfig
 from sourcemod_api_client.services.async_admins_groups_service import (
-    admins_groups_create_group
+    admins_groups_create_group,
 )
 from sourcemod_api_client.models.CreateGroupSchema import CreateGroupSchema
+
 
 class Server(ormar.Model, DateFieldsMixins):
     class Meta(BaseMeta):
@@ -28,8 +29,8 @@ class Server(ormar.Model, DateFieldsMixins):
     id: int = ormar.Integer(primary_key=True)
     name: Optional[str] = ormar.String(max_length=64)
     tag: Optional[str] = ormar.String(max_length=64, unique=True)
-    ip: Optional[str]  = ormar.String(max_length=64)
-    port: Optional[str]  = ormar.Integer()
+    ip: Optional[str] = ormar.String(max_length=64)
+    port: Optional[str] = ormar.Integer()
     admin_role: Optional[Role] = ormar.ForeignKey(Role)
 
 
@@ -82,6 +83,7 @@ async def create_admin_role(instance: Server):
         await new_admin_role.scopes.add(scope)
     return new_admin_role
 
+
 async def create_sourcemod_server_admin_group(instance: Server):
     settings = get_settings()
     api_url = None
@@ -89,15 +91,18 @@ async def create_sourcemod_server_admin_group(instance: Server):
         if api["tag"] == instance.tag:
             api_url = api["url"]
             break
-    
+
     api_config = APIConfig(
         base_path=api_url,
     )
-    return await admins_groups_create_group(data=CreateGroupSchema(
-        name=f"Admin",
-        immunity_level=100,
-        flags="z",
-    ), api_config_override=api_config)
+    return await admins_groups_create_group(
+        data=CreateGroupSchema(
+            name=f"Admin",
+            immunity_level=100,
+            flags="z",
+        ),
+        api_config_override=api_config,
+    )
 
 
 @ormar.post_save(Server)
@@ -106,6 +111,7 @@ async def on_server_created(sender, instance: Server, **kwargs):
     await instance.update(admin_role=new_admin_role)
     admins_groups = await create_sourcemod_server_admin_group(instance)
     print(admins_groups)
+
 
 """
 @post_save(Server)
