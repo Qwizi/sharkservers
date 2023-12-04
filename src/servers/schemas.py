@@ -17,6 +17,15 @@ class CreateServerSchema(BaseModel):
     name: str
     ip: str
     port: int = Field(gt=0, lt=65536)
+    api_url: str
+
+
+class UpdateServerSchema(BaseModel):
+    tag: Optional[str]
+    name: Optional[str]
+    ip: Optional[str]
+    port: Optional[int] = Field(gt=0, lt=65536)
+    api_url: Optional[str]
 
 
 class ServerStatusSchema(BaseModel):

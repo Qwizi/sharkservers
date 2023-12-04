@@ -221,7 +221,7 @@ async def update_${module_name}(
 
 EOF
 
-# Create views_admin.py file
+# Create servers.py file
 cat > src/"$module_name"/views_admin.py << EOF
 # $1 admin views
 from fastapi import APIRouter
