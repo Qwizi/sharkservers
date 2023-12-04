@@ -52,15 +52,6 @@ class ServerService(BaseService):
         return servers_with_status
 
 
-"""
-
-class ServerPlayerStatsService(BaseService):
-    class Meta:
-        model = ServerPlayerStats
-        not_found_exception = player_server_stats_not_found_exception
-"""
-
-
 class ChatColorModuleService(BaseService):
     class Meta:
         model = ChatColorModule

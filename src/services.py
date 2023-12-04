@@ -194,7 +194,7 @@ class MainService:
 
     @staticmethod
     async def generate_openapi_file():
-        url = "http://localhost/openapi.json"
+        url = "http://localhost:8080/openapi.json"
         async with httpx.AsyncClient() as client:
             r = await client.get(url)
             with open("openapi.json", "wb") as f:
