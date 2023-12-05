@@ -47,7 +47,8 @@ from src.subscryptions.views import router as subscryptions_router
 
 from src.users.models import User
 # Routes
-from src.users.views import router as users_router_v1
+from src.users.views.users import router as users_router
+from src.users.views.me import router as users_me_router
 # Admin Routes
 from src.users.views_admin import (
     router as admin_users_router,
@@ -75,7 +76,8 @@ def init_routes(_app: FastAPI):
     # V1 routes
     _app.include_router(root_router, tags=["root"])
     _app.include_router(auth_router_v1, prefix="/v1/auth", tags=["auth"])
-    _app.include_router(users_router_v1, prefix="/v1/users", tags=["users"])
+    _app.include_router(users_router, prefix="/v1/users", tags=["users"])
+    _app.include_router(users_me_router, prefix="/v1/users/me", tags=["users-me"])
     _app.include_router(scopes_router, prefix="/v1/scopes", tags=["scopes"])
     _app.include_router(roles_router, prefix="/v1/roles", tags=["roles"])
     _app.include_router(steamprofile_router, prefix="/v1/players", tags=["players"])

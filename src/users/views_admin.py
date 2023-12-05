@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, Security
 from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
+
+from src.auth.utils import get_password_hash
 from src.settings import Settings, get_settings
 
 from src.auth.dependencies import get_admin_user, get_auth_service
@@ -111,6 +113,10 @@ async def admin_update_user(
     filtered = {k: v for k, v in update_user_data_dict.items() if v is not None}
     update_user_data_dict.clear()
     update_user_data_dict.update(filtered)
+    password = update_user_data_dict.pop("password", None)
+    if password:
+        password_hash = get_password_hash(password)
+        update_user_data_dict.update(password=password_hash)
     roles_ids: list[int] | None = update_user_data_dict.pop("roles", None)
     display_role_id: int | None = update_user_data_dict.pop("display_role", None)
     print(roles_ids)

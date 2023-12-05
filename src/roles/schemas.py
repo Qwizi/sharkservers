@@ -43,6 +43,7 @@ class CreateRoleSchema(BaseModel):
 
 
 class UpdateRoleSchema(BaseModel):
+    tag: Optional[str]
     name: Optional[str]
     color: Optional[str]
     is_staff: Optional[bool]

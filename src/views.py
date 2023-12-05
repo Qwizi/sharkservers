@@ -12,6 +12,7 @@ from src.scopes.services import ScopeService
 from src.servers.dependencies import get_servers_service
 from src.servers.services import ServerService
 from src.services import MainService
+from src.settings import Settings, get_settings
 from src.utils import installed_file_path
 from fastapi_events.dispatcher import dispatch
 
@@ -24,6 +25,7 @@ async def install(
     scopes_service: ScopeService = Depends(get_scopes_service),
     roles_service: RoleService = Depends(get_roles_service),
     auth_service: AuthService = Depends(get_auth_service),
+    settings: Settings = Depends(get_settings),
 ):
     await MainService.install(
         file_path=installed_file_path,
@@ -31,6 +33,7 @@ async def install(
         scopes_service=scopes_service,
         roles_service=roles_service,
         auth_service=auth_service,
+        settings=settings,
     )
     return {"msg": "Successfully installed"}
 

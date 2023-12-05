@@ -40,7 +40,7 @@ async def admin_create_server_admins_groups(
 async def admin_get_server_admins_group(
         group_id: int,
         server: Server = Depends(get_valid_server),
-) -> Page_GroupOut_:
+) -> GroupOut:
     """
     Get server admins group
     :param servers_service:
@@ -54,7 +54,7 @@ async def admin_get_server_admins_group(
 async def admin_delete_server_admins_group(
         group_id: int,
         server: Server = Depends(get_valid_server),
-) -> Page_GroupOut_:
+) -> GroupOut:
     """
     Delete server admins group
     :param servers_service:
