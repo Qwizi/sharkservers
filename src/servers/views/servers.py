@@ -16,10 +16,10 @@ router = APIRouter()
 
 @router.get("/")
 async def get_servers(
-        params: Params = Depends(),
-        ip: str = None,
-        port: int = None,
-        servers_service: ServerService = Depends(get_servers_service),
+    params: Params = Depends(),
+    ip: str = None,
+    port: int = None,
+    servers_service: ServerService = Depends(get_servers_service),
 ) -> Page[ServerOut]:
     """
     Get all servers
@@ -32,7 +32,7 @@ async def get_servers(
 
 @router.get("/status")
 async def get_servers_status(
-        servers_service: ServerService = Depends(get_servers_service),
+    servers_service: ServerService = Depends(get_servers_service),
 ):
     """
     Get all servers' status

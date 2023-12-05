@@ -174,8 +174,7 @@ class MainService:
             filename=MainService.__name__, data="Step 3 - Create admin user"
         )
         admin_user: User = await auth_service.register(
-            admin_user_data, is_activated=True, is_superuser=True,
-            settings=settings
+            admin_user_data, is_activated=True, is_superuser=True, settings=settings
         )
         bot_password = auth_service.generate_secret_salt()
         bot_user: User = await auth_service.register(
@@ -186,7 +185,7 @@ class MainService:
                 password2=bot_password,
             ),
             is_activated=True,
-            settings=settings
+            settings=settings,
         )
         logger_with_filename(
             filename=MainService.__name__,

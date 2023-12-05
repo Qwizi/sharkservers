@@ -3,13 +3,25 @@ from typing import Optional
 import ormar
 from fastapi_pagination import Params
 from pydantic.color import Color
-from sourcemod_api_client import APIConfig, CreateAdminSchema, UpdateAdminSchema, Page_GroupOut_
+from sourcemod_api_client import (
+    APIConfig,
+    CreateAdminSchema,
+    UpdateAdminSchema,
+    Page_GroupOut_,
+)
 from sourcemod_api_client.models.CreateGroupSchema import CreateGroupSchema
 from sourcemod_api_client.services.async_admins_groups_service import (
-    admins_groups_create_group, admins_groups_get_groups, admins_groups_get_group, admins_groups_delete_group
+    admins_groups_create_group,
+    admins_groups_get_groups,
+    admins_groups_get_group,
+    admins_groups_delete_group,
 )
 from sourcemod_api_client.services.async_adminss_service import (
-    adminss_get_admin, adminss_get_admins, adminss_create_admin, adminss_update_admin, adminss_delete_admin
+    adminss_get_admin,
+    adminss_get_admins,
+    adminss_create_admin,
+    adminss_update_admin,
+    adminss_delete_admin,
 )
 
 from src.db import BaseMeta, DateFieldsMixins
@@ -39,40 +51,55 @@ class Server(ormar.Model, DateFieldsMixins):
         )
 
     async def get_admins_groups(self, params: Params) -> Page_GroupOut_:
-        return await admins_groups_get_groups(api_config_override=self.get_sourcemod_api_config(), page=params.page,
-                                              size=params.size)
+        return await admins_groups_get_groups(
+            api_config_override=self.get_sourcemod_api_config(),
+            page=params.page,
+            size=params.size,
+        )
 
     async def get_admin_group(self, group_id: int):
-        return admins_groups_get_group(group_id=group_id,
-                                       api_config_override=self.get_sourcemod_api_config())
+        return admins_groups_get_group(
+            group_id=group_id, api_config_override=self.get_sourcemod_api_config()
+        )
 
     async def create_admin_group(self, data: CreateGroupSchema):
-        return await admins_groups_create_group(data=data,
-                                                api_config_override=self.get_sourcemod_api_config())
+        return await admins_groups_create_group(
+            data=data, api_config_override=self.get_sourcemod_api_config()
+        )
 
     async def delete_admin_group(self, group_id: int):
-        return await admins_groups_delete_group(group_id=group_id,
-                                                api_config_override=self.get_sourcemod_api_config())
+        return await admins_groups_delete_group(
+            group_id=group_id, api_config_override=self.get_sourcemod_api_config()
+        )
 
     async def get_admins(self, params: Params):
-        return await adminss_get_admins(api_config_override=self.get_sourcemod_api_config(), page=params.page,
-                                        size=params.size)
+        return await adminss_get_admins(
+            api_config_override=self.get_sourcemod_api_config(),
+            page=params.page,
+            size=params.size,
+        )
 
     async def get_admin(self, identity: str):
-        return await adminss_get_admin(identity=identity,
-                                       api_config_override=self.get_sourcemod_api_config())
+        return await adminss_get_admin(
+            identity=identity, api_config_override=self.get_sourcemod_api_config()
+        )
 
     async def create_admin(self, data: CreateAdminSchema):
-        return await adminss_create_admin(data=data,
-                                          api_config_override=self.get_sourcemod_api_config())
+        return await adminss_create_admin(
+            data=data, api_config_override=self.get_sourcemod_api_config()
+        )
 
     async def update_admin(self, identity: str, data: UpdateAdminSchema):
-        return await adminss_update_admin(identity=identity, data=data,
-                                          api_config_override=self.get_sourcemod_api_config())
+        return await adminss_update_admin(
+            identity=identity,
+            data=data,
+            api_config_override=self.get_sourcemod_api_config(),
+        )
 
     async def delete_admin(self, identity: str):
-        return await adminss_delete_admin(identity=identity,
-                                          api_config_override=self.get_sourcemod_api_config())
+        return await adminss_delete_admin(
+            identity=identity, api_config_override=self.get_sourcemod_api_config()
+        )
 
 
 class ChatColorModule(ormar.Model, DateFieldsMixins):
@@ -116,11 +143,13 @@ async def create_admin_role(instance: Server):
 async def on_server_created(sender, instance: Server, **kwargs):
     new_admin_role = await create_admin_role(instance)
     await instance.update(admin_role=new_admin_role)
-    admins_groups = await instance.create_admin_group(data=CreateGroupSchema(
-        name=f"Admin",
-        immunity_level=100,
-        flags="z",
-    ))
+    admins_groups = await instance.create_admin_group(
+        data=CreateGroupSchema(
+            name=f"Admin",
+            immunity_level=100,
+            flags="z",
+        )
+    )
     print(admins_groups)
 
 
@@ -134,6 +163,7 @@ async def on_server_deleted(sender, instance: Server, **kwargs):
 
     for admin in admins.items:
         await instance.delete_admin(identity=admin.identity)
+
 
 """
 @post_save(Server)

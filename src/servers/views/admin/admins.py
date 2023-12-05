@@ -1,6 +1,11 @@
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Params
-from sourcemod_api_client import AdminOut, CreateAdminSchema, Page_AdminOut_, UpdateAdminSchema
+from sourcemod_api_client import (
+    AdminOut,
+    CreateAdminSchema,
+    Page_AdminOut_,
+    UpdateAdminSchema,
+)
 
 from src.servers.dependencies import get_valid_server
 from src.servers.models import Server
@@ -10,8 +15,8 @@ router = APIRouter()
 
 @router.get("/{server_id}/admins")
 async def admin_get_server_admins(
-        params: Params = Depends(),
-        server: Server = Depends(get_valid_server),
+    params: Params = Depends(),
+    server: Server = Depends(get_valid_server),
 ) -> Page_AdminOut_:
     """
     Get server admins
@@ -24,8 +29,8 @@ async def admin_get_server_admins(
 
 @router.post("/{server_id}/admins")
 async def admin_create_server_admin(
-        data: CreateAdminSchema,
-        server: Server = Depends(get_valid_server),
+    data: CreateAdminSchema,
+    server: Server = Depends(get_valid_server),
 ) -> AdminOut:
     """
     Create server admin
@@ -38,8 +43,8 @@ async def admin_create_server_admin(
 
 @router.get("/{server_id}/admins/{identity}")
 async def admin_get_server_admin(
-        identity: str,
-        server: Server = Depends(get_valid_server),
+    identity: str,
+    server: Server = Depends(get_valid_server),
 ) -> AdminOut:
     """
     Get server admin
@@ -52,9 +57,9 @@ async def admin_get_server_admin(
 
 @router.put("/{server_id}/admins/{identity}")
 async def admin_update_server_admin(
-        identity: str,
-        data: UpdateAdminSchema,
-        server: Server = Depends(get_valid_server),
+    identity: str,
+    data: UpdateAdminSchema,
+    server: Server = Depends(get_valid_server),
 ) -> AdminOut:
     """
     Update server admin
@@ -67,8 +72,8 @@ async def admin_update_server_admin(
 
 @router.delete("/{server_id}/admins/{identity}")
 async def admin_delete_server_admin(
-        identity: str,
-        server: Server = Depends(get_valid_server),
+    identity: str,
+    server: Server = Depends(get_valid_server),
 ) -> AdminOut:
     """
     Delete server admin

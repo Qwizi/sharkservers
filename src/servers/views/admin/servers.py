@@ -14,7 +14,7 @@ router = APIRouter(dependencies=[Depends(get_admin_user)])
 
 @router.get("")
 async def admin_get_servers(
-        servers_service: ServerService = Depends(get_servers_service),
+    servers_service: ServerService = Depends(get_servers_service),
 ) -> ServerOut:
     """
     Get all servers
@@ -25,8 +25,8 @@ async def admin_get_servers(
 
 @router.post("")
 async def admin_create_server(
-        server_data: CreateServerSchema,
-        servers_service: ServerService = Depends(get_servers_service),
+    server_data: CreateServerSchema,
+    servers_service: ServerService = Depends(get_servers_service),
 ) -> ServerOut:
     """
     Create a new server
@@ -39,8 +39,8 @@ async def admin_create_server(
 
 @router.get("/{server_id}")
 async def admin_get_server(
-        server: Server = Depends(get_valid_server),
-        servers_service: ServerService = Depends(get_servers_service),
+    server: Server = Depends(get_valid_server),
+    servers_service: ServerService = Depends(get_servers_service),
 ) -> ServerOut:
     """
     Get server by id
@@ -53,9 +53,9 @@ async def admin_get_server(
 
 @router.put("/{server_id}")
 async def admin_update_server(
-        server_data: UpdateServerSchema,
-        server: Server = Depends(get_valid_server),
-        servers_service: ServerService = Depends(get_servers_service),
+    server_data: UpdateServerSchema,
+    server: Server = Depends(get_valid_server),
+    servers_service: ServerService = Depends(get_servers_service),
 ) -> ServerOut:
     """
     Update a server
@@ -69,8 +69,8 @@ async def admin_update_server(
 
 @router.delete("/{server_id}")
 async def admin_delete_server(
-        server: Server = Depends(get_valid_server),
-        servers_service: ServerService = Depends(get_servers_service),
+    server: Server = Depends(get_valid_server),
+    servers_service: ServerService = Depends(get_servers_service),
 ):
     """
     Delete a server
@@ -79,5 +79,3 @@ async def admin_delete_server(
     :return:
     """
     return await servers_service.delete(server.id)
-
-

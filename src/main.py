@@ -46,9 +46,11 @@ from src.settings import get_settings
 from src.subscryptions.views import router as subscryptions_router
 
 from src.users.models import User
+
 # Routes
 from src.users.views.users import router as users_router
 from src.users.views.me import router as users_me_router
+
 # Admin Routes
 from src.users.views_admin import (
     router as admin_users_router,
@@ -60,10 +62,12 @@ from .forum.dependencies import (
     get_threads_service,
     get_posts_service,
 )
+
 # import admin posts router
 from .logger import logger
 from .users.dependencies import get_users_service
 from .utils import app_lifespan, custom_generate_unique_id
+
 # Routers
 from .views import router as root_router
 
@@ -105,8 +109,16 @@ def init_routes(_app: FastAPI):
     _app.include_router(
         admin_servers_router, prefix="/v1/admin/servers", tags=["admin-servers"]
     )
-    _app.include_router(admin_admins_groups_router, prefix="/v1/admin/servers", tags=["admin-servers-admin-groups"])
-    _app.include_router(admin_servers_admin_users_router, prefix="/v1/admin/servers", tags=["admin-servers-admins"])
+    _app.include_router(
+        admin_admins_groups_router,
+        prefix="/v1/admin/servers",
+        tags=["admin-servers-admin-groups"],
+    )
+    _app.include_router(
+        admin_servers_admin_users_router,
+        prefix="/v1/admin/servers",
+        tags=["admin-servers-admins"],
+    )
     return _app
 
 
@@ -176,7 +188,7 @@ def create_app():
         version=VERSION,
         debug=True,
         generate_unique_id_function=custom_generate_unique_id,
-        lifespan=app_lifespan
+        lifespan=app_lifespan,
     )
     _app = add_middlewares(_app)
     _app.mount("/static", StaticFiles(directory=st_abs_file_path), name="static")
@@ -185,9 +197,9 @@ def create_app():
 
     @_app.websocket("/ws")
     async def websocket_endpoint(
-            websocket: WebSocket,
-            chat_service: ChatService = Depends(get_chat_service),
-            author: User = Depends(ws_get_current_user),
+        websocket: WebSocket,
+        chat_service: ChatService = Depends(get_chat_service),
+        author: User = Depends(ws_get_current_user),
     ):
         try:
             logger.info(_app.state.broadcast)

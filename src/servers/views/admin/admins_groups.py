@@ -10,8 +10,8 @@ router = APIRouter()
 
 @router.get("/{server_id}/admins/groups")
 async def admin_get_server_admins_groups(
-        params: Params = Depends(),
-        server: Server = Depends(get_valid_server),
+    params: Params = Depends(),
+    server: Server = Depends(get_valid_server),
 ) -> Page_GroupOut_:
     """
     Get server admins groups
@@ -24,8 +24,8 @@ async def admin_get_server_admins_groups(
 
 @router.post("/{server_id}/admins/groups")
 async def admin_create_server_admins_groups(
-        data: CreateGroupSchema,
-        server: Server = Depends(get_valid_server),
+    data: CreateGroupSchema,
+    server: Server = Depends(get_valid_server),
 ) -> GroupOut:
     """
     Create server admins groups
@@ -38,8 +38,8 @@ async def admin_create_server_admins_groups(
 
 @router.get("/{server_id}/admins/groups/{group_id}")
 async def admin_get_server_admins_group(
-        group_id: int,
-        server: Server = Depends(get_valid_server),
+    group_id: int,
+    server: Server = Depends(get_valid_server),
 ) -> GroupOut:
     """
     Get server admins group
@@ -52,8 +52,8 @@ async def admin_get_server_admins_group(
 
 @router.delete("/{server_id}/admins/groups/{group_id}")
 async def admin_delete_server_admins_group(
-        group_id: int,
-        server: Server = Depends(get_valid_server),
+    group_id: int,
+    server: Server = Depends(get_valid_server),
 ) -> GroupOut:
     """
     Delete server admins group
