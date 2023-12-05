@@ -142,7 +142,7 @@ async def ${module_get_valid_name}(${module_name}_id: int) -> ${module_name_uppe
 
 
 EOF
-# Create views.py file
+# Create me.py file
 cat > src/"$module_name"/views.py << EOF
 # $1 views
 from fastapi import APIRouter, Depends, Security

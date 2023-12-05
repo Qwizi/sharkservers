@@ -122,8 +122,9 @@ class AuthService:
         :param user_data:
         :return:
         """
-        password = get_password_hash(user_data.password)
+
         try:
+            password = get_password_hash(user_data.password)
             secret_salt = self.generate_secret_salt()
 
             user_role = await self.roles_service.get_one(
