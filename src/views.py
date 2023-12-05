@@ -3,7 +3,11 @@ from src.auth.dependencies import get_auth_service
 
 from src.auth.schemas import RegisterUserSchema
 from src.auth.services.auth import AuthService
-from src.forum.dependencies import get_categories_service, get_posts_service, get_threads_service
+from src.forum.dependencies import (
+    get_categories_service,
+    get_posts_service,
+    get_threads_service,
+)
 from src.forum.services import CategoryService, PostService, ThreadService
 from src.roles.dependencies import get_roles_service
 from src.roles.services import RoleService

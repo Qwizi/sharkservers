@@ -1,11 +1,23 @@
-from fastapi import APIRouter, Security, Depends, BackgroundTasks, Request, UploadFile, File
+from fastapi import (
+    APIRouter,
+    Security,
+    Depends,
+    BackgroundTasks,
+    Request,
+    UploadFile,
+    File,
+)
 from fastapi_limiter.depends import RateLimiter
 from fastapi_pagination import Params
 
 from src.apps.dependencies import get_app_service
 from src.apps.schemas import CreateAppSchema
 from src.apps.services import AppService
-from src.auth.dependencies import get_current_active_user, get_change_account_email_code_service, get_steam_auth_service
+from src.auth.dependencies import (
+    get_current_active_user,
+    get_change_account_email_code_service,
+    get_steam_auth_service,
+)
 from src.auth.schemas import ActivateUserCodeSchema, SteamAuthSchema
 from src.auth.services.code import CodeService
 from src.auth.services.steam import SteamAuthService
@@ -20,8 +32,15 @@ from src.services import EmailService, UploadService
 from src.settings import Settings, get_settings
 from src.users.dependencies import get_users_service, get_valid_user_session
 from src.users.models import User, UserSession
-from src.users.schemas import UserOutWithEmail, ChangeUsernameSchema, SuccessChangeUsernameSchema, ChangePasswordSchema, \
-    ChangeEmailSchema, ChangeDisplayRoleSchema, UserSessionOut
+from src.users.schemas import (
+    UserOutWithEmail,
+    ChangeUsernameSchema,
+    SuccessChangeUsernameSchema,
+    ChangePasswordSchema,
+    ChangeEmailSchema,
+    ChangeDisplayRoleSchema,
+    UserSessionOut,
+)
 from src.users.services import UserService
 
 limiter = RateLimiter(times=1, seconds=60)
@@ -33,7 +52,7 @@ router = APIRouter()
     "",
 )
 async def get_logged_user(
-        user: User = Security(get_current_active_user, scopes=["users:me"])
+    user: User = Security(get_current_active_user, scopes=["users:me"])
 ) -> UserOutWithEmail:
     """
     Get logged user
@@ -45,10 +64,10 @@ async def get_logged_user(
 
 @router.get("/posts")
 async def get_logged_user_posts(
-        params: Params = Depends(),
-        queries: OrderQuery = Depends(),
-        user: User = Security(get_current_active_user, scopes=["users:me"]),
-        posts_service: PostService = Depends(get_posts_service),
+    params: Params = Depends(),
+    queries: OrderQuery = Depends(),
+    user: User = Security(get_current_active_user, scopes=["users:me"]),
+    posts_service: PostService = Depends(get_posts_service),
 ):
     """
     Get user posts
@@ -64,10 +83,10 @@ async def get_logged_user_posts(
 
 @router.get("/threads")
 async def get_logged_user_threads(
-        params: Params = Depends(),
-        queries: OrderQuery = Depends(),
-        user: User = Security(get_current_active_user, scopes=["users:me"]),
-        threads_service: ThreadService = Depends(get_threads_service),
+    params: Params = Depends(),
+    queries: OrderQuery = Depends(),
+    user: User = Security(get_current_active_user, scopes=["users:me"]),
+    threads_service: ThreadService = Depends(get_threads_service),
 ):
     """
     Get user threads
@@ -83,9 +102,9 @@ async def get_logged_user_threads(
 
 @router.get("/apps", deprecated=True)
 async def get_user_apps(
-        params: Params = Depends(),
-        user: User = Security(get_current_active_user, scopes=["apps:all"]),
-        apps_service: AppService = Depends(get_app_service),
+    params: Params = Depends(),
+    user: User = Security(get_current_active_user, scopes=["apps:all"]),
+    apps_service: AppService = Depends(get_app_service),
 ) -> dict:
     """
     Get user apps
@@ -99,9 +118,9 @@ async def get_user_apps(
 
 @router.post("/username")
 async def change_user_username(
-        change_username_data: ChangeUsernameSchema,
-        user: User = Security(get_current_active_user, scopes=["users:me:username"]),
-        users_service: UserService = Depends(get_users_service),
+    change_username_data: ChangeUsernameSchema,
+    user: User = Security(get_current_active_user, scopes=["users:me:username"]),
+    users_service: UserService = Depends(get_users_service),
 ) -> SuccessChangeUsernameSchema:
     """
     Change user username
@@ -118,9 +137,9 @@ async def change_user_username(
 
 @router.post("/password")
 async def change_user_password(
-        change_password_data: ChangePasswordSchema,
-        user: User = Security(get_current_active_user, scopes=["users:me:password"]),
-        users_service: UserService = Depends(get_users_service),
+    change_password_data: ChangePasswordSchema,
+    user: User = Security(get_current_active_user, scopes=["users:me:password"]),
+    users_service: UserService = Depends(get_users_service),
 ) -> dict:
     """
     Change user password
@@ -134,12 +153,12 @@ async def change_user_password(
 
 @router.post("/email", dependencies=[Depends(limiter)])
 async def request_change_user_email(
-        change_email_data: ChangeEmailSchema,
-        background_tasks: BackgroundTasks,
-        user: User = Security(get_current_active_user, scopes=["users:me"]),
-        email_service: EmailService = Depends(get_email_service),
-        code_service: CodeService = Depends(get_change_account_email_code_service),
-        users_service: UserService = Depends(get_users_service),
+    change_email_data: ChangeEmailSchema,
+    background_tasks: BackgroundTasks,
+    user: User = Security(get_current_active_user, scopes=["users:me"]),
+    email_service: EmailService = Depends(get_email_service),
+    code_service: CodeService = Depends(get_change_account_email_code_service),
+    users_service: UserService = Depends(get_users_service),
 ):
     """
     Request change user email
@@ -168,9 +187,9 @@ async def request_change_user_email(
     dependencies=[Security(get_current_active_user, scopes=["users:me"])],
 )
 async def confirm_change_user_email(
-        activate_code_data: ActivateUserCodeSchema,
-        code_service: CodeService = Depends(get_change_account_email_code_service),
-        users_service: UserService = Depends(get_users_service),
+    activate_code_data: ActivateUserCodeSchema,
+    code_service: CodeService = Depends(get_change_account_email_code_service),
+    users_service: UserService = Depends(get_users_service),
 ) -> UserOutWithEmail:
     """
     Confirm change user email
@@ -187,9 +206,9 @@ async def confirm_change_user_email(
 
 @router.post("/display-role")
 async def change_user_display_role(
-        change_display_role_data: ChangeDisplayRoleSchema,
-        user: User = Security(get_current_active_user, scopes=["users:me:display-role"]),
-        users_service: UserService = Depends(get_users_service),
+    change_display_role_data: ChangeDisplayRoleSchema,
+    user: User = Security(get_current_active_user, scopes=["users:me:display-role"]),
+    users_service: UserService = Depends(get_users_service),
 ):
     """
     Change user display role
@@ -206,9 +225,9 @@ async def change_user_display_role(
 
 @router.get("/apps", deprecated=True)
 async def get_user_apps(
-        params: Params = Depends(),
-        user: User = Security(get_current_active_user, scopes=["apps:all"]),
-        apps_service: AppService = Depends(get_app_service),
+    params: Params = Depends(),
+    user: User = Security(get_current_active_user, scopes=["apps:all"]),
+    apps_service: AppService = Depends(get_app_service),
 ) -> dict:
     """
     Get user apps
@@ -222,11 +241,11 @@ async def get_user_apps(
 
 @router.post("/apps", deprecated=True)
 async def create_user_app(
-        app_data: CreateAppSchema,
-        user: User = Security(get_current_active_user, scopes=["apps:create"]),
-        apps_service: AppService = Depends(get_app_service),
-        scopes_service: ScopeService = Depends(get_scopes_service),
-        settings: Settings = Depends(get_settings),
+    app_data: CreateAppSchema,
+    user: User = Security(get_current_active_user, scopes=["apps:create"]),
+    apps_service: AppService = Depends(get_app_service),
+    scopes_service: ScopeService = Depends(get_scopes_service),
+    settings: Settings = Depends(get_settings),
 ) -> dict:
     """
     Create user app
@@ -252,12 +271,12 @@ async def create_user_app(
 
 @router.post("/avatar")
 async def upload_user_avatar(
-        request: Request,
-        avatar: UploadFile = File(...),
-        user: User = Security(get_current_active_user, scopes=["users:me"]),
-        users_service: UserService = Depends(get_users_service),
-        upload_service: UploadService = Depends(get_upload_service),
-        settings: Settings = Depends(get_settings),
+    request: Request,
+    avatar: UploadFile = File(...),
+    user: User = Security(get_current_active_user, scopes=["users:me"]),
+    users_service: UserService = Depends(get_users_service),
+    upload_service: UploadService = Depends(get_upload_service),
+    settings: Settings = Depends(get_settings),
 ):
     """
     Upload user avatar
@@ -272,23 +291,23 @@ async def upload_user_avatar(
 
 @router.post("/connect/steam")
 async def connect_steam_profile(
-        params: SteamAuthSchema,
-        user: User = Security(get_current_active_user, scopes=["users:me"]),
-        steam_auth_service: SteamAuthService = Depends(get_steam_auth_service),
+    params: SteamAuthSchema,
+    user: User = Security(get_current_active_user, scopes=["users:me"]),
+    steam_auth_service: SteamAuthService = Depends(get_steam_auth_service),
 ):
     return await steam_auth_service.authenticate(user, params)
 
 
 @router.get("/sessions")
 async def get_user_sessions(
-        user: User = Security(get_current_active_user, scopes=["users:me"])
+    user: User = Security(get_current_active_user, scopes=["users:me"])
 ) -> list[UserSessionOut]:
     return user.sessions
 
 
 @router.delete("/sessions/{session_id}")
 async def delete_user_session(
-        user_session: UserSession = Depends(get_valid_user_session),
+    user_session: UserSession = Depends(get_valid_user_session),
 ):
     await user_session.delete()
     return user_session

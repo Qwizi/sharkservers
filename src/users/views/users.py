@@ -17,9 +17,9 @@ router = APIRouter()
 
 @router.get("")
 async def get_users(
-        params: Params = Depends(),
-        queries: UserQuery = Depends(),
-        users_service: UserService = Depends(get_users_service),
+    params: Params = Depends(),
+    queries: UserQuery = Depends(),
+    users_service: UserService = Depends(get_users_service),
 ) -> Page[UserOut]:
     """
     Get users
@@ -41,7 +41,7 @@ async def get_users(
 
 @router.get("/staff")
 async def get_staff_users(
-        params: Params = Depends(), roles_service: RoleService = Depends(get_roles_service)
+    params: Params = Depends(), roles_service: RoleService = Depends(get_roles_service)
 ) -> Page[StaffRolesSchema]:
     """
     Get staff users
@@ -54,7 +54,7 @@ async def get_staff_users(
 
 @router.get("/online")
 async def get_last_online_users(
-        params: Params = Depends(), users_service: UserService = Depends(get_users_service)
+    params: Params = Depends(), users_service: UserService = Depends(get_users_service)
 ) -> Page[UserOut]:
     """
     Get last logged users
@@ -77,10 +77,10 @@ async def get_user(user: User = Depends(get_valid_user)) -> UserOut:
 
 @router.get("/{user_id}/posts")
 async def get_user_posts(
-        params: Params = Depends(),
-        queries: OrderQuery = Depends(),
-        user: User = Depends(get_valid_user),
-        posts_service: PostService = Depends(get_posts_service),
+    params: Params = Depends(),
+    queries: OrderQuery = Depends(),
+    user: User = Depends(get_valid_user),
+    posts_service: PostService = Depends(get_posts_service),
 ):
     """
     Get user posts
@@ -96,10 +96,10 @@ async def get_user_posts(
 
 @router.get("/{user_id}/threads")
 async def get_user_threads(
-        params: Params = Depends(),
-        queries: OrderQuery = Depends(),
-        user: User = Depends(get_valid_user),
-        threads_service: ThreadService = Depends(get_threads_service),
+    params: Params = Depends(),
+    queries: OrderQuery = Depends(),
+    user: User = Depends(get_valid_user),
+    threads_service: ThreadService = Depends(get_threads_service),
 ):
     """
     Get user threads
