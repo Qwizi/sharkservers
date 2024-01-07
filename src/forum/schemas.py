@@ -20,6 +20,7 @@ author_exclude = {
     "author__players",
     "author__chats",
     "author__sessions",
+    "author__user_posts"
 }
 
 category_out = Category.get_pydantic(exclude={"threads"})

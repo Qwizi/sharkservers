@@ -1,11 +1,13 @@
 services:
   app:
-    image: qwizii/sharkservers-api:latest
-    command: uvicorn src.main:app --reload --host 0.0.0.0 --port 80 --log-level trace --ws  wsproto
-    ports:
-      - "80:80"
+    image: qwizii/sharkservers-api:v1.1.1
+    cpus: '0.50'
+    mem_limit: 1g
+    command: uvicorn src.main:app --reload --host 0.0.0.0 --port 8080 --ws  wsproto --proxy-headers
+    expose:
+      - 8080
     env_file:
-      - .env
+      - ./.env
     depends_on:
       db:
         condition: service_started
@@ -21,10 +23,8 @@ services:
       - POSTGRES_USER=shark_user
       - POSTGRES_PASSWORD=shark_password
     restart: always
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
+    expose:
+      - 5432
     networks:
       - shark
     healthcheck:
@@ -32,18 +32,42 @@ services:
   redis:
     image: "redis:alpine"
     restart: always
-    ports:
-      - "6379:6379"
+    expose:
+      - 6379
     networks:
       - shark
-    volumes:
-      - redis-data:/data
     healthcheck:
       test: "exit 1"
-
-volumes:
-  postgres-data:
-  redis-data:
+  jailbreak_db:
+    image: postgres:15.1
+    environment:
+      - POSTGRES_DB=jailbreak_db
+      - POSTGRES_USER=jailbreak_user
+      - POSTGRES_PASSWORD=jailbreak_password
+    restart: always
+    expose:
+      - "5432:5432"
+    networks:
+      - shark
+    healthcheck:
+      test: "exit 1"
+  jailbreak_app:
+    image: qwizii/fastapi-sourcemod-api:v1.0.0
+    cpus: '0.50'
+    mem_limit: 1g
+    command: uvicorn src.main:app --reload --host 0.0.0.0 --port 8081 --proxy-headers
+    ports:
+      - "8081:8081"
+    env_file:
+      - ./.env
+    depends_on:
+      jailbreak_db:
+        condition: service_started
+    restart: always
+    networks:
+      - shark
 
 networks:
   shark:
+    name: shark
+    external: true

@@ -220,5 +220,6 @@ openapi.json
 static/uploads/*
 .idea/*
 .vscode/*
+jailbreak_app.env
 
 requests/*

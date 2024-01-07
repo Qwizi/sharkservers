@@ -170,6 +170,9 @@ class ThreadService(BaseService):
                     "author__display_role",
                     "meta_fields",
                     "server",
+                    "server__admin_role",
+                    "author__player",
+                    "author__player__steamrep_profile",
                 ],
             )
         new_thread = await self.create(
