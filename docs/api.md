@@ -1,3 +1,3 @@
-::: sharkservers_api
+::: sharkservers
     options:
       show_submodules: true

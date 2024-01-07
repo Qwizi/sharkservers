@@ -1,5 +1,5 @@
 <!--
-Thank you for contributing to sharkservers-api! 🎉
+Thank you for contributing to sharkservers! 🎉
 
 Provide a general summary of your proposed changes in the Title field above.
 -->

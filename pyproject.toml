@@ -3,19 +3,19 @@
 # https://github.com/bswck/skeleton/tree/57cf553/project/pyproject.toml.jinja
 
 [tool.poetry]
-name = "sharkservers-api"
+name = "sharkservers"
 version = "0.0.0"
-description = "sharkservers-api"
+description = "sharkservers"
 authors = ["Qwizi <ciolek.adrian@protonmail.com>"]
 license = "GPL-3.0"
 readme = "README.md"
-packages = [{ include = "sharkservers_api/" }]
-homepage = "https://github.com/Qwizi/sharkservers-api"
+packages = [{ include = "sharkservers/" }]
+homepage = "https://github.com/Qwizi/sharkservers"
 
 [tool.poetry.urls]
-Documentation = "https://sharkservers-api.readthedocs.io/en/latest/"
-Issues = "https://github.com/Qwizi/sharkservers-api/issues"
-Coverage = "https://coverage-badge.samuelcolvin.workers.dev/redirect/Qwizi/sharkservers-api"
+Documentation = "https://sharkservers.readthedocs.io/en/latest/"
+Issues = "https://github.com/Qwizi/sharkservers/issues"
+Coverage = "https://coverage-badge.samuelcolvin.workers.dev/redirect/Qwizi/sharkservers"
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.13"
@@ -114,12 +114,12 @@ profile = "black"
 
 [tool.towncrier]
 directory = "changes"
-package = "sharkservers_api"
+package = "sharkservers"
 filename = "CHANGELOG.md"
 start_string = "<!-- insertion marker -->\n"
 underlines = ["", "", ""]  # We use Markdown
-title_format = "## [{version}](https://github.com/Qwizi/sharkservers-api/tree/{version}) ({project_date})"
-issue_format = "[#{issue}](https://github.com/Qwizi/sharkservers-api/issues/{issue})"
+title_format = "## [{version}](https://github.com/Qwizi/sharkservers/tree/{version}) ({project_date})"
+issue_format = "[#{issue}](https://github.com/Qwizi/sharkservers/issues/{issue})"
 
 [[tool.towncrier.type]]
 directory = "security"

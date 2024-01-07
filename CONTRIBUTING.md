@@ -3,26 +3,26 @@ This file was generated from bswck/skeleton@57cf553.
 Instead of changing this particular file, you might want to alter the template:
 https://github.com/bswck/skeleton/tree/57cf553/fragments/contributing.md
 -->
-# Contributing to [sharkservers-api](https://github.com/Qwizi/sharkservers-api) 🎉
+# Contributing to [sharkservers](https://github.com/Qwizi/sharkservers) 🎉
 Contributions are very welcome. 🚀
 
-There are many ways to contribute, ranging from **writing tutorials and improving the documentation**, to **submitting bug reports and feature requests** or **writing code** which can be incorporated into sharkservers-api.
+There are many ways to contribute, ranging from **writing tutorials and improving the documentation**, to **submitting bug reports and feature requests** or **writing code** which can be incorporated into sharkservers.
 
 ## Report bugs and request features 🐛
-Report these in the [issue tracker](https://github.com/Qwizi/sharkservers-api/issues).
+Report these in the [issue tracker](https://github.com/Qwizi/sharkservers/issues).
 Relevant forms provide guidance on how to write a good bug report or feature request.
 
 ## Implement new features ⭐
-[Look here](https://github.com/Qwizi/sharkservers-api/issues?q=is%3Aopen+label%3Aenhancement+sort%3Aupdated-desc).
+[Look here](https://github.com/Qwizi/sharkservers/issues?q=is%3Aopen+label%3Aenhancement+sort%3Aupdated-desc).
 Anything tagged with "enhancement" is open to whoever wants to implement it.
 
 ## Write documentation 📖
 The project could always use more documentation, whether as part of the official project
-docs. If you're interested in helping out, check the [docs/](https://github.com/Qwizi/sharkservers-api/tree/HEAD/docs)
+docs. If you're interested in helping out, check the [docs/](https://github.com/Qwizi/sharkservers/tree/HEAD/docs)
 folder in the repository.
 
 ## Share your feedback 🌍
-The best way to send feedback is to file an issue in the [issue tracker](https://github.com/Qwizi/sharkservers-api).
+The best way to send feedback is to file an issue in the [issue tracker](https://github.com/Qwizi/sharkservers).
 
 If you are proposing a feature:
 
@@ -34,7 +34,7 @@ If you are proposing a feature:
 ## Pull Request guidelines 📝
 1. Initially mark the PR as a draft, so that the maintainers know that you are making final touches.
 
-1. Ensure that the [test coverage](https://coverage-badge.samuelcolvin.workers.dev/redirect/Qwizi/sharkservers-api) is not decreased. If you add a new feature, please add tests for it. [Read more about coverage](https://coverage.readthedocs.io/en/latest/index.html).
+1. Ensure that the [test coverage](https://coverage-badge.samuelcolvin.workers.dev/redirect/Qwizi/sharkservers) is not decreased. If you add a new feature, please add tests for it. [Read more about coverage](https://coverage.readthedocs.io/en/latest/index.html).
 
 1. Ensure that all GitHub checks pass. If they are disabled in your PR, ping the maintainers to request enabling them.
 
@@ -42,7 +42,7 @@ If you are proposing a feature:
 
 # Get started! 🕹️
 
-Ready to contribute? Here's a quick guide on how to set up sharkservers-api and make a change.
+Ready to contribute? Here's a quick guide on how to set up sharkservers and make a change.
 
 
 <!--
@@ -56,7 +56,7 @@ https://github.com/bswck/skeleton/tree/57cf553/fragments/contributing.md
 
 
 
-1.  Fork the [sharkservers-api repository](https://github.com/Qwizi/sharkservers-api) on GitHub.
+1.  Fork the [sharkservers repository](https://github.com/Qwizi/sharkservers) on GitHub.
 
 1.  [Install Poetry](https://python-poetry.org/docs/#installation).<br/>
     Poetry is an amazing tool for managing dependencies & virtual environments, building packages and publishing them.
@@ -77,8 +77,8 @@ https://github.com/bswck/skeleton/tree/57cf553/fragments/contributing.md
 1.  Clone your fork locally and install dependencies.
 
     ```shell
-    git clone https://github.com/your-username/sharkservers-api path/to/sharkservers-api
-    cd path/to/sharkservers-api
+    git clone https://github.com/your-username/sharkservers path/to/sharkservers
+    cd path/to/sharkservers
     poetry env use $(cat .python-version)
     poetry install
     ```
