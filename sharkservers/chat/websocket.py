@@ -2,13 +2,14 @@ import json
 
 from fastapi.encoders import jsonable_encoder
 from fastapi_pagination import Params
+from starlette.websockets import WebSocket
+
 from sharkservers.chat.enums import WebsocketEventEnum
 from sharkservers.chat.schemas import ChatEventSchema
 from sharkservers.chat.services import ChatService
 from sharkservers.logger import logger
 from sharkservers.users.models import User
 from sharkservers.utils import broadcast
-from starlette.websockets import WebSocket
 
 
 async def chatroom_ws_receiver(

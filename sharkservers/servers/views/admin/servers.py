@@ -1,8 +1,13 @@
 from fastapi import APIRouter, Depends
+
 from sharkservers.auth.dependencies import get_admin_user
 from sharkservers.servers.dependencies import get_servers_service, get_valid_server
 from sharkservers.servers.models import Server
-from sharkservers.servers.schemas import CreateServerSchema, ServerOut, UpdateServerSchema
+from sharkservers.servers.schemas import (
+    CreateServerSchema,
+    ServerOut,
+    UpdateServerSchema,
+)
 from sharkservers.servers.services import ServerService
 
 router = APIRouter(dependencies=[Depends(get_admin_user)])

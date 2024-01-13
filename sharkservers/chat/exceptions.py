@@ -1,6 +1,7 @@
 # chat exceptions
 from fastapi import status
 from fastapi.exceptions import HTTPException
+
 from sharkservers.chat.enums import ChatExceptionEnum
 
 chat_not_found_exception = HTTPException(

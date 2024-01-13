@@ -3,6 +3,7 @@ from fastapi_events.dispatcher import dispatch
 from fastapi_limiter.depends import RateLimiter
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.ormar import paginate
+
 from sharkservers.auth.dependencies import get_current_active_user
 from sharkservers.forum.dependencies import (
     get_likes_service,

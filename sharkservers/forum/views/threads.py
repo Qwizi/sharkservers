@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Security
 from fastapi_events.dispatcher import dispatch
 from fastapi_limiter.depends import RateLimiter
 from fastapi_pagination import Page, Params
+
 from sharkservers.auth.dependencies import get_current_active_user
 from sharkservers.forum.dependencies import (
     get_categories_service,
@@ -18,7 +19,11 @@ from sharkservers.forum.schemas import (
     ThreadQuery,
     UpdateThreadSchema,
 )
-from sharkservers.forum.services import CategoryService, ThreadMetaService, ThreadService
+from sharkservers.forum.services import (
+    CategoryService,
+    ThreadMetaService,
+    ThreadService,
+)
 from sharkservers.servers.dependencies import get_servers_service
 from sharkservers.servers.services import ServerService
 from sharkservers.settings import get_settings

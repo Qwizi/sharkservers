@@ -81,6 +81,7 @@ class RoleService(BaseService):
             related=["user_display_role"],
             is_staff=True,
         )
+
     async def admin_create_role(
         self,
         role_data: CreateRoleSchema,

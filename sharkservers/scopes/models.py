@@ -51,7 +51,7 @@ class Scope(ormar.Model):
         Returns
         -------
             tuple: A tuple containing the formatted app name and value, along with the description.
-        """    # noqa: E501
+        """  # noqa: E501
         return f"{self.app_name}:{self.value}", self.description
 
     def get_dict(self) -> dict:

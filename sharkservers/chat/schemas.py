@@ -1,6 +1,7 @@
 # chat schemas
 from fastapi_pagination import Page
 from pydantic import BaseModel, Field
+
 from sharkservers.chat.enums import WebsocketEventEnum
 from sharkservers.chat.models import Chat
 

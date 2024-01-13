@@ -1,8 +1,6 @@
 """Module contains the API endpoints related to authentication."""  # noqa: EXE002
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from fastapi import APIRouter, BackgroundTasks, Depends, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_limiter.depends import RateLimiter
@@ -53,8 +51,8 @@ async def register(  # noqa: PLR0913
     request: Request,
     auth_service: AuthService = Depends(get_auth_service),  # noqa: B008
     code_service: CodeService = Depends(
-        get_activation_account_code_service
-    ),  # noqa: B008
+        get_activation_account_code_service,
+    ),
     email_service: EmailService = Depends(get_email_service),  # noqa: B008
     settings: Settings = Depends(get_settings),  # noqa: B008
 ) -> UserOut:
@@ -103,8 +101,8 @@ async def login_user(
     form_data: OAuth2PasswordRequestForm = Depends(),  # noqa: B008
     access_token_service: JWTService = Depends(get_access_token_service),  # noqa: B008
     refresh_token_service: JWTService = Depends(
-        get_refresh_token_service
-    ),  # noqa: B008
+        get_refresh_token_service,
+    ),
     auth_service: AuthService = Depends(get_auth_service),  # noqa: B008
 ) -> TokenSchema:
     """
@@ -139,8 +137,8 @@ async def get_access_token_from_refresh_token(
     token_data: RefreshTokenSchema,
     access_token_service: JWTService = Depends(get_access_token_service),  # noqa: B008
     refresh_token_service: JWTService = Depends(
-        get_refresh_token_service
-    ),  # noqa: B008
+        get_refresh_token_service,
+    ),
     auth_service: AuthService = Depends(get_auth_service),  # noqa: B008
 ) -> TokenSchema:
     """
@@ -190,8 +188,8 @@ async def activate_user(
     activate_code_data: ActivateUserCodeSchema,
     auth_service: AuthService = Depends(get_auth_service),  # noqa: B008
     activate_code_service: CodeService = Depends(
-        get_activation_account_code_service
-    ),  # noqa: B008
+        get_activation_account_code_service,
+    ),
 ) -> UserActivatedSchema:
     """
     Activate a user account using the provided activation code.
@@ -225,8 +223,8 @@ async def resend_activate_code(
     background_tasks: BackgroundTasks,
     auth_service: AuthService = Depends(get_auth_service),  # noqa: B008
     code_service: CodeService = Depends(
-        get_activation_account_code_service
-    ),  # noqa: B008
+        get_activation_account_code_service,
+    ),
     email_service: EmailService = Depends(get_email_service),  # noqa: B008
 ) -> dict[str, str]:
     """
@@ -261,8 +259,8 @@ async def forgot_password_request(
     background_tasks: BackgroundTasks,
     email_service: EmailService = Depends(get_email_service),  # noqa: B008
     code_service: CodeService = Depends(
-        get_reset_account_password_code_service
-    ),  # noqa: B008
+        get_reset_account_password_code_service,
+    ),
 ) -> dict[str, str]:
     """
     Send a request to reset the account password.
@@ -294,8 +292,8 @@ async def reset_password(
     data: ResetPasswordSchema,
     auth_service: AuthService = Depends(get_auth_service),  # noqa: B008
     code_service: CodeService = Depends(
-        get_reset_account_password_code_service
-    ),  # noqa: B008
+        get_reset_account_password_code_service,
+    ),
 ) -> dict:
     """
     Reset the password for a user account.

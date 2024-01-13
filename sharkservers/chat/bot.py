@@ -3,6 +3,7 @@ import json
 from broadcaster import Broadcast
 from fastapi.encoders import jsonable_encoder
 from fastapi_pagination import Params
+
 from sharkservers.chat.enums import WebsocketEventEnum
 from sharkservers.chat.schemas import ChatEventSchema
 from sharkservers.chat.services import ChatService

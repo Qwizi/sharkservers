@@ -1,5 +1,6 @@
 # chat dependencies
 from fastapi import Depends, WebSocketException, status
+
 from sharkservers.auth.dependencies import get_access_token_service
 from sharkservers.auth.services.jwt import JWTService
 from sharkservers.chat.bot import Bot

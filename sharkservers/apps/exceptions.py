@@ -1,6 +1,7 @@
 # apps exceptions
 from fastapi import status
 from fastapi.exceptions import HTTPException
+
 from sharkservers.apps.enums import AppsExceptionEnum
 
 apps_not_found_exception = HTTPException(

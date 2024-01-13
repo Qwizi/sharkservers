@@ -61,9 +61,7 @@ class SteamRepService(BaseService):
             )
             data = response.json()
             profile = data["steamrep"]["steamrepurl"]
-            is_scammer = (
-                data["steamrep"]["reputation"]["summary"] == "SCAMMER"
-            )
+            is_scammer = data["steamrep"]["reputation"]["summary"] == "SCAMMER"
             return profile, is_scammer
 
     async def create_profile(self, steamid64: str) -> SteamRepProfile:

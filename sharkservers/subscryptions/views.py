@@ -3,6 +3,9 @@ from venv import logger
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Security
 from ormar import NoMatch
+from stripe import Subscription
+from stripe.error import SignatureVerificationError
+
 from sharkservers.auth.dependencies import get_current_active_user
 from sharkservers.logger import logger
 from sharkservers.roles.dependencies import get_roles_service
@@ -14,8 +17,6 @@ from sharkservers.subscryptions.services import UserSubscryptionService
 from sharkservers.users.dependencies import get_users_service
 from sharkservers.users.models import User
 from sharkservers.users.services import UserService
-from stripe import Subscription
-from stripe.error import SignatureVerificationError
 
 router = APIRouter()
 

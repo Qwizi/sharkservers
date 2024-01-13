@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+
 from sharkservers.servers.enums import ServerExceptionEnum
 
 server_not_found_exception = HTTPException(

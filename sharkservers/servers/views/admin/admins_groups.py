@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Params
 from sourcemod_api_client import CreateGroupSchema, GroupOut, Page_GroupOut_
+
 from sharkservers.servers.dependencies import get_valid_server
 from sharkservers.servers.models import Server
 

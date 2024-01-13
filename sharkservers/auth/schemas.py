@@ -19,7 +19,6 @@ Schemas:
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, EmailStr, Field, validator
 

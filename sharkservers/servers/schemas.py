@@ -2,6 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 from pydantic.color import Color
+
 from sharkservers.servers.models import Server
 
 serverOut = Server.get_pydantic()

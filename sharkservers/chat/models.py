@@ -1,5 +1,6 @@
 # chat models
 import ormar
+
 from sharkservers.db import BaseMeta, DateFieldsMixins
 from sharkservers.users.models import User
 

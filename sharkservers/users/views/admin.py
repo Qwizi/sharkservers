@@ -12,30 +12,25 @@ Functions:
 """  # noqa: EXE002
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from fastapi import APIRouter, Depends, Security
 from fastapi_events.dispatcher import dispatch
+from fastapi_pagination import Page, Params
 
 from sharkservers.auth.dependencies import get_admin_user, get_auth_service
 from sharkservers.auth.schemas import RegisterUserSchema
+from sharkservers.auth.services.auth import AuthService
 from sharkservers.auth.utils import get_password_hash
 from sharkservers.roles.dependencies import get_roles_service
+from sharkservers.roles.services import RoleService
 from sharkservers.settings import Settings, get_settings
 from sharkservers.users.dependencies import get_users_service, get_valid_user
 from sharkservers.users.enums import UsersAdminEventsEnum
+from sharkservers.users.models import User
 from sharkservers.users.schemas import (
     AdminUpdateUserSchema,
     CreateUserSchema,
     UserOutWithEmail,
 )
-
-
-from fastapi_pagination import Page, Params
-
-from sharkservers.auth.services.auth import AuthService
-from sharkservers.roles.services import RoleService
-from sharkservers.users.models import User
 from sharkservers.users.services import UserService
 
 router = APIRouter()

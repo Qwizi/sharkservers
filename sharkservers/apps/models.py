@@ -2,6 +2,7 @@
 from typing import Optional
 
 import ormar
+
 from sharkservers.db import BaseMeta, DateFieldsMixins
 from sharkservers.scopes.models import Scope
 from sharkservers.users.models import User

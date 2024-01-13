@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi_events.dispatcher import dispatch
+
 from sharkservers.auth.dependencies import get_admin_user
 from sharkservers.forum.dependencies import (
     get_categories_service,

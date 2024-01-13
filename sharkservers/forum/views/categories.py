@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi_events.dispatcher import dispatch
 from fastapi_pagination import Page, Params
+
 from sharkservers.forum.dependencies import get_categories_service, get_valid_category
 from sharkservers.forum.enums import CategoryEventEnum
 from sharkservers.forum.models import Category

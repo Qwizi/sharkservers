@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+
 from sharkservers.subscryptions.enums import UserSubscryptionExceptionsDetailEnum
 
 subscryption_not_found = HTTPException(

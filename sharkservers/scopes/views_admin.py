@@ -31,7 +31,9 @@ async def admin_get_scopes(
     return await scopes_service.get_all(params=params)
 
 
-@router.get("/{scope_id}", dependencies=[Security(get_admin_user, scopes="scopes:retrieve")])
+@router.get(
+    "/{scope_id}", dependencies=[Security(get_admin_user, scopes="scopes:retrieve")]
+)
 async def admin_get_scope(
     scope: Scope = Depends(get_valid_scope),  # noqa: B008
 ) -> ScopeOut:
@@ -69,8 +71,9 @@ async def admin_create_scope(
     return await scopes_service.create(**scope_data.dict())
 
 
-
-@router.delete("/{scope_id}", dependencies=[Security(get_admin_user, scopes="scopes:delete")])
+@router.delete(
+    "/{scope_id}", dependencies=[Security(get_admin_user, scopes="scopes:delete")]
+)
 async def admin_delete_scope(
     scope: Scope = Depends(get_valid_scope),  # noqa: B008
     scopes_service: ScopeService = Depends(get_scopes_service),  # noqa: B008
@@ -90,7 +93,9 @@ async def admin_delete_scope(
     return await scopes_service.delete(_id=scope.id)
 
 
-@router.put("/{scope_id}", dependencies=[Security(get_admin_user, scopes="scopes:update")])
+@router.put(
+    "/{scope_id}", dependencies=[Security(get_admin_user, scopes="scopes:update")]
+)
 async def admin_update_scope(
     update_scope_data: UpdateScopeSchema,
     scope: Scope = Depends(get_valid_scope),  # noqa: B008

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Page, Params
 from ormar import Model
+
 from sharkservers.servers.dependencies import (
     get_servers_service,
     get_valid_server,

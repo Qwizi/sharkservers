@@ -1,8 +1,6 @@
 """Scopes views."""  # noqa: EXE002
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Page, Params
 

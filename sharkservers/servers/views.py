@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Page, Params
 from ormar import Model
+
 from sharkservers.players.dependencies import (
     get_players_service,
     get_valid_player_by_steamid,

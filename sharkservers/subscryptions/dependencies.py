@@ -1,5 +1,6 @@
 import stripe
 from fastapi import Depends
+
 from sharkservers.settings import Settings, get_settings
 from sharkservers.subscryptions.services import UserSubscryptionService
 

@@ -38,7 +38,9 @@ class SteamAuthService:
     """  # noqa: E501
 
     def __init__(
-        self, users_service: UserService, players_service: PlayerService,
+        self,
+        users_service: UserService,
+        players_service: PlayerService,
     ) -> None:
         """Initialize the SteamAuthService."""
         self.users_service = users_service

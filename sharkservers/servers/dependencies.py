@@ -1,5 +1,6 @@
 from fastapi import Depends
 from ormar import Model
+
 from sharkservers.servers.services import ChatColorModuleService, ServerService
 
 

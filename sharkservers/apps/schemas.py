@@ -2,6 +2,7 @@
 from typing import Optional
 
 from pydantic import BaseModel
+
 from sharkservers.apps.models import App
 
 AppsOut = App.get_pydantic()

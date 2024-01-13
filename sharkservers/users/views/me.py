@@ -18,8 +18,6 @@ Functions:
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -30,17 +28,26 @@ from fastapi import (
     UploadFile,
 )
 from fastapi_limiter.depends import RateLimiter
+from fastapi_pagination import Page, Params
 
 from sharkservers.auth.dependencies import (
     get_change_account_email_code_service,
     get_current_active_user,
     get_steam_auth_service,
 )
+from sharkservers.auth.schemas import ActivateUserCodeSchema, SteamAuthSchema
+from sharkservers.auth.services.code import CodeService
+from sharkservers.auth.services.steam import SteamAuthService
 from sharkservers.dependencies import get_email_service, get_upload_service
 from sharkservers.enums import ActivationEmailTypeEnum
 from sharkservers.forum.dependencies import get_posts_service, get_threads_service
+from sharkservers.forum.schemas import PostOut, ThreadOut
+from sharkservers.forum.services import PostService, ThreadService
+from sharkservers.schemas import OrderQuery
+from sharkservers.services import EmailService, UploadService
 from sharkservers.settings import Settings, get_settings
 from sharkservers.users.dependencies import get_users_service, get_valid_user_session
+from sharkservers.users.models import User, UserSession
 from sharkservers.users.schemas import (
     ChangeDisplayRoleSchema,
     ChangeEmailSchema,
@@ -50,18 +57,6 @@ from sharkservers.users.schemas import (
     UserOutWithEmail,
     UserSessionOut,
 )
-
-
-from fastapi_pagination import Page, Params
-
-from sharkservers.auth.schemas import ActivateUserCodeSchema, SteamAuthSchema
-from sharkservers.auth.services.code import CodeService
-from sharkservers.auth.services.steam import SteamAuthService
-from sharkservers.forum.schemas import PostOut, ThreadOut
-from sharkservers.forum.services import PostService, ThreadService
-from sharkservers.schemas import OrderQuery
-from sharkservers.services import EmailService, UploadService
-from sharkservers.users.models import User, UserSession
 from sharkservers.users.services import UserService
 
 limiter = RateLimiter(times=1, seconds=60)

@@ -1,6 +1,7 @@
 # apps dependencies
 from fastapi import Depends
 from fastapi_pagination.ext import ormar
+
 from sharkservers.apps.services import AppService
 
 

@@ -1,3 +1,5 @@
+from steam import game_servers as gs
+
 from sharkservers.db import BaseService
 from sharkservers.servers.exceptions import (
     chat_color_not_found_exception,
@@ -5,7 +7,6 @@ from sharkservers.servers.exceptions import (
 )
 from sharkservers.servers.models import ChatColorModule, Server
 from sharkservers.servers.schemas import ServerStatusSchema
-from steam import game_servers as gs
 
 
 class ServerService(BaseService):

@@ -46,6 +46,7 @@ class RolesEventsEnum(str, Enum):
     GET_ONE_PRE = "ROLES_GET_ONE_PRE"
     GET_ONE_POST = "ROLES_GET_ONE_POST"
 
+
 class RolesAdminEventsEnum(str, Enum):
     """Enumeration class for roles admin events."""
 

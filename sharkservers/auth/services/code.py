@@ -66,7 +66,10 @@ class CodeService:
         return f"{self.key}:{code}"
 
     async def create(
-        self, data: any, code_len: int = 8, expire: int = 60 * 60,
+        self,
+        data: any,
+        code_len: int = 8,
+        expire: int = 60 * 60,
     ) -> (str, str):
         """
         Create a code and stores it in Redis with the provided data.

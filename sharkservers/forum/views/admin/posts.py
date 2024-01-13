@@ -2,8 +2,13 @@
 from fastapi import APIRouter, Depends
 from fastapi.params import Security
 from fastapi_events.dispatcher import dispatch
+
 from sharkservers.auth.dependencies import get_admin_user
-from sharkservers.forum.dependencies import get_posts_service, get_valid_post, get_valid_thread
+from sharkservers.forum.dependencies import (
+    get_posts_service,
+    get_valid_post,
+    get_valid_thread,
+)
 from sharkservers.forum.enums import PostAdminEventEnum
 from sharkservers.forum.models import Post
 from sharkservers.forum.schemas import AdminCreatePostSchema, AdminUpdatePostSchema

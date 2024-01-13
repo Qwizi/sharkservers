@@ -11,31 +11,27 @@ Routes:
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from fastapi import APIRouter, Depends
 from fastapi_events.dispatcher import dispatch
 
 from sharkservers.auth.dependencies import get_auth_service
+from sharkservers.auth.schemas import RegisterUserSchema
+from sharkservers.auth.services.auth import AuthService
 from sharkservers.forum.dependencies import (
     get_categories_service,
     get_posts_service,
     get_threads_service,
 )
+from sharkservers.forum.services import CategoryService, PostService, ThreadService
 from sharkservers.roles.dependencies import get_roles_service
+from sharkservers.roles.services import RoleService
 from sharkservers.scopes.dependencies import get_scopes_service
+from sharkservers.scopes.services import ScopeService
 from sharkservers.servers.dependencies import get_servers_service
+from sharkservers.servers.services import ServerService
 from sharkservers.services import MainService
 from sharkservers.settings import Settings, get_settings
 from sharkservers.utils import installed_file_path
-
-
-from sharkservers.auth.schemas import RegisterUserSchema
-from sharkservers.auth.services.auth import AuthService
-from sharkservers.forum.services import CategoryService, PostService, ThreadService
-from sharkservers.roles.services import RoleService
-from sharkservers.scopes.services import ScopeService
-from sharkservers.servers.services import ServerService
 
 router = APIRouter()
 
@@ -46,7 +42,7 @@ async def install(  # noqa: D417
     scopes_service: ScopeService = Depends(get_scopes_service),  # noqa: B008
     roles_service: RoleService = Depends(get_roles_service),  # noqa: B008
     auth_service: AuthService = Depends(get_auth_service),  # noqa: B008
-    settings: Settings = Depends(get_settings), # noqa: B008
+    settings: Settings = Depends(get_settings),  # noqa: B008
 ) -> dict:
     """
     Endpoint for installing the SharkServers application.

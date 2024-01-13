@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import uuid
-from typing import List, Optional
 
 import ormar
 from ormar import post_delete, post_relation_add, post_relation_remove, post_save
@@ -41,7 +40,6 @@ class Category(ormar.Model, DateFieldsMixins):
         default=CategoryTypeEnum.PUBLIC.value,
     )
     threads_count: int = ormar.Integer(default=0)
-
 
 
 class Like(ormar.Model, DateFieldsMixins):

@@ -143,30 +143,30 @@ Administracja SharkServers.pl
         """  # noqa: E501
 
     async def _send_message(self, subject: str, recipients: list, body: str) -> None:
-            """
-            Sends an email message to the specified recipients.
+        """
+        Sends an email message to the specified recipients.
 
-            Args:
-            ----
-                subject (str): The subject of the email.
-                recipients (list): A list of email addresses of the recipients.
-                body (str): The body of the email.
+        Args:
+        ----
+            subject (str): The subject of the email.
+            recipients (list): A list of email addresses of the recipients.
+            body (str): The body of the email.
 
-            Returns:
-            -------
-                None
-            """  # noqa: D401
-            if not await self.checker.check_mx_record(recipients[0].split("@")[1]):
-                logger.info(f"Email {recipients[0]} is invalid")
-                return
-            await self.mailer.send_message(
-                message=MessageSchema(
-                    subject=subject,
-                    recipients=recipients,
-                    body=body,
-                    subtype=MessageType.html,
-                ),
-            )
+        Returns:
+        -------
+            None
+        """  # noqa: D401
+        if not await self.checker.check_mx_record(recipients[0].split("@")[1]):
+            logger.info(f"Email {recipients[0]} is invalid")
+            return
+        await self.mailer.send_message(
+            message=MessageSchema(
+                subject=subject,
+                recipients=recipients,
+                body=body,
+                subtype=MessageType.html,
+            ),
+        )
 
     async def send_confirmation_email(
         self,

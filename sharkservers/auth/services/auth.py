@@ -408,7 +408,8 @@ class AuthService:
         """
         # TODO(Qwizi): replace with secrets (secrets.token_hex(number)[:number])  # noqa: TD003, E501
         return "".join(
-            random.choice(string.digits) for _ in range(number)  # noqa: S311
+            random.choice(string.digits)
+            for _ in range(number)  # noqa: S311
         )
 
     @staticmethod
@@ -467,7 +468,9 @@ class AuthService:
             return msg
 
     async def activate_user(
-        self, code: str, code_service: CodeService,
+        self,
+        code: str,
+        code_service: CodeService,
     ) -> tuple[bool, User]:
         """
         Activate a user based on the provided activation code.
@@ -493,59 +496,59 @@ class AuthService:
         return True, user
 
     async def confirm_change_email(self, code_service: CodeService, code: str) -> User:
-            """
-            Confirm the change of email for a user.
+        """
+        Confirm the change of email for a user.
 
-            Args:
-            ----
-                code_service (CodeService): The code service used to retrieve the user data.
-                code (str): The activation code.
+        Args:
+        ----
+            code_service (CodeService): The code service used to retrieve the user data.
+            code (str): The activation code.
 
-            Returns:
-            -------
-                User: The updated user object.
+        Returns:
+        -------
+            User: The updated user object.
 
-            Raises:
-            ------
-                InvalidActivationCodeException: If the activation code is invalid.
-            """  # noqa: E501
-            user_data: dict = await code_service.get(code)
-            if not user_data:
-                raise invalid_activation_code_exception
-            user_id = int(user_data.get("user_id"))
-            email = user_data.get("email")
-            user = await self.users_service.get_one(id=user_id)
-            await user.update(email=email)
-            return user
+        Raises:
+        ------
+            InvalidActivationCodeException: If the activation code is invalid.
+        """  # noqa: E501
+        user_data: dict = await code_service.get(code)
+        if not user_data:
+            raise invalid_activation_code_exception
+        user_id = int(user_data.get("user_id"))
+        email = user_data.get("email")
+        user = await self.users_service.get_one(id=user_id)
+        await user.update(email=email)
+        return user
 
     async def reset_password(
-            self,
-            reset_password_data: ResetPasswordSchema,
-            code_service: CodeService,
-        ) -> bool:
-            """
-            Reset the password for a user.
+        self,
+        reset_password_data: ResetPasswordSchema,
+        code_service: CodeService,
+    ) -> bool:
+        """
+        Reset the password for a user.
 
-            Args:
-            ----
-                reset_password_data (ResetPasswordSchema): The data required to reset the password.
-                code_service (CodeService): The service used to validate the activation code.
+        Args:
+        ----
+            reset_password_data (ResetPasswordSchema): The data required to reset the password.
+            code_service (CodeService): The service used to validate the activation code.
 
-            Returns:
-            -------
-                bool: True if the password was successfully reset, False otherwise.
-            """  # noqa: E501
-            email = await code_service.get(reset_password_data.code)
-            if not email:
-                raise invalid_activation_code_exception
-            user = await self.users_service.get_one(email=email)
-            new_password = get_password_hash(reset_password_data.password)
-            await user.update(
-                password=new_password,
-                secret_salt=self.generate_secret_salt(),
-            )
-            await code_service.delete(reset_password_data.code)
-            return True
+        Returns:
+        -------
+            bool: True if the password was successfully reset, False otherwise.
+        """  # noqa: E501
+        email = await code_service.get(reset_password_data.code)
+        if not email:
+            raise invalid_activation_code_exception
+        user = await self.users_service.get_one(email=email)
+        new_password = get_password_hash(reset_password_data.password)
+        await user.update(
+            password=new_password,
+            secret_salt=self.generate_secret_salt(),
+        )
+        await code_service.delete(reset_password_data.code)
+        return True
 
     async def get_user_agent(self, request: Request) -> str:
         """
