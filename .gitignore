@@ -166,4 +166,11 @@ cython_debug/
 # VSCode workspace files
 *.code-workspace
 
-sharkservers/installed
+test.db
+installed
+openapi.json
+static/uploads/*
+.idea/*
+.vscode/*
+
+requests/*
