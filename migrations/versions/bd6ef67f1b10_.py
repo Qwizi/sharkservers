@@ -1,14 +1,14 @@
-"""empty message
+"""
+empty message
 
 Revision ID: bd6ef67f1b10
-Revises: 
+Revises:
 Create Date: 2023-11-26 17:12:28.571224
 
 """
-from alembic import op
-import sqlalchemy as sa
 import ormar
-
+import sqlalchemy as sa
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "bd6ef67f1b10"
@@ -147,7 +147,9 @@ def upgrade() -> None:
         sa.Column("port", sa.Integer(), nullable=False),
         sa.Column("admin_role", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["admin_role"], ["roles.id"], name="fk_servers_roles_id_admin_role"
+            ["admin_role"],
+            ["roles.id"],
+            name="fk_servers_roles_id_admin_role",
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -164,10 +166,14 @@ def upgrade() -> None:
         sa.Column("name_color", sa.String(length=8), nullable=False),
         sa.Column("text_color", sa.String(length=8), nullable=False),
         sa.ForeignKeyConstraint(
-            ["player"], ["players.id"], name="fk_chat_color_module_players_id_player"
+            ["player"],
+            ["players.id"],
+            name="fk_chat_color_module_players_id_player",
         ),
         sa.ForeignKeyConstraint(
-            ["server"], ["servers.id"], name="fk_chat_color_module_servers_id_server"
+            ["server"],
+            ["servers.id"],
+            name="fk_chat_color_module_servers_id_server",
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("flag"),
@@ -193,10 +199,14 @@ def upgrade() -> None:
         sa.Column("likes_count", sa.Integer(), nullable=True),
         sa.Column("player", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["display_role"], ["roles.id"], name="fk_users_roles_id_display_role"
+            ["display_role"],
+            ["roles.id"],
+            name="fk_users_roles_id_display_role",
         ),
         sa.ForeignKeyConstraint(
-            ["player"], ["players.id"], name="fk_users_players_id_player"
+            ["player"],
+            ["players.id"],
+            name="fk_users_players_id_player",
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("email"),
@@ -228,7 +238,9 @@ def upgrade() -> None:
         sa.Column("ban_time", sa.DateTime(timezone=True), nullable=True),
         sa.Column("banned_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["banned_by"], ["users.id"], name="fk_banned_users_id_banned_by"
+            ["banned_by"],
+            ["users.id"],
+            name="fk_banned_users_id_banned_by",
         ),
         sa.ForeignKeyConstraint(["user"], ["users.id"], name="fk_banned_users_id_user"),
         sa.PrimaryKeyConstraint("id"),
@@ -241,7 +253,9 @@ def upgrade() -> None:
         sa.Column("author", sa.Integer(), nullable=True),
         sa.Column("message", sa.String(length=500), nullable=False),
         sa.ForeignKeyConstraint(
-            ["author"], ["users.id"], name="fk_chats_users_id_author"
+            ["author"],
+            ["users.id"],
+            name="fk_chats_users_id_author",
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -254,7 +268,9 @@ def upgrade() -> None:
         sa.Column("content", sa.Text(), nullable=False),
         sa.Column("likes_count", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["author"], ["users.id"], name="fk_forum_posts_users_id_author"
+            ["author"],
+            ["users.id"],
+            name="fk_forum_posts_users_id_author",
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -265,7 +281,9 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("author", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["author"], ["users.id"], name="fk_forum_reputation_users_id_author"
+            ["author"],
+            ["users.id"],
+            name="fk_forum_reputation_users_id_author",
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -284,7 +302,9 @@ def upgrade() -> None:
         sa.Column("post_count", sa.Integer(), nullable=True),
         sa.Column("server", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["author"], ["users.id"], name="fk_forum_threads_users_id_author"
+            ["author"],
+            ["users.id"],
+            name="fk_forum_threads_users_id_author",
         ),
         sa.ForeignKeyConstraint(
             ["category"],
@@ -292,7 +312,9 @@ def upgrade() -> None:
             name="fk_forum_threads_forum_categories_id_category",
         ),
         sa.ForeignKeyConstraint(
-            ["server"], ["servers.id"], name="fk_forum_threads_servers_id_server"
+            ["server"],
+            ["servers.id"],
+            name="fk_forum_threads_servers_id_server",
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -313,7 +335,9 @@ def upgrade() -> None:
             name="fk_user_subscription_roles_id_old_display_role",
         ),
         sa.ForeignKeyConstraint(
-            ["user"], ["users.id"], name="fk_user_subscription_users_id_user"
+            ["user"],
+            ["users.id"],
+            name="fk_user_subscription_users_id_user",
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("stripe_customer_id"),

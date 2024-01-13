@@ -3,14 +3,14 @@
 # https://github.com/bswck/skeleton/tree/57cf553/project/pyproject.toml.jinja
 
 [tool.poetry]
-name = "sharkservers"
+name = "sharkservers-api"
 version = "0.0.0"
-description = "sharkservers"
+description = "sharkservers-api"
 authors = ["Qwizi <ciolek.adrian@protonmail.com>"]
 license = "GPL-3.0"
 readme = "README.md"
 packages = [{ include = "sharkservers/" }]
-homepage = "https://github.com/Qwizi/sharkservers"
+homepage = "https://github.com/Qwizi/sharkservers-api"
 
 [tool.poetry.urls]
 Documentation = "https://sharkservers.readthedocs.io/en/latest/"
@@ -19,8 +19,31 @@ Coverage = "https://coverage-badge.samuelcolvin.workers.dev/redirect/Qwizi/shark
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.13"
-
-[tool.poetry.group.dev.dependencies]
+uvicorn = {extras = ["all"], version = "^0.25.0"}
+fastapi-limiter = "^0.1.6"
+ormar = "^0.12.2"
+fastapi = "0.109.0"
+steam = "^1.4.4"
+fastapi-pagination = "^0.12.14"
+fastapi-mail = "1.3.1"
+asyncpg = "^0.29.0"
+psycopg2-binary = "^2.9.9"
+aiocron = "^1.8"
+redis = "^5.0.1"
+python-multipart = "^0.0.6"
+httpx = "0.23.0"
+sourcemod-api-client = "^0.0.1"
+wsproto = "^1.2.0"
+fastapi-events = "^0.10.1"
+python-jose = "^3.3.0"
+passlib = "^1.7.4"
+fakeredis = "^2.20.1"
+alembic = "^1.13.1"
+python-dotenv = "^1.0.0"
+pillow = "^10.2.0"
+broadcaster = "^0.2.0"
+asyncio-redis = "^0.16.0"
+stripe = "^7.12.0"
 
 [tool.poetry.group.dev-skeleton.dependencies]
 # This dependency group was generated from bswck/skeleton@57cf553.
@@ -104,7 +127,10 @@ ignore = [
     # Description: Line contains TODO, consider resolving the issue
     # Rationale: Not appropriate for the project.
     "FIX002",
+    "TCH001",
 ]
+[tool.ruff.lint.flake8-type-checking]
+runtime-evaluated-base-classes = ["pydantic.BaseModel", "sqlalchemy.orm.DeclarativeBase"]
 
 [tool.mypy]
 strict = true

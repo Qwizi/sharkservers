@@ -1,7 +1,7 @@
 """
-sharkservers.
+sharkservers_api.
 
-sharkservers
+sharkservers-api
 
 (C) 2023-present Adrian Ciołek (Qwizi)
 """
