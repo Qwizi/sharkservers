@@ -72,7 +72,7 @@ determine_project_path() {
 
 ensure_gh_environment() {
     # Ensure that the GitHub environment exists
-    silent echo "$(jq -n '{"deployment_branch_policy": {"protected_branches": false,"custom_branch_policies": true}}' | gh api -H "Accept: application/vnd.github+json" -X PUT "/repos/Qwizi/sharkservers/environments/$1" --input -)" || error 0 "Failed to ensure GitHub environment $BLUE$1$NC exists."
+    silent echo "$(jq -n '{"deployment_branch_policy": {"protected_branches": false,"custom_branch_policies": true}}' | gh api -H "Accept: application/vnd.github+json" -X PUT "/repos/Qwizi/sharkservers-api/environments/$1" --input -)" || error 0 "Failed to ensure GitHub environment $BLUE$1$NC exists."
 }
 
 supply_keys() {

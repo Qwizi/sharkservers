@@ -13,9 +13,9 @@ packages = [{ include = "sharkservers/" }]
 homepage = "https://github.com/Qwizi/sharkservers-api"
 
 [tool.poetry.urls]
-Documentation = "https://sharkservers.readthedocs.io/en/latest/"
-Issues = "https://github.com/Qwizi/sharkservers/issues"
-Coverage = "https://coverage-badge.samuelcolvin.workers.dev/redirect/Qwizi/sharkservers"
+Documentation = "https://sharkservers-api.readthedocs.io/en/latest/"
+Issues = "https://github.com/Qwizi/sharkservers-api/issues"
+Coverage = "https://coverage-badge.samuelcolvin.workers.dev/redirect/Qwizi/sharkservers-api"
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.13"
@@ -52,8 +52,12 @@ stripe = "^7.12.0"
 mypy = "^1.7.0"
 ruff = "^0.1.11"
 towncrier = "^23.11.0"
+pytest = "^7.4.3"
+coverage = "^7.3.2"
 poethepoet = "^0.24.3"
 pre-commit = "^3.5.0"
+smokeshow = "^0.4.0"
+
 keyring = "^24.3.0"
 [tool.poetry.group.docs]
 optional = true
@@ -64,9 +68,11 @@ mkdocs-material = ">=8.2,<10.0.0"
 mkdocstrings = { version = ">=0.19.0", extras = ["python"] }
 
 [tool.poe.tasks]
+test = "pytest -v"
 lint = "ruff check ."
 skeleton = "scripts/skeleton.57cf553.bash"
 check = [
+    { ref="test" },
     { ref="lint" },
 ]
 release.script = "scripts.release:main"
@@ -144,8 +150,8 @@ package = "sharkservers"
 filename = "CHANGELOG.md"
 start_string = "<!-- insertion marker -->\n"
 underlines = ["", "", ""]  # We use Markdown
-title_format = "## [{version}](https://github.com/Qwizi/sharkservers/tree/{version}) ({project_date})"
-issue_format = "[#{issue}](https://github.com/Qwizi/sharkservers/issues/{issue})"
+title_format = "## [{version}](https://github.com/Qwizi/sharkservers-api/tree/{version}) ({project_date})"
+issue_format = "[#{issue}](https://github.com/Qwizi/sharkservers-api/issues/{issue})"
 
 [[tool.towncrier.type]]
 directory = "security"

@@ -2,11 +2,11 @@
 # Instead of changing this particular file, you might want to alter the template:
 # https://github.com/bswck/skeleton/tree/57cf553/project/%23%25%20if%20docs%20%25%23mkdocs.yml%23%25%20endif%20%25%23.jinja
 
-site_name: "sharkservers"
-site_description: "sharkservers"
-site_url: "https://sharkservers.readthedocs.io/en/latest/"
-repo_url: "https://github.com/Qwizi/sharkservers"
-repo_name: "Qwizi/sharkservers"
+site_name: "sharkservers-api"
+site_description: "sharkservers-api"
+site_url: "https://sharkservers-api.readthedocs.io/en/latest/"
+repo_url: "https://github.com/Qwizi/sharkservers-api"
+repo_name: "Qwizi/sharkservers-api"
 watch:
 - "sharkservers"
 
