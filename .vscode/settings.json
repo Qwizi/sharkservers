@@ -1,5 +1,0 @@
-{
-    "python.analysis.autoImportCompletions": true,
-    "ruff.lint.args": ["--config=/home/qwizi/Projects/sharkservers-api/pyproject.toml"],
-    "ruff.format.args": ["--config=/home/qwizi/Projects/sharkservers-api/pyproject.toml"]
-}
