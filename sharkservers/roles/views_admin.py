@@ -40,8 +40,9 @@ async def admin_get_roles(
 
 
 @router.get(
-    "/{role_id}", dependencies=[Security(get_admin_user, scopes=["roles:retrieve"])]
-)  # noqa: E501
+    "/{role_id}",
+    dependencies=[Security(get_admin_user, scopes=["roles:retrieve"])],
+)
 async def admin_get_role(
     role: Role = Depends(get_valid_role),  # noqa: B008
 ) -> RoleOutWithScopes:
@@ -83,8 +84,9 @@ async def admin_create_role(
 
 
 @router.delete(
-    "/{role_id}", dependencies=[Security(get_admin_user, scopes=["roles:delete"])]
-)  # noqa: E501
+    "/{role_id}",
+    dependencies=[Security(get_admin_user, scopes=["roles:delete"])],
+)
 async def admin_delete_role(
     role: Role = Depends(get_valid_role),  # noqa: B008
     roles_service: RoleService = Depends(get_roles_service),  # noqa: B008
@@ -107,8 +109,9 @@ async def admin_delete_role(
 
 
 @router.put(
-    "/{role_id}", dependencies=[Security(get_admin_user, scopes=["roles:update"])]
-)  # noqa: E501
+    "/{role_id}",
+    dependencies=[Security(get_admin_user, scopes=["roles:update"])],
+)
 async def admin_update_role(
     update_role_data: UpdateRoleSchema,
     role: Role = Depends(get_valid_role),  # noqa: B008

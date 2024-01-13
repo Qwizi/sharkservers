@@ -407,10 +407,7 @@ class AuthService:
             str: The generated code.
         """
         # TODO(Qwizi): replace with secrets (secrets.token_hex(number)[:number])  # noqa: TD003, E501
-        return "".join(
-            random.choice(string.digits)
-            for _ in range(number)  # noqa: S311
-        )
+        return "".join(random.choice(string.digits) for _ in range(number))
 
     @staticmethod
     def generate_secret_salt() -> str:
@@ -511,7 +508,7 @@ class AuthService:
         Raises:
         ------
             InvalidActivationCodeException: If the activation code is invalid.
-        """  # noqa: E501
+        """
         user_data: dict = await code_service.get(code)
         if not user_data:
             raise invalid_activation_code_exception

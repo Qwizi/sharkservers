@@ -32,7 +32,8 @@ async def admin_get_scopes(
 
 
 @router.get(
-    "/{scope_id}", dependencies=[Security(get_admin_user, scopes="scopes:retrieve")]
+    "/{scope_id}",
+    dependencies=[Security(get_admin_user, scopes="scopes:retrieve")],
 )
 async def admin_get_scope(
     scope: Scope = Depends(get_valid_scope),  # noqa: B008
@@ -72,7 +73,8 @@ async def admin_create_scope(
 
 
 @router.delete(
-    "/{scope_id}", dependencies=[Security(get_admin_user, scopes="scopes:delete")]
+    "/{scope_id}",
+    dependencies=[Security(get_admin_user, scopes="scopes:delete")],
 )
 async def admin_delete_scope(
     scope: Scope = Depends(get_valid_scope),  # noqa: B008
@@ -94,7 +96,8 @@ async def admin_delete_scope(
 
 
 @router.put(
-    "/{scope_id}", dependencies=[Security(get_admin_user, scopes="scopes:update")]
+    "/{scope_id}",
+    dependencies=[Security(get_admin_user, scopes="scopes:update")],
 )
 async def admin_update_scope(
     update_scope_data: UpdateScopeSchema,

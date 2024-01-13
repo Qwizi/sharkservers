@@ -89,8 +89,9 @@ async def admin_create_player(
 
 
 @router.delete(
-    "/{profile_id}", dependencies=[Security(get_admin_user, scopes=["players:all"])]
-)  # noqa: E501
+    "/{profile_id}",
+    dependencies=[Security(get_admin_user, scopes=["players:all"])],
+)
 async def admin_delete_steam_profile(
     profile_id: int,
 ) -> PlayerOut:

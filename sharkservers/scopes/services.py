@@ -74,8 +74,10 @@ class ScopeService(BaseService):
         return self
 
     def add_extra_scope(
-        self, app_name: str, scope_values: list[tuple[str, str, str]]
-    ) -> ScopeService:  # noqa: E501
+        self,
+        app_name: str,
+        scope_values: list[tuple[str, str, str]],
+    ) -> ScopeService:
         """
         Add extra scope.
 
@@ -221,12 +223,9 @@ class ScopeService(BaseService):
         scopes = None
         if role_id == ProtectedDefaultRolesEnum.ADMIN.value:
             scopes = await self.Meta.model.objects.all()
-        elif (
-            role_id
-            in (
-                ProtectedDefaultRolesEnum.USER.value,
-                ProtectedDefaultRolesEnum.VIP.value,
-            )  # noqa: E501
+        elif role_id in (
+            ProtectedDefaultRolesEnum.USER.value,
+            ProtectedDefaultRolesEnum.VIP.value,
         ):
             scopes = await self.Meta.model.objects.filter(
                 or_(
