@@ -10,7 +10,7 @@ Exceptions:
 - user_already_banned_exception: Raised when a user is already banned.
 - user_not_banned_exception: Raised when a user is not banned.
 - user_email_is_the_same_exception: Raised when a user tries to change their email to the same email.
-"""  # noqa: D404, E501, EXE002
+"""  # noqa: D404
 from fastapi import HTTPException
 from starlette import status
 

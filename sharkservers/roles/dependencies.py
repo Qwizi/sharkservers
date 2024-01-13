@@ -1,4 +1,4 @@
-"""Dependencies for roles module."""  # noqa: EXE002
+"""Dependencies for roles module."""
 
 from fastapi import Depends
 from ormar import Model
@@ -13,7 +13,7 @@ async def get_roles_service() -> RoleService:
 
 async def get_valid_role(
     role_id: int,
-    roles_service: RoleService = Depends(get_roles_service),  # noqa: B008
+    roles_service: RoleService = Depends(get_roles_service),
 ) -> Model:
     """
     Get a valid role by its ID.
@@ -27,5 +27,5 @@ async def get_valid_role(
     -------
         Model: The valid role model.
 
-    """  # noqa: E501
+    """
     return await roles_service.get_one(id=role_id, related=["scopes"])

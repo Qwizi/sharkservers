@@ -1,4 +1,4 @@
-"""Scopes views."""  # noqa: EXE002
+"""Scopes views."""
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends
@@ -13,8 +13,8 @@ router = APIRouter()
 
 @router.get("", response_model_exclude_none=True)
 async def get_all_scopes(
-    params: Params = Depends(),  # noqa: B008
-    scopes_service: ScopeService = Depends(get_scopes_service),  # noqa: B008
+    params: Params = Depends(),
+    scopes_service: ScopeService = Depends(get_scopes_service),
     role_id: int | None = None,
 ) -> Page[ScopeOut]:
     """
@@ -29,7 +29,7 @@ async def get_all_scopes(
     Returns:
     -------
         Page[ScopeOut]: The list of scopes.
-    """  # noqa: E501
+    """
     scopes = []
     if role_id:
         scopes = await scopes_service.get_all(

@@ -1,4 +1,4 @@
-"""Player services."""  # noqa: EXE002
+"""Player services."""
 from __future__ import annotations
 
 import httpx
@@ -32,7 +32,7 @@ class SteamRepService(BaseService):
         get_data(steamid64: str) -> tuple[str, bool]: Get data from SteamRep API for a given steamid64.
         create_profile(steamid64: str) -> SteamRepProfile: Create a SteamRep profile for a given steamid64.
 
-    """  # noqa: E501
+    """
 
     api_url = "https://steamrep.com/api/beta4/reputation/"
 
@@ -53,7 +53,7 @@ class SteamRepService(BaseService):
         Returns:
         -------
             tuple: A tuple containing the profile URL and a boolean indicating if the player is a scammer.
-        """  # noqa: E501
+        """
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 self.api_url + steamid64 + "?json=1",
@@ -106,7 +106,7 @@ class PlayerService(BaseService):
     -------
         get_steam_player_info(steamid64: str) -> SteamPlayer: Get Steam player information for a given steamid64.
         create_player(steamid64: str) -> Player: Create a player with the given steamid64.
-    """  # noqa: E501
+    """
 
     steam_api_key: str = None
     steam_api: WebAPI = None

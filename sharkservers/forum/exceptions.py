@@ -1,4 +1,4 @@
-"""Forum exceptions."""  # noqa: EXE002
+"""Forum exceptions."""
 from fastapi import HTTPException
 from starlette import status
 

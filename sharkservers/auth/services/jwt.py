@@ -2,7 +2,7 @@
 JWT Service.
 
 This module contains JWTService class which is responsible for encoding and decoding JWT tokens.
-"""  # noqa: EXE002
+"""
 
 from datetime import datetime, timedelta
 

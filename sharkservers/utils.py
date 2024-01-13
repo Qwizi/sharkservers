@@ -12,7 +12,7 @@ Functions:
 
 Context Managers:
 - app_lifespan: Manages the lifespan of the FastAPI application.
-"""  # noqa: E501
+"""
 import os
 from contextlib import asynccontextmanager
 from typing import AsyncIterator

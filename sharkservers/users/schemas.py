@@ -5,7 +5,7 @@ It includes Pydantic models for various user-related operations such as creating
 
 The module also defines query parameters for filtering and ordering user data.
 
-"""  # noqa: E501, EXE002
+"""
 from __future__ import annotations
 
 from fastapi import Query

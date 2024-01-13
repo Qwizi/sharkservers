@@ -1,4 +1,4 @@
-"""Scopes services."""  # noqa: EXE002
+"""Scopes services."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

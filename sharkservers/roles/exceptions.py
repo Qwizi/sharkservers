@@ -1,4 +1,4 @@
-"""Exceptions for roles module."""  # noqa: EXE002
+"""Exceptions for roles module."""
 
 from fastapi import status
 from fastapi.exceptions import HTTPException

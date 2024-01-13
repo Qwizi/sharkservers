@@ -1,4 +1,4 @@
-"""Schemas for the players module."""  # noqa: EXE002
+"""Schemas for the players module."""
 from __future__ import annotations
 
 from pydantic import BaseModel
@@ -15,7 +15,7 @@ class PlayerOut(player_out):
 class SteamPlayer(BaseModel):
     """Steam player schema."""
 
-    id: int | None = None  # noqa: A003
+    id: int | None = None
     username: str | None = None
     steamid64: str | None = None
     steamid32: str | None = None

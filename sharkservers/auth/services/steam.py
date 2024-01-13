@@ -7,7 +7,7 @@ Classes:
 --------
     SteamAuthService: Service class for authenticating users using Steam OpenID.
 
-"""  # noqa: EXE002, E501
+"""
 
 import httpx
 from fastapi import HTTPException
@@ -35,7 +35,7 @@ class SteamAuthService:
         format_params: Format the Steam authentication parameters into a dict.
         is_valid_params: Check if the provided Steam authentication parameters are valid.
         authenticate: Authenticate a user using Steam authentication.
-    """  # noqa: E501
+    """
 
     def __init__(
         self,
@@ -122,7 +122,7 @@ class SteamAuthService:
         Raises:
         ------
             HTTPException: If the Steam profile cannot be authenticated or if the user is already connected to a profile.
-        """  # noqa: E501
+        """
         if not await self.is_valid_params(params):
             raise HTTPException(400, "Cannot authenticate steam profile")
         steamid64 = self.get_steamid_from_url(params.openid_claimed_id)

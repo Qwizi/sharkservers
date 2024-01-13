@@ -133,6 +133,10 @@ ignore = [
     # Rationale: Not appropriate for the project.
     "FIX002",
     "TCH001",
+    "TCH002",
+    "E501",
+    "EXE002",
+    "B008",
 ]
 [tool.ruff.lint.flake8-type-checking]
 runtime-evaluated-base-classes = ["pydantic.BaseModel", "sqlalchemy.orm.DeclarativeBase"]

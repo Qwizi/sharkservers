@@ -2,7 +2,7 @@
 Code service.
 
 Code service is a service that allows you to create a code and store it in redis. It is used for example to create a code for email confirmation.
-"""  # noqa: EXE002, E501
+"""
 
 import random
 import string
@@ -83,7 +83,7 @@ class CodeService:
         Returns:
         -------
             Tuple[str, str]: A tuple containing the code key and the stored data.
-        """  # noqa: E501
+        """
         code = self.generate(number=code_len)
         redis_key = self.get_redis_key(code)
         if await self.redis.exists(redis_key):

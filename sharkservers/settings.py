@@ -1,7 +1,4 @@
-"""
-Module contains the Settings class, which is responsible for storing and retrieving
-the application's configuration settings.
-"""
+"""Settings module."""
 from __future__ import annotations
 
 from functools import lru_cache
@@ -50,7 +47,7 @@ class Settings(BaseSettings):
     get_database_url(): Returns the database URL based on the configuration settings.
     get_database_url_sync(): Returns the synchronous database URL based on the configuration settings.
     get_redis_url(): Returns the Redis URL based on the configuration settings.
-    """  # noqa: E501
+    """
 
     POSTGRES_HOST: str = ""
     POSTGRES_DB: str = ""
@@ -83,6 +80,8 @@ class Settings(BaseSettings):
     SITE_URL: str = "http://localhost:8080"
 
     class Config:
+        """The Config class represents the configuration settings for the Settings class."""
+
         env_file = ".env"
 
     def get_database_url(self) -> str:

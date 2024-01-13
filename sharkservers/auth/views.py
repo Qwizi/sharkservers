@@ -1,4 +1,4 @@
-"""Module contains the API endpoints related to authentication."""  # noqa: EXE002
+"""Module contains the API endpoints related to authentication."""
 from __future__ import annotations
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Request
@@ -49,12 +49,12 @@ async def register(  # noqa: PLR0913
     user_data: RegisterUserSchema,
     background_tasks: BackgroundTasks,
     request: Request,
-    auth_service: AuthService = Depends(get_auth_service),  # noqa: B008
+    auth_service: AuthService = Depends(get_auth_service),
     code_service: CodeService = Depends(
         get_activation_account_code_service,
     ),
-    email_service: EmailService = Depends(get_email_service),  # noqa: B008
-    settings: Settings = Depends(get_settings),  # noqa: B008
+    email_service: EmailService = Depends(get_email_service),
+    settings: Settings = Depends(get_settings),
 ) -> UserOut:
     """
     Register a new user.
@@ -72,7 +72,7 @@ async def register(  # noqa: PLR0913
     Returns:
     -------
         UserOut: The registered user.
-    """  # noqa: E501
+    """
     registered_user: User = await auth_service.register(
         user_data=user_data,
         request=request,
@@ -98,12 +98,12 @@ async def register(  # noqa: PLR0913
 @router.post("/token", dependencies=[Depends(limiter)])
 async def login_user(
     request: Request,
-    form_data: OAuth2PasswordRequestForm = Depends(),  # noqa: B008
-    access_token_service: JWTService = Depends(get_access_token_service),  # noqa: B008
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    access_token_service: JWTService = Depends(get_access_token_service),
     refresh_token_service: JWTService = Depends(
         get_refresh_token_service,
     ),
-    auth_service: AuthService = Depends(get_auth_service),  # noqa: B008
+    auth_service: AuthService = Depends(get_auth_service),
 ) -> TokenSchema:
     """
     Log in a user and returns a token.
@@ -119,7 +119,7 @@ async def login_user(
     Returns:
     -------
         TokenSchema: The token schema containing the access token.
-    """  # noqa: E501
+    """
     user_ip = request.client.host
     user_agent = request.headers.get("User-Agent", None)
     token, user = await auth_service.login(
@@ -135,11 +135,11 @@ async def login_user(
 @router.post("/token/refresh")
 async def get_access_token_from_refresh_token(
     token_data: RefreshTokenSchema,
-    access_token_service: JWTService = Depends(get_access_token_service),  # noqa: B008
+    access_token_service: JWTService = Depends(get_access_token_service),
     refresh_token_service: JWTService = Depends(
         get_refresh_token_service,
     ),
-    auth_service: AuthService = Depends(get_auth_service),  # noqa: B008
+    auth_service: AuthService = Depends(get_auth_service),
 ) -> TokenSchema:
     """
     Retrieve an access token from a refresh token.
@@ -154,7 +154,7 @@ async def get_access_token_from_refresh_token(
     Returns:
     -------
         TokenSchema: The access token.
-    """  # noqa: E501
+    """
     token, user = await auth_service.create_access_token_from_refresh_token(
         token_data,
         jwt_access_token_service=access_token_service,
@@ -165,8 +165,8 @@ async def get_access_token_from_refresh_token(
 
 @router.post("/logout")
 async def logout_user(
-    user: User = Depends(get_current_active_user),  # noqa: B008
-    auth_service: AuthService = Depends(get_auth_service),  # noqa: B008
+    user: User = Depends(get_current_active_user),
+    auth_service: AuthService = Depends(get_auth_service),
 ) -> UserOut:
     """
     Log out the user.
@@ -186,7 +186,7 @@ async def logout_user(
 @router.post("/activate", dependencies=[Depends(limiter)])
 async def activate_user(
     activate_code_data: ActivateUserCodeSchema,
-    auth_service: AuthService = Depends(get_auth_service),  # noqa: B008
+    auth_service: AuthService = Depends(get_auth_service),
     activate_code_service: CodeService = Depends(
         get_activation_account_code_service,
     ),
@@ -221,11 +221,11 @@ async def activate_user(
 async def resend_activate_code(
     data: ResendActivationCodeSchema,
     background_tasks: BackgroundTasks,
-    auth_service: AuthService = Depends(get_auth_service),  # noqa: B008
+    auth_service: AuthService = Depends(get_auth_service),
     code_service: CodeService = Depends(
         get_activation_account_code_service,
     ),
-    email_service: EmailService = Depends(get_email_service),  # noqa: B008
+    email_service: EmailService = Depends(get_email_service),
 ) -> dict[str, str]:
     """
     Resends the activation code to the specified email address.
@@ -241,7 +241,7 @@ async def resend_activate_code(
     Returns:
     -------
         dict[str, str]: A dictionary with a message indicating if the email is correct and an email with the activation code will be sent.
-    """  # noqa: E501
+    """
     background_tasks.add_task(
         auth_service.resend_activation_code,
         data.email,
@@ -257,7 +257,7 @@ async def resend_activate_code(
 async def forgot_password_request(
     data: ResendActivationCodeSchema,
     background_tasks: BackgroundTasks,
-    email_service: EmailService = Depends(get_email_service),  # noqa: B008
+    email_service: EmailService = Depends(get_email_service),
     code_service: CodeService = Depends(
         get_reset_account_password_code_service,
     ),
@@ -276,7 +276,7 @@ async def forgot_password_request(
     Returns:
     -------
         dict[str, str]: A dictionary with a message indicating that an email with the reset code will be sent if the email is correct.
-    """  # noqa: E501
+    """
     code, _data = await code_service.create(data.email, code_len=5, expire=900)
     background_tasks.add_task(
         email_service.send_confirmation_email,
@@ -290,7 +290,7 @@ async def forgot_password_request(
 @router.post("/reset-password", dependencies=[Depends(limiter)])
 async def reset_password(
     data: ResetPasswordSchema,
-    auth_service: AuthService = Depends(get_auth_service),  # noqa: B008
+    auth_service: AuthService = Depends(get_auth_service),
     code_service: CodeService = Depends(
         get_reset_account_password_code_service,
     ),

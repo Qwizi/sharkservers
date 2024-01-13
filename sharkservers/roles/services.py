@@ -1,4 +1,4 @@
-"""Services for roles."""  # noqa: EXE002
+"""Services for roles."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

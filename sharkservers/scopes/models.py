@@ -1,4 +1,4 @@
-"""Scopes models."""  # noqa: EXE002
+"""Scopes models."""
 import ormar
 
 from sharkservers.db import BaseMeta
@@ -28,7 +28,7 @@ class Scope(ormar.Model):
 
         tablename = "scopes"
 
-    id = ormar.Integer(primary_key=True)  # noqa: A003
+    id = ormar.Integer(primary_key=True)
     app_name = ormar.String(max_length=64)
     value = ormar.String(max_length=120)
     description = ormar.String(max_length=256)
@@ -51,7 +51,7 @@ class Scope(ormar.Model):
         Returns
         -------
             tuple: A tuple containing the formatted app name and value, along with the description.
-        """  # noqa: E501
+        """
         return f"{self.app_name}:{self.value}", self.description
 
     def get_dict(self) -> dict:

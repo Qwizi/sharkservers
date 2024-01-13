@@ -5,7 +5,7 @@ Enums:
 - RedisAuthKeyEnum: The keys for the redis auth codes.
 - AuthExceptionsDetailEnum: The detail messages for the auth exceptions.
 - AuthEventsEnum: The events for the auth module.
-"""  # noqa: EXE002
+"""
 from enum import Enum
 
 

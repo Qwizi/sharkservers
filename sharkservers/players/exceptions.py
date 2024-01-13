@@ -1,4 +1,4 @@
-"""Players exceptions."""  # noqa: EXE002
+"""Players exceptions."""
 from fastapi import HTTPException
 from starlette import status
 

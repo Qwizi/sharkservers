@@ -2,7 +2,7 @@
 Main moduke of the SharkServers API.
 
 It contains the FastAPI application setup, including routes, middlewares, and WebSocket endpoints.
-"""  # noqa: E501, EXE002
+"""
 
 import os
 from typing import TYPE_CHECKING
@@ -266,8 +266,8 @@ def create_app() -> FastAPI:
     @_app.websocket("/ws")
     async def websocket_endpoint(
         websocket: WebSocket,
-        chat_service: ChatService = Depends(get_chat_service),  # noqa: B008
-        author=Depends(ws_get_current_user),  # noqa: B008
+        chat_service: ChatService = Depends(get_chat_service),
+        author=Depends(ws_get_current_user),
     ) -> None:
         try:
             logger.info(_app.state.broadcast)

@@ -1,9 +1,9 @@
-"""Module contains the enum classes used in the Sharkservers API for users."""  # noqa: EXE002
+"""Module contains the enum classes used in the Sharkservers API for users."""
 from enum import Enum
 
 
 class UsersExceptionsDetailEnum(str, Enum):
-    """Represents the detail of the exceptions raised in the Sharkservers API for users."""  # noqa: E501
+    """Represents the detail of the exceptions raised in the Sharkservers API for users."""
 
     USER_NOT_FOUND = "User not found"
     USERNAME_NOT_AVAILABLE = "Username not available"

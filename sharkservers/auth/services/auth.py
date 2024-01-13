@@ -6,7 +6,7 @@ Module responsible for authentication and authorization.
 Classes:
 - OAuth2ClientSecretRequestForm: Represents a form for requesting OAuth2 client secret.
 - AuthService: Represents the service responsible for authentication and authorization operations.
-"""  # noqa: E501, EXE002
+"""
 from __future__ import annotations
 
 import random
@@ -101,7 +101,7 @@ class AuthService:
         confirm_change_email: Confirm the change of email for a user.
         reset_password: Reset the password for a user.
         get_user_agent: Get the User-Agent header from the request.
-    """  # noqa: E501
+    """
 
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/auth/token")
 
@@ -121,7 +121,7 @@ class AuthService:
             roles_service (RoleService): The service for managing roles.
             scopes_service (ScopeService): The service for managing scopes.
             users_sessions_service (UserSessionService): The service for managing user sessions.
-        """  # noqa: E501
+        """
         self.users_service = users_service
         self.roles_service = roles_service
         self.scopes_service = scopes_service
@@ -147,7 +147,7 @@ class AuthService:
         Returns:
         -------
             Union[User, bool]: The authenticated user object if successful, False otherwise.
-        """  # noqa: E501, D401
+        """  # noqa: D401
         try:
             user: User = await self.users_service.get_one(
                 username=username,
@@ -185,7 +185,7 @@ class AuthService:
         Raises:
         ------
             user_exists_exception: If the user already exists.
-        """  # noqa: E501
+        """
         try:
             password = get_password_hash(user_data.password)
             secret_salt = self.generate_secret_salt()
@@ -250,7 +250,7 @@ class AuthService:
         Returns:
         -------
             tuple[TokenSchema, User]: A tuple containing the access and refresh tokens, and the authenticated user.
-        """  # noqa: E501
+        """
         user = await self.authenticate_user(
             form_data.username,
             form_data.password,
@@ -332,7 +332,7 @@ class AuthService:
         Returns:
         -------
             tuple[TokenSchema, User]: A tuple containing the access token schema and the user object.
-        """  # noqa: E501
+        """
         try:
             payload = jwt_refresh_token_service.decode(token_data.refresh_token)
             refresh_token_exp = payload.get("exp", None)
@@ -388,7 +388,7 @@ class AuthService:
         Returns:
         -------
             User: The updated user object.
-        """  # noqa: E501
+        """
         secret = self.generate_secret_salt()
         await user.update(secret_salt=secret)
         return user
@@ -406,7 +406,7 @@ class AuthService:
         -------
             str: The generated code.
         """
-        # TODO(Qwizi): replace with secrets (secrets.token_hex(number)[:number])  # noqa: TD003, E501
+        # TODO(Qwizi): replace with secrets (secrets.token_hex(number)[:number])  # noqa: TD003
         return "".join(random.choice(string.digits) for _ in range(number))
 
     @staticmethod
@@ -418,7 +418,7 @@ class AuthService:
         -------
             str: The generated secret salt.
         """
-        # TODO(Qwizi): replace with secrets (secrets.token_hex(number)[:number])  # noqa: TD003, E501
+        # TODO(Qwizi): replace with secrets (secrets.token_hex(number)[:number])  # noqa: TD003
         return "".join(
             random.choice(string.ascii_letters + string.digits)  # noqa: S311
             for _ in range(32)
@@ -442,9 +442,9 @@ class AuthService:
         Returns:
         -------
             dict: A dictionary with a message indicating that the activation code will be sent if the email is correct.
-        """  # noqa: E501
+        """
         msg = {
-            "msg": "If email is correct, you will receive an email with activation code",  # noqa: E501
+            "msg": "If email is correct, you will receive an email with activation code",
         }
         try:
             user = await self.users_service.get_one(email=email, is_activated=False)
@@ -481,7 +481,7 @@ class AuthService:
         -------
             Tuple[bool, Union[bool, User]]: A tuple containing a boolean indicating the success of the activation,
             and either a boolean indicating if the user was already activated or the activated user object.
-        """  # noqa: E501
+        """
         user_id = await code_service.get(code)
         if not user_id:
             return False, False
@@ -534,7 +534,7 @@ class AuthService:
         Returns:
         -------
             bool: True if the password was successfully reset, False otherwise.
-        """  # noqa: E501
+        """
         email = await code_service.get(reset_password_data.code)
         if not email:
             raise invalid_activation_code_exception

@@ -1,4 +1,4 @@
-"""Schemas for the roles module."""  # noqa: EXE002
+"""Schemas for the roles module."""
 from __future__ import annotations
 
 from pydantic import BaseModel
@@ -25,7 +25,7 @@ class RoleOutWithoutScopesAndUserRoles(role_out_without_scopes_and_user_roles):
 class StaffUserInRolesSchema(BaseModel):
     """StaffUserInRolesSchema schema."""
 
-    id: int  # noqa: A003
+    id: int
     username: str
     avatar: str
 
@@ -33,7 +33,7 @@ class StaffUserInRolesSchema(BaseModel):
 class StaffRolesSchema(BaseModel):
     """StaffRolesSchema schema."""
 
-    id: int  # noqa: A003
+    id: int
     name: str
     color: str
     user_display_role: list[StaffUserInRolesSchema]

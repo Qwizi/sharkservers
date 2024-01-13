@@ -1,4 +1,4 @@
-"""Schemas for scopes module."""  # noqa: EXE002
+"""Schemas for scopes module."""
 from __future__ import annotations
 
 from pydantic import BaseModel

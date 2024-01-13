@@ -1,4 +1,4 @@
-"""Enums for scopes module."""  # noqa: EXE002
+"""Enums for scopes module."""
 from enum import Enum
 
 

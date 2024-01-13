@@ -1,4 +1,4 @@
-"""Migration script for Alembic."""  # noqa: EXE002
+"""Migration script for Alembic."""
 import asyncio
 import os
 from logging.config import fileConfig

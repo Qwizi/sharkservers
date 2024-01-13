@@ -1,4 +1,4 @@
-"""Dependencies for scopes endpoints."""  # noqa: EXE002
+"""Dependencies for scopes endpoints."""
 
 from fastapi import Depends
 
@@ -13,7 +13,7 @@ async def get_scopes_service() -> ScopeService:
 
 async def get_valid_scope(
     scope_id: int,
-    scopes_service: ScopeService = Depends(get_scopes_service),  # noqa: B008
+    scopes_service: ScopeService = Depends(get_scopes_service),
 ) -> Scope:
     """Get a valid scope by ID."""
     return await scopes_service.get_one(id=scope_id)

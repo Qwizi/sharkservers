@@ -39,10 +39,10 @@ router = APIRouter()
 @router.post("/install")
 async def install(  # noqa: D417
     user_data: RegisterUserSchema,
-    scopes_service: ScopeService = Depends(get_scopes_service),  # noqa: B008
-    roles_service: RoleService = Depends(get_roles_service),  # noqa: B008
-    auth_service: AuthService = Depends(get_auth_service),  # noqa: B008
-    settings: Settings = Depends(get_settings),  # noqa: B008
+    scopes_service: ScopeService = Depends(get_scopes_service),
+    roles_service: RoleService = Depends(get_roles_service),
+    auth_service: AuthService = Depends(get_auth_service),
+    settings: Settings = Depends(get_settings),
 ) -> dict:
     """
     Endpoint for installing the SharkServers application.
@@ -85,12 +85,12 @@ async def generate_openapi() -> dict[str, str]:
 
 @router.get("/generate-random-data")
 async def generate_random_data(  # noqa: PLR0913, D417
-    auth_service: AuthService = Depends(get_auth_service),  # noqa: B008
-    roles_service: RoleService = Depends(get_roles_service),  # noqa: B008
-    categories_service: CategoryService = Depends(get_categories_service),  # noqa: B008
-    threads_service: ThreadService = Depends(get_threads_service),  # noqa: B008
-    posts_service: PostService = Depends(get_posts_service),  # noqa: B008
-    servers_service: ServerService = Depends(get_servers_service),  # noqa: B008
+    auth_service: AuthService = Depends(get_auth_service),
+    roles_service: RoleService = Depends(get_roles_service),
+    categories_service: CategoryService = Depends(get_categories_service),
+    threads_service: ThreadService = Depends(get_threads_service),
+    posts_service: PostService = Depends(get_posts_service),
+    servers_service: ServerService = Depends(get_servers_service),
 ) -> dict[str, str]:
     """
     Endpoint for generating random data for testing purposes.

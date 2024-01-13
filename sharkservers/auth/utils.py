@@ -5,7 +5,7 @@ Functions:
 - verify_password: Verifies a password.
 - get_password_hash: Hashes a password.
 - now_datetime: Returns the current datetime.
-"""  # noqa: EXE002
+"""
 
 from datetime import datetime
 

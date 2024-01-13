@@ -1,4 +1,4 @@
-"""Players views."""  # noqa: EXE002
+"""Players views."""
 
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Page, Params
@@ -21,8 +21,8 @@ router = APIRouter()
 
 @router.get("")
 async def get_players(
-    params: Params = Depends(),  # noqa: B008
-    players_service: PlayerService = Depends(get_players_service),  # noqa: B008
+    params: Params = Depends(),
+    players_service: PlayerService = Depends(get_players_service),
 ) -> Page[PlayerOut]:
     """
     Retrieve a list of players based on the provided parameters.
@@ -42,7 +42,7 @@ async def get_players(
 @router.post("")
 async def create_player(
     player_data: CreatePlayerSchema,
-    players_service: PlayerService = Depends(get_players_service),  # noqa: B008
+    players_service: PlayerService = Depends(get_players_service),
 ) -> PlayerOut:
     """
     Create a new player.
@@ -61,7 +61,7 @@ async def create_player(
 
 @router.get("/{steamid64}")
 async def get_player(
-    player: Player = Depends(get_valid_player_by_steamid),  # noqa: B008
+    player: Player = Depends(get_valid_player_by_steamid),
 ) -> PlayerOut:
     """
     Retrieve a player by their Steam ID.

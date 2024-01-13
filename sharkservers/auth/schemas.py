@@ -15,7 +15,7 @@ Schemas:
 - EmailConfirmSchema: The schema for the email confirmation.
 - ResetPasswordSchema: The schema for resetting the password.
 - SteamAuthSchema: The schema for the steam auth.
-"""  # noqa: EXE002
+"""
 from __future__ import annotations
 
 import datetime
@@ -106,7 +106,7 @@ class ResendActivationCodeSchema(BaseModel):
 class UserActivatedSchema(BaseModel):
     """Schema for the user activated."""
 
-    id: int  # noqa: A003
+    id: int
     is_activated: bool
 
 

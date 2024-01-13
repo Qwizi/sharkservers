@@ -1,4 +1,4 @@
-"""Exceptions for scopes module."""  # noqa: EXE002
+"""Exceptions for scopes module."""
 from starlette import status
 from starlette.exceptions import HTTPException
 

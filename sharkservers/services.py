@@ -1,4 +1,4 @@
-"""Services module."""  # noqa: EXE002
+"""Services module."""
 
 import json
 import os
@@ -108,7 +108,7 @@ Jeśli potrzebujesz pomocy lub masz pytania, zawsze możesz skontaktować się z
 Z poważaniem,<br>
 Administracja SharkServers.pl
 
-        """  # noqa: E501
+        """
 
     @staticmethod
     def password_reset_email_template(code: str) -> str:
@@ -140,7 +140,7 @@ Jeśli potrzebujesz pomocy lub masz pytania, zawsze możesz skontaktować się z
 
 Z poważaniem,<br>
 Administracja SharkServers.pl
-        """  # noqa: E501
+        """
 
     async def _send_message(self, subject: str, recipients: list, body: str) -> None:
         """

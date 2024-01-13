@@ -1,4 +1,4 @@
-"""Roles models."""  # noqa: EXE002
+"""Roles models."""
 from __future__ import annotations
 
 import ormar
@@ -26,7 +26,7 @@ class Role(ormar.Model, DateFieldsMixins):
 
         tablename = "roles"
 
-    id: int = ormar.Integer(primary_key=True)  # noqa: A003
+    id: int = ormar.Integer(primary_key=True)
     tag: str | None = ormar.String(max_length=64, unique=True)
     name: str | None = ormar.String(max_length=64)
     color: str | None = ormar.String(max_length=256, default="#999999")

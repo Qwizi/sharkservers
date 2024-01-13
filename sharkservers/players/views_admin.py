@@ -1,4 +1,4 @@
-"""Admin views for players."""  # noqa: EXE002
+"""Admin views for players."""
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Security
 from fastapi_pagination import Page, Params
@@ -16,8 +16,8 @@ router = APIRouter()
 
 @router.get("", dependencies=[Security(get_admin_user, scopes=["players:all"])])
 async def admin_get_steam_profiles(
-    params: Params = Depends(),  # noqa: B008
-    players_service: PlayerService = Depends(get_players_service),  # noqa: B008
+    params: Params = Depends(),
+    players_service: PlayerService = Depends(get_players_service),
 ) -> Page[PlayerOut]:
     """
     Retrieve all player profiles with their associated SteamRep profiles.
@@ -30,7 +30,7 @@ async def admin_get_steam_profiles(
     Returns:
     -------
         Page[PlayerOut]: A paginated list of player profiles with their associated SteamRep profiles.
-    """  # noqa: E501
+    """
     return await players_service.get_all(params, related=["steamrep_profile"])
 
 
@@ -66,7 +66,7 @@ async def admin_get_steam_profile(
 async def admin_create_player(
     profile_data: CreatePlayerSchema,
     background_tasks: BackgroundTasks,
-    players_service: PlayerService = Depends(get_players_service),  # noqa: B008
+    players_service: PlayerService = Depends(get_players_service),
 ) -> dict:
     """
     Admin endpoint to create a player.
@@ -80,7 +80,7 @@ async def admin_create_player(
     Returns:
     -------
         dict: A dictionary with a message indicating that the player was created.
-    """  # noqa: E501
+    """
     background_tasks.add_task(
         players_service.create_player,
         profile_data.dict()["steamid64"],
@@ -109,7 +109,7 @@ async def admin_delete_steam_profile(
     Raises:
     ------
         player_not_found_exception: If the player profile with the given ID is not found.
-    """  # noqa: E501
+    """
     try:
         profile = await Player.objects.get(id=profile_id)
         await profile.delete()

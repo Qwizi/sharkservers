@@ -68,7 +68,7 @@ router = APIRouter()
     "",
 )
 async def get_logged_user(
-    user: User = Security(get_current_active_user, scopes=["users:me"]),  # noqa: B008
+    user: User = Security(get_current_active_user, scopes=["users:me"]),
 ) -> UserOutWithEmail:
     """
     Retrieve the currently logged-in user.
@@ -87,10 +87,10 @@ async def get_logged_user(
 
 @router.get("/posts")
 async def get_logged_user_posts(
-    params: Params = Depends(),  # noqa: B008
-    queries: OrderQuery = Depends(),  # noqa: B008
-    user: User = Security(get_current_active_user, scopes=["users:me"]),  # noqa: B008
-    posts_service: PostService = Depends(get_posts_service),  # noqa: B008
+    params: Params = Depends(),
+    queries: OrderQuery = Depends(),
+    user: User = Security(get_current_active_user, scopes=["users:me"]),
+    posts_service: PostService = Depends(get_posts_service),
 ) -> Page[PostOut]:
     """
     Retrieves all posts created by the logged-in user.
@@ -105,7 +105,7 @@ async def get_logged_user_posts(
     Returns:
     -------
         List[Post]: The list of posts created by the logged-in user.
-    """  # noqa: D401, E501
+    """  # noqa: D401
     return await posts_service.get_all(
         params=params,
         author__id=user.id,
@@ -115,10 +115,10 @@ async def get_logged_user_posts(
 
 @router.get("/threads")
 async def get_logged_user_threads(
-    params: Params = Depends(),  # noqa: B008
-    queries: OrderQuery = Depends(),  # noqa: B008
-    user: User = Security(get_current_active_user, scopes=["users:me"]),  # noqa: B008
-    threads_service: ThreadService = Depends(get_threads_service),  # noqa: B008
+    params: Params = Depends(),
+    queries: OrderQuery = Depends(),
+    user: User = Security(get_current_active_user, scopes=["users:me"]),
+    threads_service: ThreadService = Depends(get_threads_service),
 ) -> Page[ThreadOut]:
     """
     Retrieve all threads for the logged-in user.
@@ -144,8 +144,8 @@ async def get_logged_user_threads(
 @router.post("/username")
 async def change_user_username(
     change_username_data: ChangeUsernameSchema,
-    user: User = Security(get_current_active_user, scopes=["users:me:username"]),  # noqa: B008
-    users_service: UserService = Depends(get_users_service),  # noqa: B008
+    user: User = Security(get_current_active_user, scopes=["users:me:username"]),
+    users_service: UserService = Depends(get_users_service),
 ) -> SuccessChangeUsernameSchema:
     """
     Change the username of the current user.
@@ -159,7 +159,7 @@ async def change_user_username(
     Returns:
     -------
         SuccessChangeUsernameSchema: The response containing the old and new usernames.
-    """  # noqa: E501
+    """
     old_username = user.username
     user = await users_service.change_username(user, change_username_data)
     return SuccessChangeUsernameSchema(
@@ -171,8 +171,8 @@ async def change_user_username(
 @router.post("/password")
 async def change_user_password(
     change_password_data: ChangePasswordSchema,
-    user: User = Security(get_current_active_user, scopes=["users:me:password"]),  # noqa: B008
-    users_service: UserService = Depends(get_users_service),  # noqa: B008
+    user: User = Security(get_current_active_user, scopes=["users:me:password"]),
+    users_service: UserService = Depends(get_users_service),
 ) -> dict:
     """
     Change the password of the current user.
@@ -195,10 +195,10 @@ async def change_user_password(
 async def request_change_user_email(  # noqa: PLR0913
     change_email_data: ChangeEmailSchema,
     background_tasks: BackgroundTasks,
-    user: User = Security(get_current_active_user, scopes=["users:me"]),  # noqa: B008
-    email_service: EmailService = Depends(get_email_service),  # noqa: B008
-    code_service: CodeService = Depends(get_change_account_email_code_service),  # noqa: B008
-    users_service: UserService = Depends(get_users_service),  # noqa: B008
+    user: User = Security(get_current_active_user, scopes=["users:me"]),
+    email_service: EmailService = Depends(get_email_service),
+    code_service: CodeService = Depends(get_change_account_email_code_service),
+    users_service: UserService = Depends(get_users_service),
 ) -> dict[str, str]:
     """
     Request a change of user email.
@@ -215,7 +215,7 @@ async def request_change_user_email(  # noqa: PLR0913
     Returns:
     -------
         dict: A dictionary with a success message indicating that the request for email change was sent.
-    """  # noqa: E501
+    """
     confirm_code, _data = await users_service.create_confirm_email_code(
         code_service=code_service,
         user=user,
@@ -236,8 +236,8 @@ async def request_change_user_email(  # noqa: PLR0913
 )
 async def confirm_change_user_email(
     activate_code_data: ActivateUserCodeSchema,
-    code_service: CodeService = Depends(get_change_account_email_code_service),  # noqa: B008
-    users_service: UserService = Depends(get_users_service),  # noqa: B008
+    code_service: CodeService = Depends(get_change_account_email_code_service),
+    users_service: UserService = Depends(get_users_service),
 ) -> UserOutWithEmail:
     """
     Confirm the change of user's email address using the activation code.
@@ -251,7 +251,7 @@ async def confirm_change_user_email(
     Returns:
     -------
         UserOutWithEmail: The updated user with the new email address.
-    """  # noqa: E501
+    """
     return await users_service.confirm_change_email(
         code_service=code_service,
         code=activate_code_data.code,
@@ -261,8 +261,8 @@ async def confirm_change_user_email(
 @router.post("/display-role")
 async def change_user_display_role(
     change_display_role_data: ChangeDisplayRoleSchema,
-    user: User = Security(get_current_active_user, scopes=["users:me:display-role"]),  # noqa: B008
-    users_service: UserService = Depends(get_users_service),  # noqa: B008
+    user: User = Security(get_current_active_user, scopes=["users:me:display-role"]),
+    users_service: UserService = Depends(get_users_service),
 ) -> UserOutWithEmail:
     """
     Change the display role of the current user.
@@ -276,7 +276,7 @@ async def change_user_display_role(
     Returns:
     -------
         UserOutWithEmail: The updated user object.
-    """  # noqa: E501
+    """
     user, old_user_display_role = await users_service.change_display_role(
         user,
         change_display_role_data,
@@ -287,11 +287,11 @@ async def change_user_display_role(
 @router.post("/avatar")
 async def upload_user_avatar(  # noqa: PLR0913
     request: Request,
-    avatar: UploadFile = File(...),  # noqa: B008
-    user: User = Security(get_current_active_user, scopes=["users:me"]),  # noqa: B008
-    users_service: UserService = Depends(get_users_service),  # noqa: B008
-    upload_service: UploadService = Depends(get_upload_service),  # noqa: B008
-    settings: Settings = Depends(get_settings),  # noqa: B008
+    avatar: UploadFile = File(...),
+    user: User = Security(get_current_active_user, scopes=["users:me"]),
+    users_service: UserService = Depends(get_users_service),
+    upload_service: UploadService = Depends(get_upload_service),
+    settings: Settings = Depends(get_settings),
 ) -> dict[str, str]:
     """
     Upload the user's avatar.
@@ -315,8 +315,8 @@ async def upload_user_avatar(  # noqa: PLR0913
 @router.post("/connect/steam")
 async def connect_steam_profile(
     params: SteamAuthSchema,
-    user: User = Security(get_current_active_user, scopes=["users:me"]),  # noqa: B008
-    steam_auth_service: SteamAuthService = Depends(get_steam_auth_service),  # noqa: B008
+    user: User = Security(get_current_active_user, scopes=["users:me"]),
+    steam_auth_service: SteamAuthService = Depends(get_steam_auth_service),
 ) -> None:
     """
     Connect a Steam profile to the user's account.
@@ -330,13 +330,13 @@ async def connect_steam_profile(
     Returns:
     -------
         None: Nothing.
-    """  # noqa: E501
+    """
     return await steam_auth_service.authenticate(user, params)
 
 
 @router.get("/sessions")
 async def get_user_sessions(
-    user: User = Security(get_current_active_user, scopes=["users:me"]),  # noqa: B008
+    user: User = Security(get_current_active_user, scopes=["users:me"]),
 ) -> list[UserSessionOut]:
     """
     Retrieve the sessions of the current user.
@@ -354,7 +354,7 @@ async def get_user_sessions(
 
 @router.delete("/sessions/{session_id}")
 async def delete_user_session(
-    user_session: UserSession = Depends(get_valid_user_session),  # noqa: B008
+    user_session: UserSession = Depends(get_valid_user_session),
 ) -> UserSessionOut:
     """
     Delete the user session.

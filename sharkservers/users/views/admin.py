@@ -9,7 +9,7 @@ Functions:
 - admin_update_user: Updates a user.
 
 
-"""  # noqa: EXE002
+"""
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Security
@@ -42,8 +42,8 @@ router = APIRouter()
     dependencies=[Security(get_admin_user, scopes=["users:all"])],
 )
 async def admin_get_users(
-    params: Params = Depends(),  # noqa: B008
-    users_service: UserService = Depends(get_users_service),  # noqa: B008
+    params: Params = Depends(),
+    users_service: UserService = Depends(get_users_service),
 ) -> Page[UserOutWithEmail]:
     """
     Retrieve all users with their associated data.
@@ -56,7 +56,7 @@ async def admin_get_users(
     Returns:
     -------
         Page[UserOutWithEmail]: The paginated list of users with their associated data.
-    """  # noqa: E501
+    """
     users = await users_service.get_all(
         params=params,
         related=["display_role", "player", "player__steamrep_profile"],
@@ -70,7 +70,7 @@ async def admin_get_users(
     dependencies=[Security(get_admin_user, scopes=["users:retrieve"])],
 )
 async def admin_get_user(
-    user: User = Depends(get_valid_user),  # noqa: B008
+    user: User = Depends(get_valid_user),
 ) -> UserOutWithEmail:
     """
     Retrieve the user information for an admin user.
@@ -94,8 +94,8 @@ async def admin_get_user(
 )
 async def admin_create_user(
     user_data: CreateUserSchema,
-    auth_service: AuthService = Depends(get_auth_service),  # noqa: B008
-    settings: Settings = Depends(get_settings),  # noqa: B008
+    auth_service: AuthService = Depends(get_auth_service),
+    settings: Settings = Depends(get_settings),
 ) -> UserOutWithEmail:
     """
     Create a new user with the provi    print(roles)
@@ -111,7 +111,7 @@ async def admin_create_user(
     Returns:
     -------
         UserOutWithEmail: The created user with email.
-    """  # noqa: D205, E501
+    """  # noqa: D205
     return await auth_service.register(
         RegisterUserSchema(
             username=user_data.username,
@@ -130,8 +130,8 @@ async def admin_create_user(
     dependencies=[Security(get_admin_user, scopes=["users:delete"])],
 )
 async def admin_delete_user(
-    validate_user: User = Depends(get_valid_user),  # noqa: B008
-    users_service: UserService = Depends(get_users_service),  # noqa: B008
+    validate_user: User = Depends(get_valid_user),
+    users_service: UserService = Depends(get_users_service),
 ) -> UserOutWithEmail:
     """
     Deletes a user from the system.
@@ -154,8 +154,8 @@ async def admin_delete_user(
 )
 async def admin_update_user(
     update_user_data: AdminUpdateUserSchema,
-    validate_user: User = Depends(get_valid_user),  # noqa: B008
-    roles_service: RoleService = Depends(get_roles_service),  # noqa: B008
+    validate_user: User = Depends(get_valid_user),
+    roles_service: RoleService = Depends(get_roles_service),
 ) -> UserOutWithEmail:
     """
     Admin function to update a user's information.

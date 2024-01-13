@@ -1,4 +1,4 @@
-"""Players models."""  # noqa: EXE002
+"""Players models."""
 from __future__ import annotations
 
 import ormar
@@ -23,7 +23,7 @@ class SteamRepProfile(ormar.Model, DateFieldsMixins):
 
         tablename = "steamrep_profiles"
 
-    id: int = ormar.Integer(primary_key=True)  # noqa: A003
+    id: int = ormar.Integer(primary_key=True)
     profile_url: str | None = ormar.String(max_length=255, unique=True)
     is_scammer: bool | None = ormar.Boolean(default=False)
     steamid64: str | None = ormar.String(max_length=255, unique=True)
@@ -52,7 +52,7 @@ class Player(ormar.Model, DateFieldsMixins):
 
         tablename = "players"
 
-    id: int = ormar.Integer(primary_key=True)  # noqa: A003
+    id: int = ormar.Integer(primary_key=True)
     steamrep_profile: SteamRepProfile | None = ormar.ForeignKey(
         SteamRepProfile,
         related_name="players",

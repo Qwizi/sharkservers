@@ -1,4 +1,4 @@
-"""Module contains the ConnectionManager class, which manages WebSocket connections and provides methods for sending messages."""  # noqa: E501
+"""Module contains the ConnectionManager class, which manages WebSocket connections and provides methods for sending messages."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

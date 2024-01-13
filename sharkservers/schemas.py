@@ -8,7 +8,7 @@ It includes the following classes:
 - HTTPError400Schema: Represents the schema for a 400 Bad Request error response.
 - HTTPError401Schema: Represents the schema for a 401 Unauthorized error response.
 - OrderQuery: Represents the schema for the order query parameter.
-"""  # noqa: EXE002
+"""
 from typing import Optional
 
 from fastapi import Query

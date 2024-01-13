@@ -1,1 +1,1 @@
-"""Players enums."""  # noqa: EXE002
+"""Players enums."""

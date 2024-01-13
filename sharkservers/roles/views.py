@@ -1,4 +1,4 @@
-"""Views for roles."""  # noqa: EXE002
+"""Views for roles."""
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Page, Params
 
@@ -15,8 +15,8 @@ router = APIRouter()
 
 @router.get("")
 async def get_roles(
-    params: Params = Depends(),  # noqa: B008
-    roles_service: RoleService = Depends(get_roles_service),  # noqa: B008
+    params: Params = Depends(),
+    roles_service: RoleService = Depends(get_roles_service),
 ) -> Page[RoleOut]:
     """
     Retrieve all roles based on the provided parameters.
@@ -34,7 +34,7 @@ async def get_roles(
 
 
 @router.get("/{role_id}")
-async def get_role(role: Role = Depends(get_valid_role)) -> RoleOutWithScopes:  # noqa: B008
+async def get_role(role: Role = Depends(get_valid_role)) -> RoleOutWithScopes:
     """
     Retrieve a role by its ID.
 

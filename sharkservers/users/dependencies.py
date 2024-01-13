@@ -9,7 +9,7 @@ Functions:
 - get_valid_user: Validates a user ID and returns the corresponding user model.
 - get_users_sessions_service: Returns an instance of the UserSessionService class.
 - get_valid_user_session: Validates a user session ID and returns the corresponding user session model.
-"""  # noqa: EXE002, E501
+"""
 from uuid import UUID
 
 from fastapi import Depends
@@ -33,7 +33,7 @@ async def get_users_service() -> UserService:
 
 async def get_valid_user(
     user_id: int,
-    users_service: UserService = Depends(get_users_service),  # noqa: B008
+    users_service: UserService = Depends(get_users_service),
 ) -> Model:
     """
     Retrieves a valid user by their ID.
@@ -50,7 +50,7 @@ async def get_valid_user(
     Raises:
     ------
         user_not_found_exception: If the user is not found.
-    """  # noqa: D401, E501
+    """  # noqa: D401
     try:
         return await users_service.get_one(
             id=user_id,
@@ -73,7 +73,7 @@ async def get_users_sessions_service() -> UserSessionService:
 
 async def get_valid_user_session(
     session_id: UUID,
-    users_sessions_service: UserSessionService = Depends(get_users_sessions_service),  # noqa: B008
+    users_sessions_service: UserSessionService = Depends(get_users_sessions_service),
 ) -> UserSession:
     """
     Retrieve a valid user session by session ID.
@@ -90,7 +90,7 @@ async def get_valid_user_session(
     Raises:
     ------
         user_not_found_exception: If the user session is not found.
-    """  # noqa: E501
+    """
     try:
         return await users_sessions_service.get_one(
             id=session_id,

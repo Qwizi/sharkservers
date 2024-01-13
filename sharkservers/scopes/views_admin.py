@@ -1,4 +1,4 @@
-"""Scopes admin views."""  # noqa: EXE002
+"""Scopes admin views."""
 from fastapi import APIRouter, Depends, Security
 from fastapi_pagination import Page, Params
 
@@ -13,8 +13,8 @@ router = APIRouter()
 
 @router.get("", dependencies=[Security(get_admin_user, scopes="scopes:all")])
 async def admin_get_scopes(
-    params: Params = Depends(),  # noqa: B008
-    scopes_service: ScopeService = Depends(get_scopes_service),  # noqa: B008
+    params: Params = Depends(),
+    scopes_service: ScopeService = Depends(get_scopes_service),
 ) -> Page[ScopeOut]:
     """
     Retrieve all scopes for admin users.
@@ -36,7 +36,7 @@ async def admin_get_scopes(
     dependencies=[Security(get_admin_user, scopes="scopes:retrieve")],
 )
 async def admin_get_scope(
-    scope: Scope = Depends(get_valid_scope),  # noqa: B008
+    scope: Scope = Depends(get_valid_scope),
 ) -> ScopeOut:
     """
     Retrieve a scope for admin users.
@@ -55,7 +55,7 @@ async def admin_get_scope(
 @router.post("", dependencies=[Security(get_admin_user, scopes="scopes:create")])
 async def admin_create_scope(
     scope_data: CreateScopeSchema,
-    scopes_service: ScopeService = Depends(get_scopes_service),  # noqa: B008
+    scopes_service: ScopeService = Depends(get_scopes_service),
 ) -> ScopeOut:
     """
     Create a new scope.
@@ -68,7 +68,7 @@ async def admin_create_scope(
     Returns:
     -------
         ScopeOut: The created scope.
-    """  # noqa: E501
+    """
     return await scopes_service.create(**scope_data.dict())
 
 
@@ -77,8 +77,8 @@ async def admin_create_scope(
     dependencies=[Security(get_admin_user, scopes="scopes:delete")],
 )
 async def admin_delete_scope(
-    scope: Scope = Depends(get_valid_scope),  # noqa: B008
-    scopes_service: ScopeService = Depends(get_scopes_service),  # noqa: B008
+    scope: Scope = Depends(get_valid_scope),
+    scopes_service: ScopeService = Depends(get_scopes_service),
 ) -> ScopeOut:
     """
     Deletes a scope from the system.
@@ -101,7 +101,7 @@ async def admin_delete_scope(
 )
 async def admin_update_scope(
     update_scope_data: UpdateScopeSchema,
-    scope: Scope = Depends(get_valid_scope),  # noqa: B008
+    scope: Scope = Depends(get_valid_scope),
 ) -> ScopeOut:
     """
     Update the given scope with the provided data.

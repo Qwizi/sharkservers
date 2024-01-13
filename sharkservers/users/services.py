@@ -5,7 +5,7 @@ It includes the following classes:
 - UserService: Provides methods for managing user data, such as changing username, password, and display role.
 - UserSessionService: Provides methods for managing user session data.
 
-"""  # noqa: E501
+"""
 
 import json
 from datetime import timedelta
@@ -148,7 +148,7 @@ class UserService(BaseService):
         ------
             cannot_change_display_role_exception: If the new display role is not available.
 
-        """  # noqa: E501
+        """
         display_role_exists_in_user_roles = False
         old_user_display_role = user.display_role.id
         for role in user.roles:
@@ -183,7 +183,7 @@ class UserService(BaseService):
         ------
             user_email_is_the_same_exception: If the new email is the same as the current email.
 
-        """  # noqa: E501
+        """
         if user.email == new_email:
             raise user_email_is_the_same_exception
         redis_data = {

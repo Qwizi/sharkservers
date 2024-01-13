@@ -8,7 +8,7 @@ Endpoints:
 - GET /users/{user_id}: Retrieves a specific user based on the provided user ID.
 - GET /users/{user_id}/posts: Retrieves a paginated list of posts made by a specific user.
 - GET /users/{user_id}/threads: Retrieves a paginated list of threads created by a specific user.
-"""  # noqa: E501
+"""
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Page, Params
 
@@ -29,9 +29,9 @@ router = APIRouter()
 
 @router.get("")
 async def get_users(
-    params: Params = Depends(),  # noqa: B008
-    queries: UserQuery = Depends(),  # noqa: B008
-    users_service: UserService = Depends(get_users_service),  # noqa: B008
+    params: Params = Depends(),
+    queries: UserQuery = Depends(),
+    users_service: UserService = Depends(get_users_service),
 ) -> Page[UserOut]:
     """
     Retrieve a list of users based on the provided parameters and queries.
@@ -46,7 +46,7 @@ async def get_users(
     -------
         Page[UserOut]: The paginated list of users.
 
-    """  # noqa: E501
+    """
     kwargs = {}
     if queries.username:
         kwargs["username__contains"] = queries.username
@@ -60,8 +60,8 @@ async def get_users(
 
 @router.get("/staff")
 async def get_staff_users(
-    params: Params = Depends(),  # noqa: B008
-    roles_service: RoleService = Depends(get_roles_service),  # noqa: B008
+    params: Params = Depends(),
+    roles_service: RoleService = Depends(get_roles_service),
 ) -> Page[StaffRolesSchema]:
     """
     Retrieve staff users based on the provided parameters.
@@ -81,8 +81,8 @@ async def get_staff_users(
 
 @router.get("/online")
 async def get_last_online_users(
-    params: Params = Depends(),  # noqa: B008
-    users_service: UserService = Depends(get_users_service),  # noqa: B008
+    params: Params = Depends(),
+    users_service: UserService = Depends(get_users_service),
 ) -> Page[UserOut]:
     """
     Retrieve the last online users based on the provided parameters.
@@ -95,12 +95,12 @@ async def get_last_online_users(
     Returns:
     -------
         Page[UserOut]: A paginated list of UserOut objects representing the last online users.
-    """  # noqa: E501
+    """
     return await users_service.get_last_online_users(params=params)
 
 
 @router.get("/{user_id}", response_model=UserOut)
-async def get_user(user: User = Depends(get_valid_user)) -> UserOut:  # noqa: B008
+async def get_user(user: User = Depends(get_valid_user)) -> UserOut:
     """
     Retrieve the authenticated user.
 
@@ -118,10 +118,10 @@ async def get_user(user: User = Depends(get_valid_user)) -> UserOut:  # noqa: B0
 
 @router.get("/{user_id}/posts")
 async def get_user_posts(
-    params: Params = Depends(),  # noqa: B008
-    queries: OrderQuery = Depends(),  # noqa: B008
-    user: User = Depends(get_valid_user),  # noqa: B008
-    posts_service: PostService = Depends(get_posts_service),  # noqa: B008
+    params: Params = Depends(),
+    queries: OrderQuery = Depends(),
+    user: User = Depends(get_valid_user),
+    posts_service: PostService = Depends(get_posts_service),
 ) -> Page[PostOut]:
     """
     Retrieve all posts authored by a specific user.
@@ -137,7 +137,7 @@ async def get_user_posts(
     -------
         Page[PostOut]: A paginated list of PostOut objects.
 
-    """  # noqa: E501
+    """
     return await posts_service.get_all(
         params=params,
         author__id=user.id,
@@ -147,10 +147,10 @@ async def get_user_posts(
 
 @router.get("/{user_id}/threads")
 async def get_user_threads(
-    params: Params = Depends(),  # noqa: B008
-    queries: OrderQuery = Depends(),  # noqa: B008
-    user: User = Depends(get_valid_user),  # noqa: B008
-    threads_service: ThreadService = Depends(get_threads_service),  # noqa: B008
+    params: Params = Depends(),
+    queries: OrderQuery = Depends(),
+    user: User = Depends(get_valid_user),
+    threads_service: ThreadService = Depends(get_threads_service),
 ) -> Page[ThreadOut]:
     """
     Retrieves all threads belonging to a specific user.

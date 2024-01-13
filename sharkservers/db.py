@@ -2,7 +2,7 @@
 Module contains database-related functionality for the SharkServers API.
 
 It defines the database connection, models, and base service class.
-"""  # noqa: EXE002
+"""
 
 import datetime
 from sqlite3 import IntegrityError as SQLIntegrityError

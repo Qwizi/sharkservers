@@ -1,4 +1,4 @@
-"""Forum models."""  # noqa: EXE002
+"""Forum models."""
 from __future__ import annotations
 
 import uuid
@@ -31,10 +31,10 @@ class Category(ormar.Model, DateFieldsMixins):
 
         tablename = "forum_categories"
 
-    id: int = ormar.Integer(primary_key=True)  # noqa: A003
+    id: int = ormar.Integer(primary_key=True)
     name: str = ormar.String(max_length=64, unique=True)
     description: str = ormar.Text(nullable=True)
-    type: str = ormar.String(  # noqa: A003
+    type: str = ormar.String(
         max_length=64,
         choices=list(CategoryTypeEnum),
         default=CategoryTypeEnum.PUBLIC.value,
@@ -57,7 +57,7 @@ class Like(ormar.Model, DateFieldsMixins):
 
         tablename = "forum_reputation"
 
-    id: int = ormar.Integer(primary_key=True)  # noqa: A003
+    id: int = ormar.Integer(primary_key=True)
     author: User | None = ormar.ForeignKey(User, related_name="user_reputation")
 
 
@@ -79,7 +79,7 @@ class Post(ormar.Model, DateFieldsMixins):
 
         tablename = "forum_posts"
 
-    id: int = ormar.Integer(primary_key=True)  # noqa: A003
+    id: int = ormar.Integer(primary_key=True)
     author: User | None = ormar.ForeignKey(User, related_name="user_posts")
     content: str = ormar.Text()
     likes: list[Like] | None = ormar.ManyToMany(Like, related_name="post_likes")
@@ -103,7 +103,7 @@ class ThreadMeta(ormar.Model, DateFieldsMixins):
 
         tablename = "forum_threads_meta"
 
-    id: str = ormar.UUID(primary_key=True, default=uuid.uuid4)  # noqa: A003
+    id: str = ormar.UUID(primary_key=True, default=uuid.uuid4)
     name: str | None = ormar.String(max_length=64)
     value: str | None = ormar.Text(nullable=True)
     description: str | None = ormar.Text(nullable=True)

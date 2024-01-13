@@ -1,4 +1,4 @@
-"""Enum classes for roles module."""  # noqa: EXE002
+"""Enum classes for roles module."""
 from enum import Enum
 
 

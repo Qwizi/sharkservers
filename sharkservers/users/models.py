@@ -8,7 +8,7 @@ The UserSession model represents a session of a user and includes fields for use
 The Ban model represents a ban on a user and includes fields for the banned user, reason, ban time, and the user who issued the ban.
 
 The module also includes a pre_update hook for the User model that updates the "updated_at" field whenever a user is updated.
-"""  # noqa: E501, EXE002
+"""
 from __future__ import annotations
 
 import uuid
@@ -43,7 +43,7 @@ class UserSession(ormar.Model, DateFieldsMixins):
 
         tablename = "user_sessions"
 
-    id: str = ormar.UUID(primary_key=True, default=uuid.uuid4)  # noqa: A003
+    id: str = ormar.UUID(primary_key=True, default=uuid.uuid4)
     user_ip: str = ormar.String(max_length=255)
     user_agent: str = ormar.String(max_length=255)
 
@@ -71,14 +71,14 @@ class User(ormar.Model, DateFieldsMixins):
         likes_count (int): The number of likes received by the user.
         player (Player, optional): The associated player for the user.
         sessions (List[UserSession], optional): The sessions associated with the user.
-    """  # noqa: E501
+    """
 
     class Meta(BaseMeta):
         """Meta class for defining metadata options for the User model."""
 
         tablename = "users"
 
-    id: int = ormar.Integer(primary_key=True)  # noqa: A003
+    id: int = ormar.Integer(primary_key=True)
     username: str | None = ormar.String(max_length=64, unique=True)
     email: EmailStr | None = ormar.String(max_length=255, unique=True)
     password: str | None = ormar.String(max_length=255)
@@ -124,7 +124,7 @@ class Ban(ormar.Model, DateFieldsMixins):
 
         tablename = "banned"
 
-    id: int = ormar.Integer(primary_key=True)  # noqa: A003
+    id: int = ormar.Integer(primary_key=True)
     user: User | None = ormar.ForeignKey(User, related_name="banned_user")
     reason: str | None = ormar.String(max_length=255)
     ban_time: datetime.datetime | None = ormar.DateTime(nullable=True, timezone=True)

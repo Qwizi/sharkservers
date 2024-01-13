@@ -1,3 +1,4 @@
+"""Logging configuration for the server."""
 import logging
 from logging.config import dictConfig
 
@@ -37,5 +38,17 @@ dictConfig(LogConfig().dict())
 logger = logging.getLogger("mycoolapp")
 
 
-def logger_with_filename(filename, data) -> None:
+def logger_with_filename(filename: str, data: str) -> None:
+    """
+    Log a message with the filename and data.
+
+    Args:
+    ----
+        filename (str): The filename to log.
+        data (str): The data to log.
+
+    Returns:
+    -------
+        None
+    """
     logger.debug(f"{filename} | {data!s}")

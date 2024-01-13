@@ -1,4 +1,4 @@
-"""Enums for forum app."""  # noqa: EXE002
+"""Enums for forum app."""
 from enum import Enum
 
 

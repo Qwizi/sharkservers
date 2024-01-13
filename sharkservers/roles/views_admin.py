@@ -1,4 +1,4 @@
-"""Views for admin roles."""  # noqa: EXE002
+"""Views for admin roles."""
 from fastapi import APIRouter, Depends, Security
 from fastapi_pagination import Page, Params
 
@@ -20,8 +20,8 @@ router = APIRouter()
 
 @router.get("", dependencies=[Security(get_admin_user, scopes=["roles:all"])])
 async def admin_get_roles(
-    params: Params = Depends(),  # noqa: B008
-    roles_service: RoleService = Depends(get_roles_service),  # noqa: B008
+    params: Params = Depends(),
+    roles_service: RoleService = Depends(get_roles_service),
 ) -> Page[RoleOut]:
     """
     Retrieve all roles with pagination.
@@ -35,7 +35,7 @@ async def admin_get_roles(
     Returns:
     -------
         Page[RoleOut]: The paginated list of roles.
-    """  # noqa: E501
+    """
     return await roles_service.get_all(params=params)
 
 
@@ -44,7 +44,7 @@ async def admin_get_roles(
     dependencies=[Security(get_admin_user, scopes=["roles:retrieve"])],
 )
 async def admin_get_role(
-    role: Role = Depends(get_valid_role),  # noqa: B008
+    role: Role = Depends(get_valid_role),
 ) -> RoleOutWithScopes:
     """
     Retrieve the details of a role.
@@ -64,8 +64,8 @@ async def admin_get_role(
 @router.post("", dependencies=[Security(get_admin_user, scopes=["roles:create"])])
 async def admin_create_role(
     role_data: CreateRoleSchema,
-    roles_service: RoleService = Depends(get_roles_service),  # noqa: B008
-    scopes_service: ScopeService = Depends(get_scopes_service),  # noqa: B008
+    roles_service: RoleService = Depends(get_roles_service),
+    scopes_service: ScopeService = Depends(get_scopes_service),
 ) -> RoleOutWithScopes:
     """
     Admin endpoint to create a new role.
@@ -79,7 +79,7 @@ async def admin_create_role(
     Returns:
     -------
         The newly created role.
-    """  # noqa: E501
+    """
     return await roles_service.admin_create_role(role_data, scopes_service)
 
 
@@ -88,8 +88,8 @@ async def admin_create_role(
     dependencies=[Security(get_admin_user, scopes=["roles:delete"])],
 )
 async def admin_delete_role(
-    role: Role = Depends(get_valid_role),  # noqa: B008
-    roles_service: RoleService = Depends(get_roles_service),  # noqa: B008
+    role: Role = Depends(get_valid_role),
+    roles_service: RoleService = Depends(get_roles_service),
 ) -> RoleOutWithScopes:
     """
     Delete a role.
@@ -114,8 +114,8 @@ async def admin_delete_role(
 )
 async def admin_update_role(
     update_role_data: UpdateRoleSchema,
-    role: Role = Depends(get_valid_role),  # noqa: B008
-    scopes_service: ScopeService = Depends(get_scopes_service),  # noqa: B008
+    role: Role = Depends(get_valid_role),
+    scopes_service: ScopeService = Depends(get_scopes_service),
 ) -> RoleOutWithScopes:
     """
     Update a role with the provided data.

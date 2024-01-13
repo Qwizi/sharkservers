@@ -1,4 +1,4 @@
-"""Players dependencies."""  # noqa: EXE002
+"""Players dependencies."""
 
 from fastapi import Depends
 
@@ -22,8 +22,8 @@ async def get_steamrep_service() -> SteamRepService:
 
 
 async def get_players_service(
-    steamrep_service: SteamRepService = Depends(get_steamrep_service),  # noqa: B008
-    settings: Settings = Depends(get_settings),  # noqa: B008
+    steamrep_service: SteamRepService = Depends(get_steamrep_service),
+    settings: Settings = Depends(get_settings),
 ) -> PlayerService:
     """
     Retrieve the PlayerService instance with the specified dependencies.
@@ -45,7 +45,7 @@ async def get_players_service(
 
 async def get_valid_player(
     player_id: int,
-    player_service: PlayerService = Depends(get_players_service),  # noqa: B008
+    player_service: PlayerService = Depends(get_players_service),
 ) -> Player:
     """
     Retrieve a valid player by their ID.
@@ -58,7 +58,7 @@ async def get_valid_player(
     Returns:
     -------
         Player: The valid player object.
-    """  # noqa: E501
+    """
     return await player_service.get_one(
         id=player_id,
         select_related=["steamrep_profile"],
@@ -67,7 +67,7 @@ async def get_valid_player(
 
 async def get_valid_player_by_steamid(
     steamid64: str,
-    player_service: PlayerService = Depends(get_players_service),  # noqa: B008
+    player_service: PlayerService = Depends(get_players_service),
 ) -> Player:
     """
     Retrieve a valid player by their SteamID.
@@ -80,7 +80,7 @@ async def get_valid_player_by_steamid(
     Returns:
     -------
         Player: The player object.
-    """  # noqa: E501
+    """
     return await player_service.get_one(
         steamid64=steamid64,
         related=["steamrep_profile"],

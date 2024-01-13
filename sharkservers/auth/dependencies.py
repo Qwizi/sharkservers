@@ -14,7 +14,7 @@ Functions:
     get_change_account_email_code_service: Get change account email code service
     get_reset_account_password_code_service: Get reset account password code service
     get_steam_auth_service: Get steam auth service
-"""  # noqa: EXE002
+"""
 
 import uuid
 from datetime import timedelta
@@ -51,7 +51,7 @@ from sharkservers.users.services import UserService, UserSessionService
 
 
 async def get_access_token_service(
-    settings: Settings = Depends(get_settings),  # noqa: B008
+    settings: Settings = Depends(get_settings),
 ) -> JWTService:
     """
     Get the access token service.
@@ -72,7 +72,7 @@ async def get_access_token_service(
 
 
 async def get_refresh_token_service(
-    settings: Settings = Depends(get_settings),  # noqa: B008
+    settings: Settings = Depends(get_settings),
 ) -> JWTService:
     """
     # Retrieve the JWTService instance for handling refresh tokens.
@@ -92,10 +92,10 @@ async def get_refresh_token_service(
 
 
 async def get_auth_service(
-    users_service: UserService = Depends(get_users_service),  # noqa: B008
-    roles_service: RoleService = Depends(get_roles_service),  # noqa: B008
-    scopes_service: ScopeService = Depends(get_scopes_service),  # noqa: B008
-    users_sessions_service: UserSessionService = Depends(  # noqa: B008
+    users_service: UserService = Depends(get_users_service),
+    roles_service: RoleService = Depends(get_roles_service),
+    scopes_service: ScopeService = Depends(get_scopes_service),
+    users_sessions_service: UserSessionService = Depends(
         get_users_sessions_service,
     ),
 ) -> AuthService:
@@ -112,7 +112,7 @@ async def get_auth_service(
     Returns:
     -------
         AuthService: The authentication service instance.
-    """  # noqa: E501
+    """
     return AuthService(
         users_service=users_service,
         roles_service=roles_service,
@@ -124,9 +124,9 @@ async def get_auth_service(
 async def get_current_user(
     security_scopes: SecurityScopes,
     token: str = Depends(AuthService.oauth2_scheme),
-    access_token_service: JWTService = Depends(get_access_token_service),  # noqa: B008
-    users_service: UserService = Depends(get_users_service),  # noqa: B008
-    users_sessions_service: UserSessionService = Depends(get_users_sessions_service),  # noqa: B008
+    access_token_service: JWTService = Depends(get_access_token_service),
+    users_service: UserService = Depends(get_users_service),
+    users_sessions_service: UserSessionService = Depends(get_users_sessions_service),
 ) -> User:
     """
     Retrieve the current user based on the provided security scopes and token.
@@ -147,7 +147,7 @@ async def get_current_user(
     ------
         InvalidCredentialsException: If the credentials are invalid.
         NoPermissionsException: If the user does not have the required permissions.
-    """  # noqa: E501
+    """
     token_data = access_token_service.decode_token(token)
     session_id = token_data.session_id
     if not session_id:
@@ -189,7 +189,7 @@ async def get_current_user(
 
 
 async def get_current_active_user(
-    current_user: User = Depends(get_current_user),  # noqa: B008
+    current_user: User = Depends(get_current_user),
 ) -> User:
     """
     Retrieve the current active user.
@@ -207,13 +207,13 @@ async def get_current_active_user(
     Raises:
     ------
         inactivate_user_exception: If the current user is not activated.
-    """  # noqa: E501
+    """
     if not current_user.is_activated:
         raise inactivate_user_exception
     return current_user
 
 
-async def get_admin_user(user: User = Depends(get_current_active_user)) -> User:  # noqa: B008
+async def get_admin_user(user: User = Depends(get_current_active_user)) -> User:
     """
     Retrieve the admin user.
 
@@ -235,7 +235,7 @@ async def get_admin_user(user: User = Depends(get_current_active_user)) -> User:
 
 
 async def get_activation_account_code_service(
-    redis: Redis = Depends(get_redis),  # noqa: B008
+    redis: Redis = Depends(get_redis),
 ) -> CodeService:
     """
     Get the activation account code service.
@@ -251,12 +251,12 @@ async def get_activation_account_code_service(
     -------
         The CodeService instance.
 
-    """  # noqa: E501
+    """
     return CodeService(redis=redis, key=RedisAuthKeyEnum.ACTIVATE_USER.value)
 
 
 async def get_change_account_email_code_service(
-    redis: Redis = Depends(get_redis),  # noqa: B008
+    redis: Redis = Depends(get_redis),
 ) -> CodeService:
     """
     Retrieves the CodeService instance for changing the account email.
@@ -271,7 +271,7 @@ async def get_change_account_email_code_service(
 
 
 async def get_reset_account_password_code_service(
-    redis: Redis = Depends(get_redis),  # noqa: B008
+    redis: Redis = Depends(get_redis),
 ) -> CodeService:
     """
     Retrieve the CodeService instance for resetting account password.
@@ -288,8 +288,8 @@ async def get_reset_account_password_code_service(
 
 
 async def get_steam_auth_service(
-    users_service: UserService = Depends(get_users_service),  # noqa: B008
-    players_service: PlayerService = Depends(get_players_service),  # noqa: B008
+    users_service: UserService = Depends(get_users_service),
+    players_service: PlayerService = Depends(get_players_service),
 ) -> SteamAuthService:
     """
     Get the SteamAuthService instance with the provided dependencies.
