@@ -1,13 +1,13 @@
 import pytest
 
-from src.roles.enums import ProtectedDefaultRolesEnum
-from src.users.models import User
+from sharkservers.roles.enums import ProtectedDefaultRolesEnum
+from sharkservers.users.models import User
 from tests.conftest import create_fake_users, TEST_USER
 
 ENDPOINT = "/v1/admin/users"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "route",
     [
@@ -20,25 +20,25 @@ async def test_unauthorized_admin_get_users(route, client):
     assert r.status_code == 401
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_unauthorized_admin_create_user(client):
     r = await client.post(ENDPOINT)
     assert r.status_code == 401
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_unauthorized_admin_delete_user(client):
     r = await client.delete(ENDPOINT + "/1")
     assert r.status_code == 401
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_unauthorized_admin_update_user(client):
     r = await client.put(ENDPOINT + "/1")
     assert r.status_code == 401
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_admin_get_empty_users(admin_client):
     r = await admin_client.get(ENDPOINT)
     assert r.status_code == 200
@@ -46,7 +46,7 @@ async def test_admin_get_empty_users(admin_client):
     assert r.json()["total"] == 2
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_admin_get_users(admin_client):
     # Create 50 users
     await create_fake_users(number=50)
@@ -61,7 +61,7 @@ async def test_admin_get_users(admin_client):
     assert r2.json()["page"] == 2
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_admin_get_user(admin_client):
     users = await create_fake_users(1)
     r = await admin_client.get(ENDPOINT + f"/{users[0].id}")
@@ -69,13 +69,13 @@ async def test_admin_get_user(admin_client):
     assert r.json()["username"] == users[0].username
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_admin_get_invalid_user(admin_client):
     r = await admin_client.get(ENDPOINT + "/999")
     assert r.status_code == 404
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_admin_create_user_not_activated_and_no_superuser(admin_client):
     r = await admin_client.post(
         ENDPOINT,
@@ -93,7 +93,7 @@ async def test_admin_create_user_not_activated_and_no_superuser(admin_client):
     assert "password" not in r.json()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_admin_create_user_activated_and_no_superuser(admin_client):
     r = await admin_client.post(
         ENDPOINT,
@@ -112,7 +112,7 @@ async def test_admin_create_user_activated_and_no_superuser(admin_client):
     assert "password" not in r.json()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_admin_create_user_activated_and_superuser(admin_client):
     r = await admin_client.post(
         ENDPOINT,
@@ -132,13 +132,13 @@ async def test_admin_create_user_activated_and_superuser(admin_client):
     assert "password" not in r.json()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_admin_delete_invalid_user(admin_client):
     r = await admin_client.delete(ENDPOINT + "/9999")
     assert r.status_code == 404
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_admin_delete_user(admin_client):
     users = await create_fake_users(1)
     r = await admin_client.delete(ENDPOINT + f"/{users[0].id}")
@@ -146,13 +146,13 @@ async def test_admin_delete_user(admin_client):
     assert await User.objects.count() == 2
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_admin_update_invalid_user(admin_client):
     r = await admin_client.put(ENDPOINT + "/9999")
     assert r.status_code == 404
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_admin_update_user_username(admin_client):
     users = await create_fake_users(1)
     updated_username = "updated_username"
@@ -163,7 +163,7 @@ async def test_admin_update_user_username(admin_client):
     assert r.json()["username"] == updated_username
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_admin_update_user_email(admin_client):
     users = await create_fake_users(1)
     updated_email = "updated_email@test.pl"
@@ -174,7 +174,7 @@ async def test_admin_update_user_email(admin_client):
     assert r.json()["email"] == updated_email
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_admin_update_user_invalid_display_role(admin_client):
     users = await create_fake_users(1)
     role_id = 9999
@@ -184,7 +184,7 @@ async def test_admin_update_user_invalid_display_role(admin_client):
     assert r.status_code == 404
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "role",
     [
@@ -202,7 +202,7 @@ async def test_admin_update_user_display_role(role, admin_client):
     assert r.json()["display_role"]["id"] == role
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("roles", [[22, 44], [28, 23, 21], [312, 433, 999]])
 async def test_admin_update_user_invalid_roles(roles, admin_client):
     users = await create_fake_users(1)
@@ -210,7 +210,7 @@ async def test_admin_update_user_invalid_roles(roles, admin_client):
     assert r.status_code == 404
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "roles",
     [

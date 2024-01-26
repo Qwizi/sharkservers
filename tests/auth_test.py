@@ -4,11 +4,11 @@ from unittest import mock
 
 import pytest
 
-from src.auth.enums import AuthExceptionsDetailEnum
-from src.auth.schemas import RegisterUserSchema
-from src.roles.enums import ProtectedDefaultRolesEnum
-from src.settings import get_settings
-from src.users.models import User
+from sharkservers.auth.enums import AuthExceptionsDetailEnum
+from sharkservers.auth.schemas import RegisterUserSchema
+from sharkservers.roles.enums import ProtectedDefaultRolesEnum
+from sharkservers.settings import get_settings
+from sharkservers.users.models import User
 from tests.conftest import _get_auth_service
 
 TEST_REGISTER_USER = {
@@ -29,7 +29,7 @@ REFRESH_TOKEN_ENDPOINT = "/v1/auth/token/refresh"
 LOGOUT_ENDPOINT = "/v1/auth/logout"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_auth_register(client):
     r = await client.post(REGISTER_ENDPOINT, json=TEST_REGISTER_USER)
     assert r.status_code == 200
@@ -42,7 +42,7 @@ async def test_auth_register(client):
     assert r.json()["display_role"]["id"] == ProtectedDefaultRolesEnum.USER.value
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_auth_register_exception_when_password_not_match(client):
     r = await client.post(
         REGISTER_ENDPOINT,
@@ -67,7 +67,7 @@ async def test_auth_register_exception_when_password_not_match(client):
     assert r.json() == response_data
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_auth_register_exception_when_username_or_password_is_taken(
     client,
 ):
@@ -87,7 +87,7 @@ async def test_auth_register_exception_when_username_or_password_is_taken(
     assert r.status_code == 422
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "username",
     [
@@ -123,7 +123,7 @@ async def test_auth_register_exception_with_invalid_username(username, client):
     assert r.status_code == 422
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "email",
     [
@@ -148,7 +148,7 @@ async def test_auth_register_exception_with_invalid_email(email, client):
     assert r.status_code == 422
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_auth_create_access_token(client):
     auth_service = await _get_auth_service()
     user = await auth_service.register(
@@ -169,7 +169,7 @@ async def test_auth_create_access_token(client):
     assert r.json()["refresh_token"]["exp"] != r.json()["access_token"]["exp"]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_auth_create_access_token_exception_when_user_not_activated(client):
     auth_service = await _get_auth_service()
     user = await auth_service.register(RegisterUserSchema(**TEST_REGISTER_USER))
@@ -182,10 +182,12 @@ async def test_auth_create_access_token_exception_when_user_not_activated(client
     )
 
     assert r.status_code == 400
-    assert r.json() == {"detail": AuthExceptionsDetailEnum.INACTIVE_USER.value}
+    assert r.json() == {
+        "detail": AuthExceptionsDetailEnum.INCORRECT_USERNAME_PASSWORD.value
+    }
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_auth_create_access_token_exception_when_user_not_exist(client):
     # No user in database
     r = await client.post(
@@ -199,7 +201,7 @@ async def test_auth_create_access_token_exception_when_user_not_exist(client):
     assert r.status_code == 404
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_refresh_token(client):
     auth_service = await _get_auth_service()
     user = await auth_service.register(
@@ -222,13 +224,13 @@ async def test_get_refresh_token(client):
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_refresh_token_exception_when_refresh_token_not_exist(client):
     r = await client.post(REFRESH_TOKEN_ENDPOINT, json={"refresh_token": "test"})
     assert r.status_code == 401
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_refresh_token_exception_when_refresh_token_is_expired(client):
     auth_service = await _get_auth_service()
     settings = get_settings()
@@ -240,7 +242,7 @@ async def test_get_refresh_token_exception_when_refresh_token_is_expired(client)
     token_data = token_response.json()
     await asyncio.sleep(1)
     with mock.patch(
-        "src.auth.services.auth.now_datetime",
+        "sharkservers.auth.services.auth.now_datetime",
         return_value=datetime.datetime.now()
         + datetime.timedelta(minutes=settings.REFRESH_TOKEN_EXPIRES + 5),
     ):
@@ -254,13 +256,13 @@ async def test_get_refresh_token_exception_when_refresh_token_is_expired(client)
         }
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_auth_exception_not_logged_client(client):
     r = await client.post(LOGOUT_ENDPOINT)
     assert r.status_code == 401
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_auth_logout(logged_client):
     r = await logged_client.post(LOGOUT_ENDPOINT)
     assert r.status_code == 200

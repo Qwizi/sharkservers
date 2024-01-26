@@ -1,5 +1,5 @@
 # Stage 1: Install Rust, build dependencies, and prepare the build environment
-FROM python:3.11.3 AS builder
+FROM python:3.11.6-slim AS builder
 
 ARG TARGETPLATFORM
 ENV CARGO_HOME=/usr/local/cargo

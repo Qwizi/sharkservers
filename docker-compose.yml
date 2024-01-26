@@ -3,9 +3,8 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
-    cpus: '0.50'
-    mem_limit: 1g
-    command: uvicorn src.main:app --reload --host 0.0.0.0 --port 8080 --ws  wsproto --proxy-headers
+    container_name: sharkservers_app
+    command: uvicorn sharkservers.main:app --reload --host 0.0.0.0 --port 8080 --ws  wsproto --proxy-headers
     ports:
       - "8080:8080"
     volumes:
@@ -22,6 +21,7 @@ services:
       - shark
   db:
     image: postgres:15.1
+    container_name: sharkservers_db
     environment:
       - POSTGRES_DB=shark_db
       - POSTGRES_USER=shark_user
@@ -33,49 +33,23 @@ services:
       - shark
     healthcheck:
       test: "exit 1"
+    volumes:
+      - local_pgdata:/var/lib/postgresql/data
   redis:
     image: "redis:alpine"
+    container_name: sharkservers_redis
     restart: always
-    ports:
+    expose:
       - "6379:6379"
     networks:
       - shark
     healthcheck:
       test: "exit 1"
-  jailbreak_db:
-    image: postgres:15.1
-    environment:
-      - POSTGRES_DB=jailbreak_db
-      - POSTGRES_USER=jailbreak_user
-      - POSTGRES_PASSWORD=jailbreak_password
-    restart: always
-    expose:
-      - "5432:5432"
-    networks:
-      - shark
-    healthcheck:
-      test: "exit 1"
-  jailbreak_app:
-    build:
-      context: ../fastapi-sourcemod-api/sourcemod_api/
-      dockerfile: Dockerfile
-    cpus: '0.50'
-    mem_limit: 1g
-    command: uvicorn src.main:app --reload --host 0.0.0.0 --port 8081 --proxy-headers
-    ports:
-      - "8081:8081"
-    volumes:
-      - ../fastapi-sourcemod-api/sourcemod_api/:/app/
-    env_file:
-      - ../fastapi-sourcemod-api/sourcemod_api/.env
-    depends_on:
-      jailbreak_db:
-        condition: service_started
-    restart: always
-    networks:
-      - shark
 
 networks:
   shark:
     name: shark
     external: true
+
+volumes:
+  local_pgdata:

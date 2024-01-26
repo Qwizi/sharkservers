@@ -1,17 +1,17 @@
 import pytest
 
-from src.roles.enums import ProtectedDefaultRolesEnum
+from sharkservers.roles.enums import ProtectedDefaultRolesEnum
 
 SCOPES_ENDPOINT = "/v1/scopes"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_all_scopes(client):
     r = await client.get(SCOPES_ENDPOINT)
     assert r.status_code == 200
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "role_id",
     [
@@ -25,7 +25,7 @@ async def test_get_scopes_by_role_id(role_id, client):
     assert r.status_code == 200
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_scopes_by_role_id_not_found(client):
     r = await client.get(SCOPES_ENDPOINT + f"?role_id=999999")
     assert r.status_code == 200

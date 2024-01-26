@@ -2,13 +2,13 @@ import os
 
 import pytest
 
-from src.roles.models import Role
-from src.users.models import User
+from sharkservers.roles.models import Role
+from sharkservers.users.models import User
 from tests.auth_test import TEST_REGISTER_USER
-from src.main import installed_file_path
+from sharkservers.main import installed_file_path
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_install(client):
     install_file_exists = False
     if os.path.exists(installed_file_path):
@@ -28,7 +28,7 @@ async def test_install(client):
         install_finish_file = open(installed_file_path, "w+")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_install_when_is_already_installed(client):
     install_file_exists = True if os.path.exists(installed_file_path) else False
     install_finish_file = open(installed_file_path, "w+")

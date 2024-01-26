@@ -1,0 +1,17 @@
+_commit: 57cf553
+_src_path: gh:bswck/skeleton
+author_username: Qwizi
+docs: true
+docs_slug: sharkservers-api
+email_address: ciolek.adrian@protonmail.com
+github_username: Qwizi
+license_name: GPL-3.0
+org_full_name: Adrian Ciołek
+package_name: sharkservers
+project_description: sharkservers-api
+publish_on_pypi: false
+python_version: '3.11'
+repo_name: sharkservers-api
+tests: true
+use_precommit: true
+visibility: public

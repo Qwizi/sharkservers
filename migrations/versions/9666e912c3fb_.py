@@ -1,4 +1,5 @@
-"""empty message
+"""
+empty message
 
 Revision ID: 9666e912c3fb
 Revises: bd6ef67f1b10
@@ -6,9 +7,6 @@ Create Date: 2023-11-26 17:36:18.384429
 
 """
 from alembic import op
-import sqlalchemy as sa
-import ormar
-
 
 # revision identifiers, used by Alembic.
 revision = "9666e912c3fb"

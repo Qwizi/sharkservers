@@ -13,34 +13,34 @@ from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter
 from httpx import AsyncClient
 
-from src.auth.dependencies import (
+from sharkservers.auth.dependencies import (
     get_access_token_service,
     get_refresh_token_service,
 )
-from src.auth.schemas import RegisterUserSchema
-from src.auth.services.auth import AuthService
-from src.auth.views import limiter
-from src.db import metadata, create_redis_pool
-from src.forum.dependencies import (
+from sharkservers.auth.schemas import RegisterUserSchema
+from sharkservers.auth.services.auth import AuthService
+from sharkservers.auth.views import limiter
+from sharkservers.db import metadata, create_redis_pool
+from sharkservers.forum.dependencies import (
     get_categories_service,
     get_posts_service,
     get_threads_service,
     get_thread_meta_service,
 )
-from src.forum.enums import CategoryTypeEnum, ThreadStatusEnum
-from src.forum.models import Category
-from src.forum.schemas import CreateThreadSchema
-from src.forum.services import CategoryService
-from src.logger import logger
-from src.main import app
-from src.roles.dependencies import get_roles_service
-from src.scopes.dependencies import get_scopes_service
-from src.scopes.models import Scope
-from src.servers.dependencies import get_servers_service
-from src.services import MainService
-from src.settings import get_settings
-from src.users.dependencies import get_users_service
-from src.users.models import User
+from sharkservers.forum.enums import CategoryTypeEnum, ThreadStatusEnum
+from sharkservers.forum.models import Category
+from sharkservers.forum.schemas import CreateThreadSchema
+from sharkservers.forum.services import CategoryService
+from sharkservers.logger import logger
+from sharkservers.main import app
+from sharkservers.roles.dependencies import get_roles_service
+from sharkservers.scopes.dependencies import get_scopes_service
+from sharkservers.scopes.models import Scope
+from sharkservers.servers.dependencies import get_servers_service
+from sharkservers.services import MainService
+from sharkservers.settings import get_settings
+from sharkservers.users.dependencies import get_users_service
+from sharkservers.users.models import User
 
 DATABASE_URL = "sqlite:///../test.db"
 
@@ -80,6 +80,17 @@ TEST_THREAD = {
     "content": "Test Content",
 }
 
+
+@pytest.fixture
+def anyio_backend():
+    return "asyncio"
+
+
+@pytest.fixture(scope="session")
+def event_loop():
+    return asyncio.get_event_loop()
+
+
 test_avatar_image_file = mock.MagicMock(file=File)
 test_avatar_image_file.filename = "test_avatar.jpg"
 
@@ -98,9 +109,10 @@ async def _get_auth_service():
     return auth_service
 
 
-@pytest_asyncio.fixture(autouse=True, scope="function")
+@pytest.fixture(autouse=True, scope="function")
 async def create_test_database():
     engine = sqlalchemy.create_engine(DATABASE_URL)
+    metadata.drop_all(engine)
     metadata.create_all(engine)
     roles_service = await get_roles_service()
     scopes_service = await get_scopes_service()
@@ -122,7 +134,7 @@ async def create_test_database():
     metadata.drop_all(engine)
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest.fixture()
 async def client():
     app.state.redis = await create_redis_pool()
     await FastAPILimiter.init(app.state.redis)
@@ -151,7 +163,7 @@ async def auth_user_headers(username, password):
     return {"Authorization": f"Bearer {token.access_token.token}"}
 
 
-@pytest_asyncio.fixture(scope="function")
+@pytest.fixture
 async def admin_client():
     headers = await auth_user_headers(
         TEST_ADMIN_USER.get("username"), TEST_ADMIN_USER.get("password")
@@ -159,12 +171,16 @@ async def admin_client():
     app.state.redis = await create_redis_pool()
     await FastAPILimiter.init(app.state.redis)
     override_limiter = RateLimiter(times=999, seconds=1)
-    app.dependency_overrides[limiter] = override_limiter
-    async with AsyncClient(app=app, base_url="http://localhost", headers=headers) as c:
-        yield c
+    app.dependency_overrides[limiter] = override_limiter @ pytest.fixture(
+        scope="session"
+    )
 
 
-@pytest_asyncio.fixture(scope="function")
+def event_loop():
+    return asyncio.get_event_loop()
+
+
+@pytest.fixture
 async def logged_client():
     auth_service = await _get_auth_service()
     user = await auth_service.register(
@@ -185,14 +201,6 @@ async def logged_client():
     async with AsyncClient(app=app, base_url="http://localhost", headers=headers) as c:
         yield c
     app.dependency_overrides[limiter] = {}
-
-
-@pytest.fixture(scope="module")
-def event_loop():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    yield loop
 
 
 async def create_fake_users(number: int = 50):
