@@ -51,4 +51,4 @@ def logger_with_filename(filename: str, data: str) -> None:
     -------
         None
     """
-    logger.debug(f"{filename} | {data!s}")
+    logger.debug(f"{filename} | {data!s}")  # noqa: G004

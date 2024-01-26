@@ -1,5 +1,5 @@
+"""Threads views."""
 from fastapi import APIRouter, Depends, Security
-from fastapi_events.dispatcher import dispatch
 from fastapi_limiter.depends import RateLimiter
 from fastapi_pagination import Page, Params
 
@@ -11,7 +11,7 @@ from sharkservers.forum.dependencies import (
     get_valid_thread,
     get_valid_thread_with_author,
 )
-from sharkservers.forum.enums import ThreadEventEnum, ThreadStatusEnum
+from sharkservers.forum.enums import ThreadStatusEnum
 from sharkservers.forum.models import Thread
 from sharkservers.forum.schemas import (
     CreateThreadSchema,
@@ -47,12 +47,17 @@ async def get_threads(
 ) -> Page[ThreadOut]:
     """
     Get all threads.
-    :param threads_service:
-    :param category_id:
-    :param params:
-    :return:
+
+    Args:
+    ----
+        params (Params, optional): The params. Defaults to Depends().
+        queries (ThreadQuery, optional): The queries. Defaults to Depends().
+        threads_service (ThreadService, optional): The threads service. Defaults to Depends(get_threads_service).
+
+    Returns:
+    -------
+        Page[ThreadOut]: The threads.
     """
-    dispatch(ThreadEventEnum.GET_ALL_PRE, payload={"data": params})
     kwargs = {}
     if queries.category:
         kwargs["category__id"] = queries.category
@@ -85,7 +90,7 @@ async def get_threads(
 
 
 @router.post("", dependencies=[Depends(limiter)])
-async def create_thread(
+async def create_thread(  # noqa: PLR0913
     thread_data: CreateThreadSchema,
     user: User = Security(get_current_active_user, scopes=["threads:create"]),
     threads_service: ThreadService = Depends(get_threads_service),
@@ -94,17 +99,24 @@ async def create_thread(
     servers_service: ServerService = Depends(get_servers_service),
 ) -> ThreadOut:
     """
-    Create new thread.
-    :param thread_meta_service:
-    :param categories_service:
-    :param threads_service:
-    :param thread_data:
-    :param user:
-    :return:
+    Create thread.
+
+    Args:
+    ----
+        thread_data (CreateThreadSchema): The thread data.
+        user (User, optional): The user. Defaults to Security(get_current_active_user, scopes=["threads:create"]).
+        threads_service (ThreadService, optional): The threads service. Defaults to Depends(get_threads_service).
+        categories_service (CategoryService, optional): The categories service. Defaults to Depends(get_categories_service).
+        thread_meta_service (ThreadMetaService, optional): The thread meta service. Defaults to Depends(get_thread_meta_service).
+        servers_service (ServerService, optional): The servers service. Defaults to Depends(get_servers_service).
+
+
+    Returns:
+    -------
+        ThreadOut: The thread.
     """
-    # Get category by id
     category = await categories_service.get_one(id=thread_data.category)
-    new_thread = await threads_service.create_thread(
+    return await threads_service.create_thread(
         data=thread_data,
         author=user,
         category=category,
@@ -112,32 +124,39 @@ async def create_thread(
         thread_meta_service=thread_meta_service,
         servers_service=servers_service,
     )
-    return new_thread
 
 
-@router.get("/{thread_id}", response_model=ThreadOut)
-async def get_thread(thread: Thread = Depends(get_valid_thread)):
+@router.get("/{thread_id}")
+async def get_thread(thread: Thread = Depends(get_valid_thread)) -> ThreadOut:
     """
     Get thread by id.
-    :param thread:
-    :return:
+
+    Args:
+    ----
+        thread (Thread, optional): The thread. Defaults to Depends(get_valid_thread).
+
+    Returns:
+    -------
+        ThreadOut: The thread.
     """
-    dispatch(ThreadEventEnum.GET_ONE_POST, payload={"data": thread})
     return thread
 
 
-@router.put("/{thread_id}", response_model=ThreadOut, dependencies=[Depends(limiter)])
+@router.put("/{thread_id}", dependencies=[Depends(limiter)])
 async def update_thread(
     thread_data: UpdateThreadSchema,
     thread: Thread = Depends(get_valid_thread_with_author),
-):
+) -> ThreadOut:
     """
     Update thread by id.
-    :param thread_data:
-    :param thread:
-    :return:
+
+    Args:
+    ----
+        thread_data (UpdateThreadSchema): The thread data.
+        thread (Thread, optional): The thread. Defaults to Depends(get_valid_thread_with_author).
+
+    Returns:
+    -------
+        ThreadOut: The thread.
     """
-    dispatch(ThreadEventEnum.UPDATE_PRE, payload={"data": thread_data})
-    updated_thread = await thread.update(**thread_data.dict(exclude_unset=True))
-    dispatch(ThreadEventEnum.UPDATE_POST, payload={"data": updated_thread})
-    return updated_thread
+    return await thread.update(**thread_data.dict(exclude_unset=True))

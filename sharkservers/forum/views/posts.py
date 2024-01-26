@@ -1,3 +1,6 @@
+"""Posts views."""
+from __future__ import annotations
+
 from fastapi import APIRouter, Depends, Security
 from fastapi_events.dispatcher import dispatch
 from fastapi_limiter.depends import RateLimiter
@@ -39,17 +42,24 @@ limiter = RateLimiter(
 
 @router.get("")
 async def get_posts(
-    thread_id: int = None,
+    thread_id: int | None = None,
     params: Params = Depends(),
     queries: PostQuery = Depends(),
     posts_service: PostService = Depends(get_posts_service),
 ) -> Page[PostOut]:
     """
-    Get all posts by thread id.
-    :param posts_service:
-    :param thread_id:
-    :param params:
-    :return:
+    Get all posts.
+
+    Args:
+    ----
+        thread_id (int, optional): The thread ID. Defaults to None.
+        params (Params, optional): The params. Defaults to Depends().
+        queries (PostQuery, optional): The queries. Defaults to Depends().
+        posts_service (PostService, optional): The posts service. Defaults to Depends(get_posts_service).
+
+    Returns:
+    -------
+        Page[PostOut]: The posts.
     """
     kwargs = {}
     if thread_id:
@@ -68,12 +78,18 @@ async def get_posts(
     )
 
 
-@router.get("/{post_id}", response_model=PostOut)
-async def get_post_by_id(post: Post = Depends(get_valid_post)):
+@router.get("/{post_id}")
+async def get_post_by_id(post: Post = Depends(get_valid_post)) -> PostOut:
     """
-    Get post by id.
-    :param post:
-    :return:
+    Get post by ID.
+
+    Args:
+    ----
+        post (Post): The post. Defaults to Depends(get_valid_post).
+
+    Returns:
+    -------
+        Post: The post.
     """
     return post
 
@@ -86,14 +102,23 @@ async def create_post(
     threads_service: ThreadService = Depends(get_threads_service),
 ) -> PostOut:
     """
+    Create post.
 
-    :param threads_service:
-    :param posts_service:
-    :param post_data:
-    :param user:
-    :return:
+    Args:
+    ----
+        post_data (CreatePostSchema): The post data.
+        user (User, optional): The user. Defaults to Security(get_current_active_user, scopes=["posts:create"]).
+        posts_service (PostService, optional): The posts service. Defaults to Depends(get_posts_service).
+        threads_service (ThreadService, optional): The threads service. Defaults to Depends(get_threads_service).
+
+    Raises:
+    ------
+        thread_is_closed_exception: The thread is closed exception.
+
+    Returns:
+    -------
+        PostOut: The post.
     """
-    dispatch(PostEventEnum.CREATE_PRE, payload={"data": post_data})
     post_data_dict = post_data.dict()
     thread_id = post_data_dict.pop("thread_id")
     thread = await threads_service.get_one(id=thread_id)
@@ -109,10 +134,20 @@ async def create_post(
 async def update_post(
     post_data: UpdatePostSchema,
     post: Post = Depends(get_valid_post_author),
-):
-    post_updated = await post.update(**post_data.dict(exclude_unset=True))
-    dispatch(PostEventEnum.UPDATE_POST, payload={"data": post_updated})
-    return post_updated
+) -> PostOut:
+    """
+    Update post.
+
+    Args:
+    ----
+        post_data (UpdatePostSchema): The post data.
+        post (Post, optional): The post. Defaults to Depends(get_valid_post_author).
+
+    Returns:
+    -------
+        Post: The post.
+    """
+    return await post.update(**post_data.dict(exclude_unset=True))
 
 
 @router.get("/{post_id}/likes")
@@ -122,10 +157,17 @@ async def get_post_likes(
     params: Params = Depends(),
 ) -> Page[LikeOut]:
     """
-    Get all post likes.
-    :param post:
-    :param likes_service:
-    :return:
+    Get post likes.
+
+    Args:
+    ----
+        post (Post, optional): The post. Defaults to Depends(get_valid_post).
+        likes_service (LikeService, optional): The likes service. Defaults to Depends(get_likes_service).
+        params (Params, optional): The params. Defaults to Depends().
+
+    Returns:
+    -------
+        Page[LikeOut]: The likes.
     """
     return await paginate(
         likes_service.Meta.model.objects.select_related(
@@ -140,19 +182,22 @@ async def like_post(
     post: Post = Depends(get_valid_post),
     user: User = Security(get_current_active_user, scopes=["posts:create"]),
     likes_service: LikeService = Depends(get_likes_service),
-):
+) -> LikeOut:
     """
     Like post.
-    :param post:
-    :param user:
-    :param likes_service:
-    :return:
+
+    Args:
+    ----
+        post (Post, optional): The post. Defaults to Depends(get_valid_post).
+        user (User, optional): The user. Defaults to Security(get_current_active_user, scopes=["posts:create"]).
+        likes_service (LikeService, optional): The likes service. Defaults to Depends(get_likes_service).
+
+    Returns:
+    -------
+        LikeOut: The like.
     """
     new_like, likes = await likes_service.add_like_to_post(post=post, author=user)
-    return {
-        "message": "Post liked successfully",
-        "data": {"new_like": new_like, "likes": likes},
-    }
+    return new_like
 
 
 @router.post("/{post_id}/dislike", dependencies=[Depends(limiter)])
@@ -160,12 +205,18 @@ async def dislike_post(
     post: Post = Depends(get_valid_post),
     user: User = Security(get_current_active_user, scopes=["posts:create"]),
     likes_service: LikeService = Depends(get_likes_service),
-):
+) -> dict:
     """
     Dislike post.
-    :param post:
-    :param user:
-    :param likes_service:
-    :return:
+
+    Args:
+    ----
+        post (Post, optional): The post. Defaults to Depends(get_valid_post).
+        user (User, optional): The user. Defaults to Security(get_current_active_user, scopes=["posts:create"]).
+        likes_service (LikeService, optional): The likes service. Defaults to Depends(get_likes_service).
+
+    Returns:
+    -------
+        dict: The response.
     """
     return await likes_service.remove_like_from_post(post=post, author=user)

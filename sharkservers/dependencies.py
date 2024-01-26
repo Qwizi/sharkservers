@@ -1,6 +1,5 @@
-""""""
+"""Dependencies for the application."""
 from fastapi import Depends
-from fastapi_limiter.depends import RateLimiter
 from fastapi_mail import ConnectionConfig, FastMail
 from fastapi_mail.email_utils import DefaultChecker
 
@@ -71,36 +70,3 @@ async def get_upload_service(
         UploadService: The upload service.
     """
     return UploadService(settings=settings)
-
-
-def get_limiter(settings_: Settings = Depends(get_settings)):
-    """
-    Retrieve the rate limiter.
-
-    Args:
-    ----
-        settings_ (Settings, optional): The application settings. Defaults to Depends(get_settings).
-
-    Returns:
-    -------
-        RateLimiter: The rate limiter.
-    """
-    if settings_.TESTING:
-        return None
-    return limitter
-
-
-class Limiter:
-    def __init__(self, times: int = 3, minutes: int = 2):
-        self.times = times
-        self.minutes = minutes
-
-    def __call__(self):
-        """
-        Calls the rate limiter.
-
-        Returns
-        -------
-            RateLimiter: The rate limiter.
-        """
-        return RateLimiter(times=self.times, minutes=self.minutes)

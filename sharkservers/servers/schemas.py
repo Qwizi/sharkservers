@@ -1,18 +1,20 @@
-from typing import Optional
+"""Schemas for the servers module."""
+from __future__ import annotations
 
 from pydantic import BaseModel, Field
-from pydantic.color import Color
 
 from sharkservers.servers.models import Server
 
-serverOut = Server.get_pydantic()
+server_out = Server.get_pydantic()
 
 
-class ServerOut(serverOut):
-    pass
+class ServerOut(server_out):
+    """Schema for retrieving a server."""
 
 
 class CreateServerSchema(BaseModel):
+    """Schema for creating a server."""
+
     tag: str
     name: str
     ip: str
@@ -21,14 +23,18 @@ class CreateServerSchema(BaseModel):
 
 
 class UpdateServerSchema(BaseModel):
-    tag: Optional[str]
-    name: Optional[str]
-    ip: Optional[str]
-    port: Optional[int] = Field(gt=0, lt=65536)
-    api_url: Optional[str]
+    """Schema for updating server information."""
+
+    tag: str | None
+    name: str | None
+    ip: str | None
+    port: int | None = Field(gt=0, lt=65536)
+    api_url: str | None
 
 
 class ServerStatusSchema(BaseModel):
+    """Schema for retrieving a server's status."""
+
     id: int
     name: str
     ip: str
@@ -37,21 +43,3 @@ class ServerStatusSchema(BaseModel):
     max_players: int
     map: str
     game: str
-
-
-class CreatePlayerChatColorSchema(BaseModel):
-    steamid64: Optional[str] = Field(max_length=17)
-    tag: str = Field(min_length=3, max_length=32)
-    flag: Optional[str] = Field(max_length=1)
-    tag_color: Color
-    name_color: Color
-    text_color: Color
-
-
-class UpdatePlayerChatColorSchema(BaseModel):
-    steamid64: Optional[str] = Field(max_length=17)
-    tag: Optional[str] = Field(min_length=3, max_length=32)
-    flag: Optional[str] = Field(max_length=1)
-    tag_color: Optional[Color]
-    name_color: Optional[Color]
-    text_color: Optional[Color]

@@ -1,13 +1,13 @@
 import pytest
 
-from src.roles.enums import ProtectedDefaultRolesEnum
-from src.scopes.dependencies import get_scopes_service
-from src.scopes.services import ScopeService
+from sharkservers.roles.enums import ProtectedDefaultRolesEnum
+from sharkservers.scopes.dependencies import get_scopes_service
+from sharkservers.scopes.services import ScopeService
 
 ROLES_ENDPOINT = "/v1/roles"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_roles(client):
     r = await client.get(ROLES_ENDPOINT)
     assert r.status_code == 200
@@ -15,7 +15,7 @@ async def test_get_roles(client):
     assert r.json()["total"] == 4
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "default_roles_id",
     [
@@ -50,7 +50,7 @@ async def test_get_default_role(default_roles_id, client):
         assert len(r.json()["scopes"]) == 0
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_invalid_role(client):
     r = await client.get(f"{ROLES_ENDPOINT}/9999")
     assert r.status_code == 404

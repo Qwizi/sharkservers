@@ -1,12 +1,12 @@
 import pytest
 
-from src.forum.enums import CategoryTypeEnum
+from sharkservers.forum.enums import CategoryTypeEnum
 from tests.conftest import create_fake_categories, TEST_CATEGORY
 
 ADMIN_CATEGORIES_ENDPOINT = "/v1/admin/forum/categories"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_unauthorized_admin_create_category(client):
     r = await client.post(
         ADMIN_CATEGORIES_ENDPOINT,
@@ -19,27 +19,27 @@ async def test_unauthorized_admin_create_category(client):
     assert r.status_code == 401
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_unauthorized_admin_delete_category(client):
     categories = await create_fake_categories(1)
     r = await client.delete(ADMIN_CATEGORIES_ENDPOINT + f"/{categories[0].id}")
     assert r.status_code == 401
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_admin_delete_category(admin_client):
     categories = await create_fake_categories(1)
     r = await admin_client.delete(ADMIN_CATEGORIES_ENDPOINT + f"/{categories[0].id}")
     assert r.status_code == 200
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_admin_delete_invalid_category(admin_client):
     r = await admin_client.delete(ADMIN_CATEGORIES_ENDPOINT + "/1")
     assert r.status_code == 404
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "category_type", [CategoryTypeEnum.PUBLIC.value, CategoryTypeEnum.APPLICATION.value]
 )

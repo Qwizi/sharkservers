@@ -1,10 +1,12 @@
+"""Forum services."""
+from __future__ import annotations
+
 from fastapi import HTTPException
 from starlette import status as starlette_status
 
 from sharkservers.db import BaseService
 from sharkservers.forum.enums import (
     CategoryTypeEnum,
-    ThreadActionEnum,
     ThreadStatusEnum,
 )
 from sharkservers.forum.exceptions import (
@@ -16,7 +18,7 @@ from sharkservers.forum.exceptions import (
     thread_not_found_exception,
 )
 from sharkservers.forum.models import Category, Like, Post, Thread, ThreadMeta
-from sharkservers.forum.schemas import CreateThreadSchema
+from sharkservers.forum.schemas import CreateThreadSchema, LikeOut, ThreadOut
 from sharkservers.logger import logger
 from sharkservers.roles.enums import ProtectedDefaultRolesTagEnum
 from sharkservers.servers.services import ServerService
@@ -24,11 +26,16 @@ from sharkservers.users.models import User
 
 
 class CategoryService(BaseService):
+    """Category service."""
+
     class Meta:
+        """Category service meta."""
+
         model = Category
         not_found_exception = category_not_found_exception
 
-    async def sync_counters(self):
+    async def sync_counters(self) -> None:
+        """Sync category threads counters."""
         try:
             categories = await self.Meta.model.objects.select_related("threads").all()
             for category in categories:
@@ -37,89 +44,47 @@ class CategoryService(BaseService):
             logger.info(
                 f"Finished sync counters to category threads -> {len(categories)}",
             )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(e)
 
 
 class ThreadMetaService(BaseService):
+    """Thread meta service."""
+
     class Meta:
+        """Thread meta service meta."""
+
         model = ThreadMeta
         not_found_exception = thread_meta_not_found_exception
 
-    async def fill_meta(self, thread_id: int, data: dict):
+    async def fill_meta(self, thread_id: int, data: dict) -> ThreadMeta:
+        """
+        Fill thread meta.
+
+        Args:
+        ----
+            thread_id (int): The thread id.
+            data (dict): The data.
+
+        Returns:
+        -------
+            ThreadMeta: The thread meta.
+        """
         for key, value in data.items():
             thread_meta = await self.get_one(name=key, thread_meta__id=thread_id)
             await thread_meta.update(value=value)
 
 
 class ThreadService(BaseService):
+    """Thread service."""
+
     class Meta:
+        """Thread service meta."""
+
         model = Thread
         not_found_exception = thread_not_found_exception
 
-    @staticmethod
-    async def close_thread(thread: Thread):
-        await thread.update(is_closed=True)
-        return thread
-
-    @staticmethod
-    async def open_thread(thread: Thread):
-        await thread.update(is_closed=False)
-        return thread
-
-    @staticmethod
-    async def change_status(thread: Thread, status: ThreadStatusEnum):
-        await thread.update(status=status)
-        return thread
-
-    async def approve(self, thread: Thread):
-        await self.set_author_role(thread)
-        await self.change_status(thread, ThreadStatusEnum.APPROVED)
-        await self.close_thread(thread)
-        return thread
-
-    async def reject(self, thread: Thread):
-        await self.change_status(thread, ThreadStatusEnum.REJECTED)
-        await self.close_thread(thread)
-        return thread
-
-    @staticmethod
-    async def pin_thread(thread: Thread):
-        await thread.update(is_pinned=True)
-        return thread
-
-    @staticmethod
-    async def unpin_thread(thread: Thread):
-        await thread.update(is_pinned=False)
-        return thread
-
-    @staticmethod
-    async def change_category(thread: Thread, new_category: Category):
-        await thread.update(category=new_category)
-        return thread
-
-    async def run_action(
-        self,
-        thread: Thread,
-        action: ThreadActionEnum,
-        new_category: Category = None,
-    ):
-        if action == ThreadActionEnum.APPROVE:
-            return await self.approve(thread)
-        elif action == ThreadActionEnum.REJECT:
-            return await self.reject(thread)
-        elif action == ThreadActionEnum.CLOSE:
-            return await self.close_thread(thread)
-        elif action == ThreadActionEnum.OPEN:
-            return await self.open_thread(thread)
-        elif action == ThreadActionEnum.PIN:
-            return await self.pin_thread(thread)
-        elif action == ThreadActionEnum.UNPIN:
-            return await self.unpin_thread(thread)
-        elif action == ThreadActionEnum.MOVE:
-            return await self.change_category(thread, new_category)
-
-    async def create_thread(
+    async def create_thread(  # noqa: PLR0913
         self,
         data: CreateThreadSchema,
         author: User,
@@ -127,8 +92,29 @@ class ThreadService(BaseService):
         status: ThreadStatusEnum = ThreadStatusEnum.PENDING.value,
         thread_meta_service: ThreadMetaService = None,
         servers_service: ServerService = None,
-        **kwargs,
-    ):
+        **kwargs,  # noqa: ANN003
+    ) -> ThreadOut:
+        """
+        Create thread.
+
+        Args:
+        ----
+            data (CreateThreadSchema): The data.
+            author (User): The author.
+            category (Category): The category.
+            status (ThreadStatusEnum, optional): The status. Defaults to ThreadStatusEnum.PENDING.value.
+            thread_meta_service (ThreadMetaService, optional): The thread meta service. Defaults to None.
+            servers_service (ServerService, optional): The servers service. Defaults to None.
+            **kwargs: The kwargs.
+
+        Raises:
+        ------
+            HTTPException: The HTTP exception.
+
+        Returns:
+        -------
+            ThreadOut: The thread.
+        """
         if category.type == CategoryTypeEnum.APPLICATION:
             if not data.server_id:
                 raise HTTPException(
@@ -183,7 +169,7 @@ class ThreadService(BaseService):
                     "author__player__steamrep_profile",
                 ],
             )
-        new_thread = await self.create(
+        return await self.create(
             title=data.title,
             content=data.content,
             category=category,
@@ -191,19 +177,30 @@ class ThreadService(BaseService):
             status=status,
             **kwargs,
         )
-        return new_thread
 
-    async def sync_counters(self):
+    async def sync_counters(self) -> None:
+        """Sync thread posts counters."""
         try:
             threads = await self.Meta.model.objects.select_related("posts").all()
             for thread in threads:
                 posts_count = await thread.posts.count()
                 await thread.update(post_count=posts_count)
             logger.info(f"Finished sync counters to thread posts -> {len(threads)}")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(e)
 
-    async def set_author_role(self, thread: Thread):
+    async def set_author_role(self, thread: Thread) -> None:
+        """
+        Set author role.
+
+        Args:
+        ----
+            thread (Thread): The thread.
+
+        Returns:
+        -------
+            None: None.
+        """
         user = thread.author
         admin_role = thread.server.admin_role
         if user.display_role.tag == ProtectedDefaultRolesTagEnum.USER.value:
@@ -214,31 +211,52 @@ class ThreadService(BaseService):
 
 
 class PostService(BaseService):
+    """Post service."""
+
     class Meta:
+        """Post service meta."""
+
         model = Post
         not_found_exception = post_not_found_exception
 
-    async def sync_counters(self):
+    async def sync_counters(self) -> None:
+        """Sync post likes counters."""
         try:
             posts = await self.Meta.model.objects.select_related("likes").all()
             for post in posts:
                 likes_count = await post.likes.count()
                 await post.update(likes_count=likes_count)
             logger.info(f"Finished sync counters to post likes -> {len(posts)}")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(e)
 
 
-class SpecialThreadQuestionService(BaseService):
-    pass
-
-
 class LikeService(BaseService):
+    """Like service."""
+
     class Meta:
+        """Like service meta."""
+
         model = Like
         not_found_exception = like_not_found_exception
 
-    async def add_like_to_post(self, post: Post, author: User):
+    async def add_like_to_post(self, post: Post, author: User) -> tuple[LikeOut, int]:
+        """
+        Add like to post.
+
+        Args:
+        ----
+            post (Post): The post.
+            author (User): The author.
+
+        Raises:
+        ------
+            like_already_exists_exception: The like already exists exception.
+
+        Returns:
+        -------
+            tuple[LikeOut, int]: The like and likes count.
+        """
         like_exists = False
         for like in post.likes:
             if like.user == author:
@@ -250,7 +268,23 @@ class LikeService(BaseService):
         await post.likes.add(new_like)
         return new_like, post.likes
 
-    async def remove_like_from_post(self, post: Post, author: User):
+    async def remove_like_from_post(self, post: Post, author: User) -> dict:
+        """
+        Remove like from post.
+
+        Args:
+        ----
+            post (Post): The post.
+            author (User): The author.
+
+        Raises:
+        ------
+            like_not_found_exception: The like not found exception.
+
+        Returns:
+        -------
+            dict: The dict.
+        """
         like_exists = False
         for like in post.likes:
             if like.author == author:

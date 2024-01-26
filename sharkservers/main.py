@@ -88,9 +88,9 @@ if TYPE_CHECKING:
     from sharkservers.users.services import UserService
 
 
-script_dir = os.path.dirname(__file__)
-st_abs_file_path = os.path.join(script_dir, "../static/")
-installed_file_path = os.path.join(script_dir, "installed")
+script_dir = os.path.dirname(__file__)  # noqa: PTH120
+st_abs_file_path = os.path.join(script_dir, "../static/")  # noqa: PTH118
+installed_file_path = os.path.join(script_dir, "installed")  # noqa: PTH118
 
 
 def init_routes(_app: FastAPI) -> FastAPI:
@@ -179,7 +179,7 @@ async def update_tables_counters() -> None:
             posts_service=posts_service,
         )
         logger.info("Finished updating tables counters")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error(e)
 
 
@@ -199,7 +199,7 @@ def add_middlewares(_app: FastAPI) -> FastAPI:
     @_app.middleware("http")
     async def update_user_last_online_time_middleware(
         request: Request,
-        call_next,
+        call_next,  # noqa: ANN001
     ) -> Response:
         settings: Settings = get_settings()  # Add type annotation for settings
         response: Response = await call_next(request)
@@ -267,7 +267,7 @@ def create_app() -> FastAPI:
     async def websocket_endpoint(
         websocket: WebSocket,
         chat_service: ChatService = Depends(get_chat_service),
-        author=Depends(ws_get_current_user),
+        author=Depends(ws_get_current_user),  # noqa: ANN001
     ) -> None:
         try:
             logger.info(_app.state.broadcast)

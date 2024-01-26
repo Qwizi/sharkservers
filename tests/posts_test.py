@@ -1,8 +1,8 @@
 import pytest
 
-from src.auth.schemas import RegisterUserSchema
-from src.forum.dependencies import get_threads_service
-from src.users.dependencies import get_users_service
+from sharkservers.auth.schemas import RegisterUserSchema
+from sharkservers.forum.dependencies import get_threads_service
+from sharkservers.users.dependencies import get_users_service
 from tests.conftest import (
     create_fake_posts,
     create_fake_categories,
@@ -14,7 +14,7 @@ from tests.conftest import (
 POSTS_ENDPOINT = "/v1/forum/posts"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_posts(logged_client):
     users_service = await get_users_service()
     author = await users_service.get_one(username=TEST_USER.get("username"))
@@ -26,7 +26,7 @@ async def test_get_posts(logged_client):
     assert r.json()["total"] == 10
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_thread_posts(logged_client):
     users_service = await get_users_service()
     author = await users_service.get_one(username=TEST_USER.get("username"))
@@ -44,13 +44,13 @@ async def test_get_thread_posts(logged_client):
     assert r2.json()["total"] == 5
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_post_not_found(logged_client):
     r = await logged_client.get(f"{POSTS_ENDPOINT}/9999")
     assert r.status_code == 404
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_post(logged_client):
     users_service = await get_users_service()
     author = await users_service.get_one(username=TEST_USER.get("username"))
@@ -62,13 +62,13 @@ async def test_get_post(logged_client):
     assert r.json()["id"] == posts[0].id
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_unauthorized_create_post(client):
     r = await client.post(POSTS_ENDPOINT)
     assert r.status_code == 401
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_post_in_closed_thread(logged_client):
     users_service = await get_users_service()
     author = await users_service.get_one(username=TEST_USER.get("username"))
@@ -82,7 +82,7 @@ async def test_create_post_in_closed_thread(logged_client):
     assert r.status_code == 400
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_post(logged_client):
     users_service = await get_users_service()
     author = await users_service.get_one(username=TEST_USER.get("username"))
@@ -100,7 +100,7 @@ async def test_create_post(logged_client):
     assert thread.posts[0].content == "test"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_unauthorized_update_post(client):
     auth_service = await _get_auth_service()
     author = await auth_service.register(
@@ -119,7 +119,7 @@ async def test_unauthorized_update_post(client):
     assert r.status_code == 401
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_update_post_when_logged_client_is_not_a_author(logged_client):
     auth_service = await _get_auth_service()
     author = await auth_service.register(
@@ -138,7 +138,7 @@ async def test_update_post_when_logged_client_is_not_a_author(logged_client):
     assert r.status_code == 400
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_update_post(logged_client):
     users_service = await get_users_service()
     author = await users_service.get_one(username=TEST_USER.get("username"))
@@ -154,7 +154,7 @@ async def test_update_post(logged_client):
     assert r.json()["author"]["id"] == author.id
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_post_when_thread_is_closed(logged_client):
     users_service = await get_users_service()
     author = await users_service.get_one(username=TEST_USER.get("username"))
@@ -167,7 +167,7 @@ async def test_create_post_when_thread_is_closed(logged_client):
     assert r.status_code == 400
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_post_likes(logged_client):
     users_service = await get_users_service()
     author = await users_service.get_one(username=TEST_USER.get("username"))
@@ -179,7 +179,7 @@ async def test_get_post_likes(logged_client):
     assert r.json()["total"] == 0
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "endpoint",
     [
@@ -205,7 +205,7 @@ async def test_unauthorized_like_and_dislike_post(endpoint, client):
     assert r.status_code == 401
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_like_post(logged_client):
     users_service = await get_users_service()
     author = await users_service.get_one(username=TEST_USER.get("username"))
@@ -219,7 +219,7 @@ async def test_like_post(logged_client):
     assert r2.json()["total"] == 1
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_dislike_post(logged_client):
     users_service = await get_users_service()
     author = await users_service.get_one(username=TEST_USER.get("username"))

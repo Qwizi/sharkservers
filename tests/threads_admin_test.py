@@ -1,6 +1,6 @@
 import pytest
-from src.auth.schemas import RegisterUserSchema
-from src.users.dependencies import get_users_service
+from sharkservers.auth.schemas import RegisterUserSchema
+from sharkservers.users.dependencies import get_users_service
 from tests.conftest import (
     _get_auth_service,
     create_fake_categories,
@@ -11,7 +11,7 @@ from tests.conftest import (
 THREADS_ADMIN_ENDPOINT = "/v1/admin/forum/threads"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_unauthorized_admin_delete_thread(client):
     auth_service = await _get_auth_service()
 
@@ -31,7 +31,7 @@ async def test_unauthorized_admin_delete_thread(client):
     assert r.status_code == 401
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_unauthorized_admin_update_thread(client):
     auth_service = await _get_auth_service()
 
@@ -51,7 +51,7 @@ async def test_unauthorized_admin_update_thread(client):
     assert r.status_code == 401
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_admin_delete_thread(admin_client):
     users_service = await get_users_service()
     admin_user = await users_service.get_one(username=TEST_ADMIN_USER.get("username"))
@@ -62,7 +62,7 @@ async def test_admin_delete_thread(admin_client):
     assert r.json()["id"] == threads[0].id
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_admin_close_thread(admin_client):
     users_service = await get_users_service()
     admin_user = await users_service.get_one(username=TEST_ADMIN_USER.get("username"))
@@ -75,7 +75,7 @@ async def test_admin_close_thread(admin_client):
     assert r.json()["is_closed"] is True
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_admin_open_thread(admin_client):
     users_service = await get_users_service()
     admin_user = await users_service.get_one(username=TEST_ADMIN_USER.get("username"))
@@ -88,7 +88,7 @@ async def test_admin_open_thread(admin_client):
     assert r.json()["is_closed"] is False
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "data",
     [

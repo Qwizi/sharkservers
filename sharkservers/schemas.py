@@ -9,7 +9,7 @@ It includes the following classes:
 - HTTPError401Schema: Represents the schema for a 401 Unauthorized error response.
 - OrderQuery: Represents the schema for the order query parameter.
 """
-from typing import Optional
+from __future__ import annotations
 
 from fastapi import Query
 from pydantic import BaseModel
@@ -75,7 +75,7 @@ class OrderQuery(BaseModel):
     :param order_by: The field to order by.
     """
 
-    order_by: Optional[str] = Query(
+    order_by: str | None = Query(
         OrderEnum.ID_DESC,
         description="Order by",
         enum=OrderEnum,

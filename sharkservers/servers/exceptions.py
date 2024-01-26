@@ -1,3 +1,4 @@
+"""Exceptions for the servers module."""
 from fastapi import HTTPException
 
 from sharkservers.servers.enums import ServerExceptionEnum

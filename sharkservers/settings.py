@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
-from pydantic import BaseSettings
+from pydantic import BaseSettings, EmailStr
 
 
 class Settings(BaseSettings):
@@ -65,7 +65,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     MAIL_USERNAME: str = ""
     MAIL_PASSWORD: str = ""
-    MAIL_FROM: str = ""
+    MAIL_FROM: EmailStr = ""
     MAIL_PORT: int = 587
     MAIL_SERVER: str = ""
     MAIL_FROM_NAME: str = ""

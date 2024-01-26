@@ -1,4 +1,5 @@
-from typing import Optional
+"""Forum schemas."""
+from __future__ import annotations
 
 from fastapi import Query
 from pydantic import BaseModel, Field
@@ -38,41 +39,67 @@ thread_meta_out = ThreadMeta.get_pydantic()
 
 
 class CategoryOut(category_out):
+    """Category output schema."""
+
     class Config:
+        """Category output schema config."""
+
         orm_mode = True
 
 
 class ThreadMetaOut(BaseModel):
+    """Thread meta output schema."""
+
     class Config:
+        """Thread meta output schema config."""
+
         orm_mode = True
 
 
 class ThreadOut(thread_out):
+    """Thread output schema."""
+
     class Config:
+        """Thread output schema config."""
+
         orm_mode = True
 
 
 class PostOut(post_out):
+    """Post output schema."""
+
     class Config:
+        """Post output schema config."""
+
         orm_mode = True
 
 
 class LikeOut(like_out):
+    """Like output schema."""
+
     class Config:
+        """Like output schema config."""
+
         orm_mode = True
 
 
 class ThreadTag(BaseModel):
+    """Thread tag schema."""
+
     id: int
     name: str
 
 
 class ThreadCategory(BaseModel):
+    """Thread category schema."""
+
     id: int
     name: str
 
 
 class ThreadAuthor(BaseModel):
+    """Thread author schema."""
+
     id: int
     username: str
     avatar: str
@@ -80,83 +107,108 @@ class ThreadAuthor(BaseModel):
 
 
 class ThreadPostSchema(BaseModel):
+    """Thread post schema."""
+
     id: int
     content: str
     author: ThreadAuthor
 
 
 class AdminCreateCategorySchema(BaseModel):
+    """Admin create category schema."""
+
     title: str = Field(max_length=64, min_length=3)
     content: str = Field(min_length=2)
     category: int
-    # tags: Optional[List[str]] = None
 
 
 # generate AdminCreateThreadSchema
 class AdminCreateThreadSchema(AdminCreateCategorySchema):
+    """Admin create thread schema."""
+
     author_id: int
 
 
 class UpdateThreadSchema(BaseModel):
-    title: Optional[str] = Field(max_length=64)
-    content: Optional[str]
+    """Update thread schema."""
+
+    title: str | None = Field(max_length=64)
+    content: str | None
 
 
 # generate AdminUpdateThreadSchema
 class AdminUpdateThreadSchema(UpdateThreadSchema):
-    author_id: Optional[int]
-    category_id: Optional[int]
+    """Admin update thread schema."""
+
+    author_id: int | None
+    category_id: int | None
 
 
 class CreatePostSchema(BaseModel):
+    """Create post schema."""
+
     thread_id: int
     content: str = Field(min_length=2)
 
 
 class UpdatePostSchema(BaseModel):
+    """Update post schema."""
+
     content: str
 
 
 class CreateCategorySchema(BaseModel):
+    """Create category schema."""
+
     name: str
-    description: Optional[str]
+    description: str | None
     type: CategoryTypeEnum = CategoryTypeEnum.PUBLIC
 
 
 class CreateThreadSchema(BaseModel):
+    """Create thread schema."""
+
     title: str = Field(max_length=64, min_length=3)
     content: str = Field(min_length=2)
     category: int
-    server_id: Optional[int] = None
-    question_experience: Optional[str] = None
-    question_age: Optional[int] = None
-    question_reason: Optional[str] = None
+    server_id: int | None = None
+    question_experience: int | None = None
+    question_age: int | None = None
+    question_reason: int | None = None
 
 
 class AdminCreatePostSchema(CreatePostSchema):
+    """Admin create post schema."""
+
     user_id: int
 
 
 class AdminUpdatePostSchema(UpdatePostSchema):
-    user_id: Optional[int]
-    thread_id: Optional[int]
+    """Admin update post schema."""
+
+    user_id: int | None
+    thread_id: int | None
 
 
 class ThreadQuery(OrderQuery):
-    category: Optional[int] = Query(None, description="Category ID", gt=0)
-    server: Optional[int] = Query(None, description="Server ID", gt=0)
-    status: Optional[str] = Query(
+    """Thread query schema."""
+
+    category: int | None = Query(None, description="Category ID", gt=0)
+    server: int | None = Query(None, description="Server ID", gt=0)
+    status: str | None = Query(
         None,
         description="Thread status",
         enum=ThreadStatusEnum,
     )
-    closed: Optional[bool] = Query(None, description="Is thread closed")
+    closed: bool | None = Query(None, description="Is thread closed")
 
 
 class PostQuery(OrderQuery):
-    pass
+    """Post query schema."""
 
 
 class AdminThreadActionSchema(BaseModel):
+    """Admin thread action schema."""
+
     action: ThreadActionEnum = ThreadActionEnum.CLOSE.value
-    category: Optional[int] = None
+    category: int | None = None

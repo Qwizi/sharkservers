@@ -18,9 +18,7 @@ from sharkservers.auth.schemas import RegisterUserSchema
 from sharkservers.enums import ActivationEmailTypeEnum
 from sharkservers.logger import logger, logger_with_filename
 from sharkservers.settings import Settings
-
-if TYPE_CHECKING:
-    from sharkservers.users.models import User
+from sharkservers.users.models import User
 
 
 class EmailService:

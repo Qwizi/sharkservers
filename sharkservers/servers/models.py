@@ -1,11 +1,14 @@
-from typing import Optional
+"""Servers models."""
+from __future__ import annotations
 
 import ormar
 from fastapi_pagination import Params
-from pydantic.color import Color
 from sourcemod_api_client import (
+    AdminOut,
     APIConfig,
     CreateAdminSchema,
+    GroupOut,
+    Page_AdminOut_,
     Page_GroupOut_,
     UpdateAdminSchema,
 )
@@ -26,107 +29,232 @@ from sourcemod_api_client.services.async_adminss_service import (
 
 from sharkservers.db import BaseMeta, DateFieldsMixins
 from sharkservers.logger import logger
-from sharkservers.players.models import Player
 from sharkservers.roles.dependencies import get_roles_service
 from sharkservers.roles.enums import ProtectedDefaultRolesEnum
 from sharkservers.roles.models import Role
+from sharkservers.roles.schemas import RoleOut
 from sharkservers.scopes.dependencies import get_scopes_service
 
 
 class Server(ormar.Model, DateFieldsMixins):
+    """
+    Represents a server in the system.
+
+    Attributes
+    ----------
+        id (int): The unique identifier of the server.
+        name (str, optional): The name of the server.
+        tag (str, optional): The tag of the server.
+        ip (str, optional): The IP address of the server.
+        port (int, optional): The port number of the server.
+        admin_role (Role, optional): The admin role associated with the server.
+        api_url (str, optional): The API URL of the server.
+
+    Methods
+    -------
+        get_sourcemod_api_config(): Returns the APIConfig object for the server's Sourcemod API.
+        get_admins_groups(params: Params) -> Page_GroupOut_: Retrieves a page of admin groups for the server.
+        get_admin_group(group_id: int): Retrieves an admin group by its ID.
+        create_admin_group(data: CreateGroupSchema): Creates a new admin group for the server.
+        delete_admin_group(group_id: int): Deletes an admin group by its ID.
+        get_admins(params: Params): Retrieves a page of admins for the server.
+        get_admin(identity: str): Retrieves an admin by their identity.
+        create_admin(data: CreateAdminSchema): Creates a new admin for the server.
+        update_admin(identity: str, data: UpdateAdminSchema): Updates an admin by their identity.
+        delete_admin(identity: str): Deletes an admin by their identity.
+    """
+
     class Meta(BaseMeta):
+        """Metadata for the server model."""
+
         tablename = "servers"
 
     id: int = ormar.Integer(primary_key=True)
-    name: Optional[str] = ormar.String(max_length=64)
-    tag: Optional[str] = ormar.String(max_length=64, unique=True)
-    ip: Optional[str] = ormar.String(max_length=64)
-    port: Optional[str] = ormar.Integer()
-    admin_role: Optional[Role] = ormar.ForeignKey(Role)
-    api_url: Optional[str] = ormar.String(max_length=256)
+    name: str | None = ormar.String(max_length=64)
+    tag: str | None = ormar.String(max_length=64, unique=True)
+    ip: str | None = ormar.String(max_length=64)
+    port: int | None = ormar.Integer()
+    admin_role: Role | None = ormar.ForeignKey(Role)
+    api_url: str | None = ormar.String(max_length=256)
 
-    def get_sourcemod_api_config(self):
+    def get_sourcemod_api_config(self) -> APIConfig:
+        """
+        Return the APIConfig object for the server's Sourcemod API.
+
+        Returns
+        -------
+            APIConfig: The APIConfig object for the server's Sourcemod API.
+        """
         return APIConfig(
             base_path=self.api_url,
         )
 
     async def get_admins_groups(self, params: Params) -> Page_GroupOut_:
+        """
+        Get a page of admin groups for the server.
+
+        Args:
+        ----
+            params (Params): The pagination parameters.
+
+        Returns:
+        -------
+            Page_GroupOut_: The page of admin groups for the server.
+        """
         return await admins_groups_get_groups(
             api_config_override=self.get_sourcemod_api_config(),
             page=params.page,
             size=params.size,
         )
 
-    async def get_admin_group(self, group_id: int):
+    async def get_admin_group(self, group_id: int) -> GroupOut:
+        """
+        Get an admin group by its ID.
+
+        Args:
+        ----
+            group_id (int): The ID of the admin group.
+
+        Returns:
+        -------
+            GroupOut: The admin group.
+        """
         return admins_groups_get_group(
             group_id=group_id,
             api_config_override=self.get_sourcemod_api_config(),
         )
 
-    async def create_admin_group(self, data: CreateGroupSchema):
+    async def create_admin_group(self, data: CreateGroupSchema) -> GroupOut:
+        """
+        Create a new admin group for the server.
+
+        Args:
+        ----
+            data (CreateGroupSchema): The data for the new admin group.
+
+        Returns:
+        -------
+            GroupOut: The newly created admin group.
+        """
         return await admins_groups_create_group(
             data=data,
             api_config_override=self.get_sourcemod_api_config(),
         )
 
-    async def delete_admin_group(self, group_id: int):
+    async def delete_admin_group(self, group_id: int) -> GroupOut:
+        """
+        Delete an admin group by its ID.
+
+        Args:
+        ----
+            group_id (int): The ID of the admin group.
+
+        Returns:
+        -------
+            GroupOut: The deleted admin group.
+        """
         return await admins_groups_delete_group(
             group_id=group_id,
             api_config_override=self.get_sourcemod_api_config(),
         )
 
-    async def get_admins(self, params: Params):
+    async def get_admins(self, params: Params) -> Page_AdminOut_:
+        """
+        Get a page of admins for the server.
+
+        Args:
+        ----
+            params (Params): The pagination parameters.
+
+        Returns:
+        -------
+            Page_AdminOut_: The page of admins for the server.
+        """
         return await adminss_get_admins(
             api_config_override=self.get_sourcemod_api_config(),
             page=params.page,
             size=params.size,
         )
 
-    async def get_admin(self, identity: str):
+    async def get_admin(self, identity: str) -> AdminOut:
+        """
+        Get an admin by their identity.
+
+        Args:
+        ----
+            identity (str): The identity of the admin.
+        """
         return await adminss_get_admin(
             identity=identity,
             api_config_override=self.get_sourcemod_api_config(),
         )
 
-    async def create_admin(self, data: CreateAdminSchema):
+    async def create_admin(self, data: CreateAdminSchema) -> AdminOut:
+        """
+        Create a new admin for the server.
+
+        Args:
+        ----
+            data (CreateAdminSchema): The data for the new admin.
+
+        Returns:
+        -------
+            AdminOut: The newly created admin.
+        """
         return await adminss_create_admin(
             data=data,
             api_config_override=self.get_sourcemod_api_config(),
         )
 
-    async def update_admin(self, identity: str, data: UpdateAdminSchema):
+    async def update_admin(self, identity: str, data: UpdateAdminSchema) -> AdminOut:
+        """
+        Update an admin by their identity.
+
+        Args:
+        ----
+            identity (str): The identity of the admin.
+            data (UpdateAdminSchema): The data to update the admin with.
+
+        Returns:
+        -------
+            AdminOut: The updated admin.
+        """
         return await adminss_update_admin(
             identity=identity,
             data=data,
             api_config_override=self.get_sourcemod_api_config(),
         )
 
-    async def delete_admin(self, identity: str):
+    async def delete_admin(self, identity: str) -> AdminOut:
+        """
+        Delete an admin by their identity.
+
+        Args:
+        ----
+            identity (str): The identity of the admin.
+
+        Returns:
+        -------
+            AdminOut: The deleted admin.
+        """
         return await adminss_delete_admin(
             identity=identity,
             api_config_override=self.get_sourcemod_api_config(),
         )
 
 
-class ChatColorModule(ormar.Model, DateFieldsMixins):
-    class Meta(BaseMeta):
-        tablename = "chat_color_module"
+async def create_admin_role(instance: Server) -> RoleOut:
+    """
+    Create an admin role for the server.
 
-    id: int = ormar.Integer(primary_key=True)
-    server: Server = ormar.ForeignKey(Server, related_name="server_chat_color_module")
-    player: Optional[Player] = ormar.ForeignKey(
-        Player,
-        related_name="player_chat_color_module",
-        nullable=True,
-    )
-    tag: str = ormar.String(max_length=64, unique=True)
-    flag: Optional[str] = ormar.String(max_length=1, unique=True)
-    tag_color: Color = ormar.String(max_length=8)
-    name_color: Color = ormar.String(max_length=8)
-    text_color: Color = ormar.String(max_length=8)
+    Args:
+    ----
+        instance (Server): The server instance.
 
-
-async def create_admin_role(instance: Server):
+    Returns:
+    -------
+        Role: The newly created admin role.
+    """
     roles_service = await get_roles_service()
     scopes_service = await get_scopes_service()
     role_name = f"Admin {instance.name.capitalize()}"
@@ -148,21 +276,42 @@ async def create_admin_role(instance: Server):
 
 
 @ormar.post_save(Server)
-async def on_server_created(sender, instance: Server, **kwargs):
+async def on_server_created(sender: Server, instance: Server, **kwargs) -> None:  # noqa: ANN003, ARG001
+    """
+    On server created event.
+
+    Args:
+    ----
+        sender (Server): The sender of the event.
+        instance (Server): The server instance.
+        **kwargs: The keyword arguments.
+
+    Returns:
+    -------
+        None
+    """
     new_admin_role = await create_admin_role(instance)
     await instance.update(admin_role=new_admin_role)
-    admins_groups = await instance.create_admin_group(
+    await instance.create_admin_group(
         data=CreateGroupSchema(
             name="Admin",
             immunity_level=100,
             flags="z",
         ),
     )
-    print(admins_groups)
 
 
 @ormar.post_delete(Server)
-async def on_server_deleted(sender, instance: Server, **kwargs):
+async def on_server_deleted(sender, instance: Server, **kwargs) -> None:  # noqa: ANN001, ARG001, ANN003
+    """
+    On server deleted event.
+
+    Args:
+    ----
+        sender (Server): The sender of the event.
+        instance (Server): The server instance.
+        **kwargs: The keyword arguments.
+    """
     await instance.admin_role.delete()
     admins_groups = await instance.get_admins_groups(params=Params())
     admins = await instance.get_admins(params=Params())
@@ -171,76 +320,3 @@ async def on_server_deleted(sender, instance: Server, **kwargs):
 
     for admin in admins.items:
         await instance.delete_admin(identity=admin.identity)
-
-
-"""
-@post_save(Server)
-async def create_roles_after_server_creation(sender, instance, **kwargs):
-    logger.info("Creating roles for server %s", instance.name)
-    roles_service = await get_roles_service()
-    scopes_service = await get_scopes_service()
-
-    server_admin_role_name = f"Admin {instance.name}".capitalize()
-    server_patron_role_name = f"Opiekun {instance.name}".capitalize()
-    roles = [server_admin_role_name, server_patron_role_name]
-    user_role_scopes = await scopes_service.get_default_scopes_for_role(
-        ProtectedDefaultRolesEnum.USER.value
-    )
-    for role_name in roles:
-        role_obj, created = await roles_service.Meta.model.objects.get_or_create(
-            name=role_name,
-            _defaults={
-                "name": role_name,
-                "color": "#fea500"
-                if role_name == server_admin_role_name
-                else "#a500ff",
-                "is_staff": True,
-            },
-        )
-        if created:
-            for scope in user_role_scopes:
-                await role_obj.scopes.add(scope)
-        logger.info(role_name, created, role_obj)
-
-
-@post_save(Server)
-async def create_default_chat_tags(sender, instance, **kwargs):
-    logger.info("Creating default chat tags for server %s", instance.name)
-    tags = [
-        ChatColorModule(
-            server=instance,
-            tag="[Owner]",
-            flag="z",
-            tag_color="#ff0000",
-            name_color="#ff0000",
-            text_color="#ff0000",
-        ),
-        ChatColorModule(
-            server=instance,
-            tag="[Admin]",
-            flag="k",
-            tag_color="#fea500",
-            name_color="#fea500",
-            text_color="#fea500",
-        ),
-        ChatColorModule(
-            server=instance,
-            tag="[Opiekun]",
-            flag="o",
-            tag_color="#a500ff",
-            name_color="#a500ff",
-            text_color="#a500ff",
-        ),
-        ChatColorModule(
-            server=instance,
-            tag="[Shark]",
-            flag="s",
-            tag_color="#00ff00",
-            name_color="#00ff00",
-            text_color="#00ff00",
-        ),
-    ]
-
-    for tag in tags:
-        await tag.save()
-"""

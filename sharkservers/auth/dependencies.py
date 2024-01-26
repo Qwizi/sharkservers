@@ -16,7 +16,6 @@ Functions:
     get_steam_auth_service: Get steam auth service
 """
 
-import uuid
 from datetime import timedelta
 
 from fastapi import Depends
@@ -44,10 +43,9 @@ from sharkservers.scopes.services import ScopeService
 from sharkservers.settings import Settings, get_settings
 from sharkservers.users.dependencies import (
     get_users_service,
-    get_users_sessions_service,
 )
-from sharkservers.users.models import User, UserSession
-from sharkservers.users.services import UserService, UserSessionService
+from sharkservers.users.models import User
+from sharkservers.users.services import UserService
 
 
 async def get_access_token_service(
@@ -95,9 +93,6 @@ async def get_auth_service(
     users_service: UserService = Depends(get_users_service),
     roles_service: RoleService = Depends(get_roles_service),
     scopes_service: ScopeService = Depends(get_scopes_service),
-    users_sessions_service: UserSessionService = Depends(
-        get_users_sessions_service,
-    ),
 ) -> AuthService:
     """
     Get the authentication service with the required dependencies.
@@ -117,7 +112,6 @@ async def get_auth_service(
         users_service=users_service,
         roles_service=roles_service,
         scopes_service=scopes_service,
-        users_sessions_service=users_sessions_service,
     )
 
 
@@ -126,7 +120,6 @@ async def get_current_user(
     token: str = Depends(AuthService.oauth2_scheme),
     access_token_service: JWTService = Depends(get_access_token_service),
     users_service: UserService = Depends(get_users_service),
-    users_sessions_service: UserSessionService = Depends(get_users_sessions_service),
 ) -> User:
     """
     Retrieve the current user based on the provided security scopes and token.
@@ -149,9 +142,6 @@ async def get_current_user(
         NoPermissionsException: If the user does not have the required permissions.
     """
     token_data = access_token_service.decode_token(token)
-    session_id = token_data.session_id
-    if not session_id:
-        raise invalid_credentials_exception
     for scope in security_scopes.scopes:
         if scope not in token_data.scopes:
             raise no_permissions_exception
@@ -166,23 +156,7 @@ async def get_current_user(
             "sessions",
         ],
     )
-    session_exists = await users_sessions_service.Meta.model.objects.filter(
-        id=uuid.UUID(session_id),
-    ).exists()
-    user_session_exists = False
-    if session_exists:
-        user_session: UserSession = await users_sessions_service.Meta.model.objects.get(
-            id=uuid.UUID(session_id),
-        )
-        for session in user.sessions:
-            if session.id == user_session.id:
-                user_session_exists = True
-                break
-    if (
-        user.secret_salt != token_data.secret
-        or not session_exists
-        or not user_session_exists
-    ):
+    if user.secret_salt != token_data.secret:
         raise invalid_credentials_exception
 
     return user

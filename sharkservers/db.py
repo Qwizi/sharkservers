@@ -83,11 +83,15 @@ class DateFieldsMixins:
 
 
 class BaseService:
+    """Base service class for ormar models."""
+
     class Meta:
+        """Meta class for the BaseService class."""
+
         model: ormar.Model = None
         not_found_exception: HTTPException = None
 
-    async def get_one(self, **kwargs) -> ormar.Model:
+    async def get_one(self, **kwargs) -> ormar.Model:  # noqa: ANN003
         """
         Get a single model instance based on the provided filters.
 
@@ -105,27 +109,27 @@ class BaseService:
         """
         try:
             related = kwargs.pop("related", None)
-            if related:
-                model = (
+            return (
+                (
                     await self.Meta.model.objects.select_related(related)
                     .filter(_exclude=False, **kwargs)
                     .first()
                 )
-            else:
-                model = await self.Meta.model.objects.filter(
+                if related
+                else await self.Meta.model.objects.filter(
                     _exclude=False,
                     **kwargs,
                 ).first()
-            return model
+            )
         except ormar.NoMatch as err:
             raise self.Meta.not_found_exception from err
 
-    async def get_all(
+    async def get_all(  # noqa: ANN201
         self,
         params: Params = None,
-        related=None,
-        order_by=None,
-        **kwargs,
+        related=None,  # noqa: ANN001
+        order_by=None,  # noqa: ANN001
+        **kwargs,  # noqa: ANN003
     ):
         """
         Get all model instances based on the provided filters.
@@ -150,7 +154,7 @@ class BaseService:
             query = await paginate(query, params)
         return query
 
-    async def delete(self, _id: int):
+    async def delete(self, _id: int):  # noqa: ANN201
         """
         Delete a model instance by its ID.
 
@@ -170,7 +174,7 @@ class BaseService:
         await _object.delete()
         return _object
 
-    async def create(self, *args, **kwargs):
+    async def create(self, *args, **kwargs):  # noqa: ANN201, ARG002, ANN002, ANN003
         """
         Create a new model instance.
 
@@ -192,7 +196,7 @@ class BaseService:
         except (IntegrityError, SQLIntegrityError, UniqueViolationError) as err:
             raise HTTPException(status_code=422, detail="Key already exists") from err
 
-    async def update(self, updated_data: dict, **kwargs) -> ormar.Model:
+    async def update(self, updated_data: dict, **kwargs) -> ormar.Model:  # noqa: ANN003
         """
         Update a model instance.
 

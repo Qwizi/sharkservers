@@ -14,13 +14,13 @@ import string
 from datetime import datetime
 from sqlite3 import IntegrityError
 from sqlite3 import IntegrityError as SQLIntegrityError
-from typing import TYPE_CHECKING
 
 from asyncpg import UniqueViolationError
-from fastapi import Form, HTTPException
+from fastapi import Form, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError
 from ormar import NoMatch
+from pydantic import EmailStr
 
 from sharkservers.auth.exceptions import (
     incorrect_username_password_exception,
@@ -37,23 +37,18 @@ from sharkservers.auth.schemas import (
     TokenDetailsSchema,
     TokenSchema,
 )
+from sharkservers.auth.services.code import CodeService
+from sharkservers.auth.services.jwt import JWTService
 from sharkservers.auth.utils import get_password_hash, now_datetime, verify_password
 from sharkservers.enums import ActivationEmailTypeEnum
 from sharkservers.logger import logger
 from sharkservers.roles.enums import ProtectedDefaultRolesTagEnum
-
-if TYPE_CHECKING:
-    from fastapi import Request
-    from pydantic import EmailStr
-
-    from sharkservers.auth.services.code import CodeService
-    from sharkservers.auth.services.jwt import JWTService
-    from sharkservers.roles.services import RoleService
-    from sharkservers.scopes.services import ScopeService
-    from sharkservers.services import EmailService
-    from sharkservers.settings import Settings
-    from sharkservers.users.models import User
-    from sharkservers.users.services import UserService, UserSessionService
+from sharkservers.roles.services import RoleService
+from sharkservers.scopes.services import ScopeService
+from sharkservers.services import EmailService
+from sharkservers.settings import Settings
+from sharkservers.users.models import User
+from sharkservers.users.services import UserService
 
 
 class OAuth2ClientSecretRequestForm:
@@ -110,7 +105,6 @@ class AuthService:
         users_service: UserService,
         roles_service: RoleService,
         scopes_service: ScopeService,
-        users_sessions_service: UserSessionService,
     ) -> None:
         """
         Initialize the Auth service.
@@ -125,14 +119,13 @@ class AuthService:
         self.users_service = users_service
         self.roles_service = roles_service
         self.scopes_service = scopes_service
-        self.users_sessions_service = users_sessions_service
 
     async def authenticate_user(
         self,
         username: str,
         password: str,
-        user_ip: str,  # noqa: ARG002
-        user_agent: str,  # noqa: ARG002
+        user_ip: str | None,  # noqa: ARG002
+        user_agent: str | None,  # noqa: ARG002
     ) -> User | bool:
         """
         Authenticates a user based on the provided username and password.
@@ -233,8 +226,8 @@ class AuthService:
         form_data: OAuth2PasswordRequestForm,
         jwt_access_token_service: JWTService,
         jwt_refresh_token_service: JWTService,
-        user_ip: str,
-        user_agent: str,
+        user_ip: str | None = None,
+        user_agent: str | None = None,
     ) -> tuple[TokenSchema, User]:
         """
         Authenticate a user and generates access and refresh tokens.
@@ -259,31 +252,6 @@ class AuthService:
         )
         if not user:
             raise incorrect_username_password_exception
-        user_session_exists = (
-            await self.users_sessions_service.Meta.model.objects.filter(
-                user_ip=user_ip,
-                user_agent=user_agent,
-            ).exists()
-        )
-        if user_session_exists:
-            user_session = await self.users_sessions_service.Meta.model.objects.get(
-                user_ip=user_ip,
-                user_agent=user_agent,
-            )
-            exists_in_relation = False
-            for session in user.sessions:
-                if session.id == user_session.id:
-                    exists_in_relation = True
-            if not exists_in_relation:
-                await user.sessions.add(user_session)
-        else:
-            user_session = await self.users_sessions_service.create(
-                user_ip=user_ip,
-                user_agent=user_agent,
-            )
-            logger.info(user_session)
-            await user.sessions.add(user_session)
-            logger.info(user.sessions)
 
         scopes = await self.scopes_service.get_scopes_list(user.roles)
         access_token, access_token_exp = jwt_access_token_service.encode(
@@ -291,7 +259,6 @@ class AuthService:
                 "sub": str(user.id),
                 "scopes": scopes,
                 "secret": user.secret_salt,
-                "session_id": str(user_session.id),
             },
         )
         refresh_token, refresh_toke_exp = jwt_refresh_token_service.encode(
@@ -407,7 +374,7 @@ class AuthService:
             str: The generated code.
         """
         # TODO(Qwizi): replace with secrets (secrets.token_hex(number)[:number])  # noqa: TD003
-        return "".join(random.choice(string.digits) for _ in range(number))
+        return "".join(random.choice(string.digits) for _ in range(number))  # noqa: S311
 
     @staticmethod
     def generate_secret_salt() -> str:

@@ -1,10 +1,10 @@
 from httpx import AsyncClient
 import pytest
-from src.enums import OrderEnum
-from src.auth.schemas import RegisterUserSchema
-from src.forum.dependencies import get_threads_service, get_thread_meta_service
-from src.forum.enums import CategoryTypeEnum, ThreadStatusEnum
-from src.users.dependencies import get_users_service
+from sharkservers.enums import OrderEnum
+from sharkservers.auth.schemas import RegisterUserSchema
+from sharkservers.forum.dependencies import get_threads_service, get_thread_meta_service
+from sharkservers.forum.enums import CategoryTypeEnum, ThreadStatusEnum
+from sharkservers.users.dependencies import get_users_service
 from tests.conftest import (
     create_fake_threads,
     TEST_USER,
@@ -18,14 +18,14 @@ from tests.conftest import (
 THREADS_ENDPOINT = "/v1/forum/threads"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_empty_threads(client):
     r = await client.get(THREADS_ENDPOINT)
     assert r.status_code == 200
     assert r.json()["total"] == 0
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "variants",
     [
@@ -191,7 +191,7 @@ async def test_get_threads(variants, logged_client):
         assert r.json()["items"][0]["id"] != 1
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_threads_with_category(logged_client):
     users_service = await get_users_service()
     category = await create_fake_categories(2)
@@ -210,19 +210,19 @@ async def test_get_threads_with_category(logged_client):
     assert r2.json()["total"] == 5
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_thread_not_found(logged_client):
     r = await logged_client.get(f"{THREADS_ENDPOINT}/9999")
     assert r.status_code == 404
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_unauthorized_create_thread(client):
     r = await client.post(THREADS_ENDPOINT)
     assert r.status_code == 401
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_thread(logged_client):
     categories = await create_fake_categories(1)
     r = await logged_client.post(
@@ -237,7 +237,7 @@ async def test_create_thread(logged_client):
     assert r.json()["title"] == TEST_THREAD.get("title")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_thread_with_invalid_category(logged_client):
     r = await logged_client.post(
         THREADS_ENDPOINT,
@@ -250,7 +250,7 @@ async def test_create_thread_with_invalid_category(logged_client):
     assert r.status_code == 404
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("title", ["a", "a" * 65])
 async def test_create_thread_with_invalid_title(title, logged_client):
     categories = await create_fake_categories(1)
@@ -265,7 +265,7 @@ async def test_create_thread_with_invalid_title(title, logged_client):
     assert r.status_code == 422
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("content", ["a"])
 async def test_create_thread_with_invalid_content(content, logged_client):
     categories = await create_fake_categories(1)
@@ -280,7 +280,7 @@ async def test_create_thread_with_invalid_content(content, logged_client):
     assert r.status_code == 422
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_unauthorized_update_thread(client):
     auth_service = await _get_auth_service()
     user = await auth_service.register(
@@ -299,7 +299,7 @@ async def test_unauthorized_update_thread(client):
     assert r.status_code == 401
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_update_thread(logged_client):
     users_service = await get_users_service()
     category = await create_fake_categories(1)
@@ -322,7 +322,7 @@ async def test_update_thread(logged_client):
     assert r.json()["content"] != old_content
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_update_thread_where_author_is_not_same_like_logged_user(logged_client):
     auth_service = await _get_auth_service()
     new_user = await auth_service.register(
@@ -347,7 +347,7 @@ async def test_update_thread_where_author_is_not_same_like_logged_user(logged_cl
     assert r.status_code == 400
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_save_thread_signal():
     users = await create_fake_users(1)
     categories = await create_fake_categories(
@@ -383,7 +383,7 @@ async def test_save_thread_signal():
     assert thread.category.threads_count == 1
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_delete_thread_signal():
     users = await create_fake_users(1)
     categories = await create_fake_categories(
@@ -398,7 +398,7 @@ async def test_delete_thread_signal():
     assert category.threads_count == 0
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_application_thread(logged_client):
     categories = await create_fake_categories(
         1, category_type=CategoryTypeEnum.APPLICATION.value
@@ -438,7 +438,7 @@ async def test_create_application_thread(logged_client):
             assert False
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "meta_fields",
     [

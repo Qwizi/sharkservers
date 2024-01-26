@@ -7,7 +7,11 @@ import ormar
 from ormar import post_delete, post_relation_add, post_relation_remove, post_save
 
 from sharkservers.db import BaseMeta, DateFieldsMixins
-from sharkservers.forum.enums import CategoryTypeEnum, ThreadStatusEnum
+from sharkservers.forum.enums import (
+    CategoryTypeEnum,
+    ThreadActionEnum,
+    ThreadStatusEnum,
+)
 from sharkservers.logger import logger
 from sharkservers.servers.models import Server
 from sharkservers.users.models import User
@@ -129,6 +133,8 @@ class Thread(ormar.Model, DateFieldsMixins):
     """
 
     class Meta(BaseMeta):
+        """Meta class for Thread model."""
+
         tablename = "forum_threads"
 
     id: int = ormar.Integer(primary_key=True)
@@ -151,6 +157,57 @@ class Thread(ormar.Model, DateFieldsMixins):
     )
     post_count: int = ormar.Integer(default=0)
     server: Server | None = ormar.ForeignKey(Server, related_name="thread_server")
+
+    async def close(self) -> None:
+        """Close thread."""
+        await self.update(is_closed=True)
+
+    async def open(self) -> None:
+        """Open thread."""
+        await self.update(is_closed=False)
+
+    async def approve(self) -> None:
+        """Approve thread."""
+        await self.update(status=ThreadStatusEnum.APPROVED)
+        await self.close()
+
+    async def reject(self) -> None:
+        """Reject thread."""
+        await self.update(status=ThreadStatusEnum.REJECTED)
+        await self.close()
+
+    async def pin(self) -> None:
+        """Pin thread."""
+        await self.update(is_pinned=True)
+
+    async def unpin(self) -> None:
+        """Unpin thread."""
+        await self.update(is_pinned=False)
+
+    async def change_category(self, new_category: Category) -> None:
+        """Change thread category."""
+        await self.update(category=new_category)
+
+    async def run_action(
+        self,
+        action: ThreadActionEnum,
+        new_category: Category = None,
+    ) -> None:
+        """Run thread action."""
+        if action == ThreadActionEnum.APPROVE:
+            await self.approve()
+        elif action == ThreadActionEnum.REJECT:
+            await self.reject()
+        elif action == ThreadActionEnum.PIN:
+            await self.pin()
+        elif action == ThreadActionEnum.UNPIN:
+            await self.unpin()
+        elif action == ThreadActionEnum.MOVE:
+            await self.change_category(new_category=new_category)
+        elif action == ThreadActionEnum.CLOSE:
+            await self.close()
+        elif action == ThreadActionEnum.OPEN:
+            await self.open()
 
 
 @post_save(Thread)
@@ -204,7 +261,20 @@ async def on_thread_save(sender, instance, **kwargs) -> None:  # noqa: ANN003, A
 
 
 @post_delete(Thread)
-async def update_category_thread_counter_after_delete(sender, instance, **kwargs):
+async def update_category_thread_counter_after_delete(
+    sender: Thread,  # noqa: ARG001
+    instance: Thread,
+    **kwargs,  # noqa: ARG001, ANN003
+) -> None:
+    """
+    Update category thread counter after thread delete.
+
+    Args:
+    ----
+        sender (Thread): Thread model
+        instance (Thread): Thread instance
+        **kwargs: Additional arguments
+    """
     category = await Category.objects.get(id=instance.category.id)
     await category.update(
         threads_count=category.threads_count - 1 if category.threads_count > 0 else 0,
@@ -213,11 +283,12 @@ async def update_category_thread_counter_after_delete(sender, instance, **kwargs
 
 @post_relation_add(Thread)
 async def update_thread_post_counter_after_relation_add(
-    sender,
-    instance,
-    child,
-    **kwargs,
-):
+    sender: Thread,  # noqa: ARG001
+    instance: Thread,
+    child: Post,
+    **kwargs,  # noqa: ARG001, ANN003
+) -> None:
+    """Update thread post counter after relation add."""
     if isinstance(child, Post):
         thread = await Thread.objects.get(id=instance.id)
         thread_posts_count = thread.post_count + 1
@@ -229,11 +300,12 @@ async def update_thread_post_counter_after_relation_add(
 
 @post_relation_remove(Thread)
 async def update_thread_post_counter_after_relation_remove(
-    sender,
-    instance,
-    child,
-    **kwargs,
-):
+    sender: Thread,  # noqa: ARG001
+    instance: Thread,
+    child: Post,
+    **kwargs,  # noqa: ANN003, ARG001
+) -> None:
+    """Update thread post counter after relation remove."""
     if isinstance(child, Post):
         thread = await Thread.objects.get(id=instance.id)
         thread_posts_count = thread.post_count - 1 if thread.post_count > 0 else 0

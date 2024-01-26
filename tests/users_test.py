@@ -4,10 +4,10 @@ from unittest import mock
 import pytest
 from fastapi.security import OAuth2PasswordRequestForm
 
-from src.auth.dependencies import get_access_token_service, get_refresh_token_service
-from src.roles.dependencies import get_roles_service
-from src.roles.enums import ProtectedDefaultRolesEnum
-from src.users.dependencies import get_users_service
+from sharkservers.auth.dependencies import get_access_token_service, get_refresh_token_service
+from sharkservers.roles.dependencies import get_roles_service
+from sharkservers.roles.enums import ProtectedDefaultRolesEnum
+from sharkservers.users.dependencies import get_users_service
 from tests.conftest import (
     create_fake_users,
     TEST_USER,
@@ -24,7 +24,7 @@ from tests.conftest import (
 USERS_ENDPOINT = "/v1/users"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_users(client):
     response = await client.get(USERS_ENDPOINT)
     assert response.status_code == 200
@@ -32,7 +32,7 @@ async def test_get_users(client):
     assert response.json()["total"] == 2
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_user(client):
     users = await create_fake_users(1)
     response = await client.get(f"{USERS_ENDPOINT}/{users[0].id}")
@@ -44,13 +44,13 @@ async def test_get_user(client):
     assert "secret_salt" not in response.json()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_user_not_found(client):
     response = await client.get(f"{USERS_ENDPOINT}/9999")
     assert response.status_code == 404
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_staff_users(client):
     response = await client.get(f"{USERS_ENDPOINT}/staff")
     assert response.status_code == 200
@@ -61,7 +61,7 @@ async def test_get_staff_users(client):
     ] == TEST_ADMIN_USER.get("username")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "endpoint",
     [
@@ -76,7 +76,7 @@ async def test_unauthorized_get_logged_user(endpoint, client):
     assert response.status_code == 401
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "endpoint",
     [
@@ -92,13 +92,13 @@ async def test_unauthorized_change_user_data(endpoint, client):
     assert response.status_code == 401
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_unauthorized_upload_logged_user_avatar(client):
     response = await client.post(f"{USERS_ENDPOINT}/me/avatar")
     assert response.status_code == 401
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_logged_user(logged_client):
     response = await logged_client.get(f"{USERS_ENDPOINT}/me")
     assert response.status_code == 200
@@ -106,7 +106,7 @@ async def test_get_logged_user(logged_client):
     assert "password" not in response.json()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_logged_user_posts(logged_client):
     users_service = await get_users_service()
     author = await users_service.get_one(
@@ -120,7 +120,7 @@ async def test_get_logged_user_posts(logged_client):
     assert response.json()["items"][0]["id"] == posts[0].id
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_logged_user_threads(logged_client):
     users_service = await get_users_service()
     categories = await create_fake_categories(1)
@@ -135,7 +135,7 @@ async def test_get_logged_user_threads(logged_client):
     assert response.json()["items"][0]["id"] == threads[0].id
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_logged_user_change_username(logged_client):
     new_username = "NewUsername"
     response = await logged_client.post(
@@ -145,7 +145,7 @@ async def test_logged_user_change_username(logged_client):
     assert response.json()["new_username"] != TEST_USER.get("username")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "username",
     [
@@ -164,7 +164,7 @@ async def test_logged_user_change_username_with_invalid_data(username, logged_cl
     assert response.status_code == 422
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_logged_user_change_username_with_already_taken_username(logged_client):
     response = await logged_client.post(
         f"{USERS_ENDPOINT}/me/username",
@@ -173,7 +173,7 @@ async def test_logged_user_change_username_with_already_taken_username(logged_cl
     assert response.status_code == 400
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_logged_user_change_password(logged_client):
     new_password = "newpassword123"
     response = await logged_client.post(
@@ -201,7 +201,7 @@ async def test_logged_user_change_password(logged_client):
     assert token is not None
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_logged_user_change_password_with_invalid_current_password(logged_client):
     password = "newpassword123"
     response = await logged_client.post(
@@ -215,7 +215,7 @@ async def test_logged_user_change_password_with_invalid_current_password(logged_
     assert response.status_code == 400
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_logged_user_change_password_with_no_equal_password_and_password2(
     logged_client,
 ):
@@ -232,7 +232,7 @@ async def test_logged_user_change_password_with_no_equal_password_and_password2(
     assert response.status_code == 422
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_logged_user_change_display_role(logged_client):
     users_service = await get_users_service()
     roles_service = await get_roles_service()
@@ -249,7 +249,7 @@ async def test_logged_user_change_display_role(logged_client):
     assert response.json()["display_role"]["id"] != old_display_role_id
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_logged_user_change_display_role_with_invalid_role_id(logged_client):
     response = await logged_client.post(
         f"{USERS_ENDPOINT}/me/display-role", json={"role_id": 9999}
@@ -257,7 +257,7 @@ async def test_logged_user_change_display_role_with_invalid_role_id(logged_clien
     assert response.status_code == 400
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_logged_user_change_display_role_when_role_not_exists_in_user_roles(
     logged_client,
 ):
@@ -268,7 +268,7 @@ async def test_logged_user_change_display_role_when_role_not_exists_in_user_role
     assert response.status_code == 400
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_last_logged_users(client):
     response = await client.get(f"{USERS_ENDPOINT}/online")
     assert response.status_code == 200
@@ -291,7 +291,7 @@ async def test_get_last_logged_users(client):
     assert response.json()["total"] == 1
     # Mock datetime to 16 minutes later, because this
     with mock.patch(
-        "src.users.services.now_datetime",
+        "sharkservers.users.services.now_datetime",
         return_value=datetime.now() + timedelta(minutes=16),
     ):
         response = await client.get(f"{USERS_ENDPOINT}/online")
@@ -300,13 +300,13 @@ async def test_get_last_logged_users(client):
         assert response.json()["total"] == 0
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_not_found_user(client):
     response = await client.get(f"{USERS_ENDPOINT}/9999")
     assert response.status_code == 404
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_user_threads(logged_client):
     users_service = await get_users_service()
     categories = await create_fake_categories(1)
@@ -318,7 +318,7 @@ async def test_get_user_threads(logged_client):
     assert response.json()["items"][0]["id"] == threads[0].id
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_user_posts(logged_client):
     users_service = await get_users_service()
     author = await users_service.get_one(username=TEST_USER.get("username"))
@@ -329,7 +329,7 @@ async def test_get_user_posts(logged_client):
     assert response.json()["items"][0]["id"] == posts[0].id
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "filename", ["default_avatar.png", "default_avatar.jpg", "default_avatar.jpeg"]
 )
@@ -352,7 +352,7 @@ async def test_logged_user_upload_avatar(filename, logged_client):
     assert response.json()["avatar"] != old_avatar_url
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "content_type",
     [
@@ -393,7 +393,7 @@ async def test_logged_user_upload_avatar_with_invalid_content_type(
     assert response.status_code == 422
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_logged_user_upload_avatar_with_invalid_file_with_valid_content_type(
     logged_client,
 ):
@@ -406,7 +406,7 @@ async def test_logged_user_upload_avatar_with_invalid_file_with_valid_content_ty
     assert response.status_code == 422
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_logged_user_upload_avatar_with_invalid_file_size(logged_client):
     image_bytes = create_fake_invalid_image(additional_bytes=1000)
     response = await logged_client.post(
