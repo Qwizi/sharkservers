@@ -182,7 +182,9 @@ async def test_auth_create_access_token_exception_when_user_not_activated(client
     )
 
     assert r.status_code == 400
-    assert r.json() == {"detail": AuthExceptionsDetailEnum.INCORRECT_USERNAME_PASSWORD.value}
+    assert r.json() == {
+        "detail": AuthExceptionsDetailEnum.INCORRECT_USERNAME_PASSWORD.value
+    }
 
 
 @pytest.mark.anyio

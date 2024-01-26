@@ -132,7 +132,9 @@ class Ban(ormar.Model, DateFieldsMixins):
 
 
 @ormar.pre_update(User)
-async def update_user_updated_at(sender, instance: User, **kwargs) -> None:  # noqa: ARG001, ANN001, ANN003
+async def update_user_updated_at(
+    sender, instance: User, **kwargs
+) -> None:  # noqa: ARG001, ANN001, ANN003
     """
     Update the 'updated_at' field of a User instance with the current datetime.
 

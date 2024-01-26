@@ -85,7 +85,9 @@ class ChangePasswordSchema(BaseModel):
     new_password2: str
 
     @validator("new_password2")
-    def passwords_match(cls, value, values, **kwargs) -> None:  # noqa: ANN001, ANN003, ARG002, N805
+    def passwords_match(
+        cls, value, values, **kwargs
+    ) -> None:  # noqa: ANN001, ANN003, ARG002, N805
         """Validate that the new_password2 matches the new_password."""
         if "new_password" in values and value != values["new_password"]:
             msg = "Passwords do not match"

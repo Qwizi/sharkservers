@@ -165,8 +165,13 @@ def release(version: str, /) -> None:
                 )
 
             _run(
-                "gh", "release", "create", new_version, "--generate-notes",
-                "--notes-file", temp_file.name,
+                "gh",
+                "release",
+                "create",
+                new_version,
+                "--generate-notes",
+                "--notes-file",
+                temp_file.name,
             )
             os.unlink(temp_file.name)
         else:

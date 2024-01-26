@@ -159,7 +159,9 @@ class ScopeService(BaseService):
                 description=description,
             )
 
-    async def create_default_scopes(self, applications, additional=None) -> None:  # noqa: ANN001
+    async def create_default_scopes(
+        self, applications, additional=None
+    ) -> None:  # noqa: ANN001
         """
         Create default scopes for applications.
 

@@ -276,7 +276,9 @@ async def create_admin_role(instance: Server) -> RoleOut:
 
 
 @ormar.post_save(Server)
-async def on_server_created(sender: Server, instance: Server, **kwargs) -> None:  # noqa: ANN003, ARG001
+async def on_server_created(
+    sender: Server, instance: Server, **kwargs
+) -> None:  # noqa: ANN003, ARG001
     """
     On server created event.
 
@@ -302,7 +304,9 @@ async def on_server_created(sender: Server, instance: Server, **kwargs) -> None:
 
 
 @ormar.post_delete(Server)
-async def on_server_deleted(sender, instance: Server, **kwargs) -> None:  # noqa: ANN001, ARG001, ANN003
+async def on_server_deleted(
+    sender, instance: Server, **kwargs
+) -> None:  # noqa: ANN001, ARG001, ANN003
     """
     On server deleted event.
 

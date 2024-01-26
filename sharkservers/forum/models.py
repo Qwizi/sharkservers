@@ -211,7 +211,9 @@ class Thread(ormar.Model, DateFieldsMixins):
 
 
 @post_save(Thread)
-async def on_thread_save(sender, instance, **kwargs) -> None:  # noqa: ANN003, ARG001, ANN001
+async def on_thread_save(
+    sender, instance, **kwargs
+) -> None:  # noqa: ANN003, ARG001, ANN001
     """
     On thread save event.
 

@@ -80,13 +80,16 @@ TEST_THREAD = {
     "content": "Test Content",
 }
 
+
 @pytest.fixture
 def anyio_backend():
-    return 'asyncio'
+    return "asyncio"
+
 
 @pytest.fixture(scope="session")
 def event_loop():
     return asyncio.get_event_loop()
+
 
 test_avatar_image_file = mock.MagicMock(file=File)
 test_avatar_image_file.filename = "test_avatar.jpg"
@@ -168,9 +171,14 @@ async def admin_client():
     app.state.redis = await create_redis_pool()
     await FastAPILimiter.init(app.state.redis)
     override_limiter = RateLimiter(times=999, seconds=1)
-    app.dependency_overrides[limiter] = override_limiter@pytest.fixture(scope="session")
+    app.dependency_overrides[limiter] = override_limiter @ pytest.fixture(
+        scope="session"
+    )
+
+
 def event_loop():
     return asyncio.get_event_loop()
+
 
 @pytest.fixture
 async def logged_client():
@@ -193,9 +201,6 @@ async def logged_client():
     async with AsyncClient(app=app, base_url="http://localhost", headers=headers) as c:
         yield c
     app.dependency_overrides[limiter] = {}
-
-
-
 
 
 async def create_fake_users(number: int = 50):

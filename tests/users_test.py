@@ -4,7 +4,10 @@ from unittest import mock
 import pytest
 from fastapi.security import OAuth2PasswordRequestForm
 
-from sharkservers.auth.dependencies import get_access_token_service, get_refresh_token_service
+from sharkservers.auth.dependencies import (
+    get_access_token_service,
+    get_refresh_token_service,
+)
 from sharkservers.roles.dependencies import get_roles_service
 from sharkservers.roles.enums import ProtectedDefaultRolesEnum
 from sharkservers.users.dependencies import get_users_service

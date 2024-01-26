@@ -305,7 +305,8 @@ class AuthService:
             refresh_token_exp = payload.get("exp", None)
             # TODO(Qwizi): replace with timezone  # noqa: TD003
             if (
-                datetime.fromtimestamp(refresh_token_exp) < now_datetime()  # noqa: DTZ006
+                datetime.fromtimestamp(refresh_token_exp)
+                < now_datetime()  # noqa: DTZ006
             ):
                 raise token_expired_exception
             user_id = int(payload.get("sub"))
@@ -374,7 +375,9 @@ class AuthService:
             str: The generated code.
         """
         # TODO(Qwizi): replace with secrets (secrets.token_hex(number)[:number])  # noqa: TD003
-        return "".join(random.choice(string.digits) for _ in range(number))  # noqa: S311
+        return "".join(
+            random.choice(string.digits) for _ in range(number)
+        )  # noqa: S311
 
     @staticmethod
     def generate_secret_salt() -> str:
