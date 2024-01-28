@@ -1,7 +1,7 @@
 """Schemas for the servers module."""
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from sharkservers.servers.models import Server
 
@@ -18,7 +18,7 @@ class CreateServerSchema(BaseModel):
     tag: str
     name: str
     ip: str
-    port: int = Field(gt=0, lt=65536)
+    port: int
     api_url: str
 
 
@@ -28,7 +28,7 @@ class UpdateServerSchema(BaseModel):
     tag: str | None
     name: str | None
     ip: str | None
-    port: int | None = Field(gt=0, lt=65536)
+    port: int | None
     api_url: str | None
 
 
