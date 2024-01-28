@@ -4,7 +4,6 @@ from io import BytesIO
 from unittest import mock
 
 import pytest
-import pytest_asyncio
 import sqlalchemy
 from PIL import ImageDraw, Image
 from fastapi import File
