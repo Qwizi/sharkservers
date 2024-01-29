@@ -78,6 +78,7 @@ class Settings(BaseSettings):
     STRIPE_API_KEY: str = ""
     STRIPE_WEBHOOK_SECRET: str = ""
     SITE_URL: str = "http://localhost:8080"
+    RESEND_API_KEY: str = ""
 
     class Config:
         """The Config class represents the configuration settings for the Settings class."""

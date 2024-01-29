@@ -12,6 +12,7 @@ from fastapi_mail import FastMail, MessageSchema, MessageType
 from fastapi_mail.email_utils import DefaultChecker
 from PIL import Image, UnidentifiedImageError
 from pydantic import EmailStr
+from resend import Resend
 from starlette import status
 
 from sharkservers.auth.schemas import RegisterUserSchema
@@ -21,157 +22,197 @@ from sharkservers.settings import Settings
 from sharkservers.users.models import User
 
 
+# class EmailService:
+#     """
+#     Email service class.
+
+#     Attributes
+#     ----------
+#         mailer: FastMail instance.
+#         checker: DefaultChecker instance.
+
+#     Methods
+#     -------
+#         activation_email_template: Returns an activation email template.
+#         change_email_template: Returns a change email template.
+#         password_reset_email_template: Returns a password reset email template.
+#         _send_message: Sends an email message.
+#         send_confirmation_email: Sends a confirmation email.
+#     """
+
+#     mailer: FastMail
+#     checker: DefaultChecker
+
+#     def __init__(self, _mailer: FastMail, checker: DefaultChecker) -> None:
+#         """Initialize EmailService class."""
+#         self.mailer = _mailer
+#         self.checker = checker
+
+#     @staticmethod
+#     def activation_email_template(code: str) -> str:
+#         """
+#         Return an activation email template.
+
+#         Args:
+#         ----
+#             code (str): Activation code.
+
+#         Returns:
+#         -------
+#             str: Activation email template.
+#         """
+#         return f"""
+#         Drogi(a) Użytkowniku, <br>
+
+# Dziękujemy za dołączenie do naszej społeczności! Jesteśmy podekscytowani, że jesteś z nami.<br>
+
+# Aby dokończyć proces rejestracji i aktywować swoje konto, proszę skorzystać z poniższego kodu aktywacyjnego: <br>
+
+# Kod aktywacyjny: {code} <br>
+
+# Pamiętaj, że kod aktywacyjny może wygasnąć po pewnym czasie, więc zalecamy, abyś aktywował/a swoje konto jak najszybciej. <br>
+
+# Pozdrawiamy, <br>
+# Administracja SharkServers.pl
+#         """
+
+#     @staticmethod
+#     def change_email_template(code: str) -> str:
+#         """
+#         Return a change email template.
+
+#         Args:
+#         ----
+#             code (str): Verification code.
+
+#         Returns:
+#         -------
+#             str: Change email template.
+#         """
+#         return f"""
+# Drogi(a) Użytkowniku,<br>
+
+# Otrzymujesz tę wiadomość, ponieważ zażądałeś/aś zmiany adresu e-mail powiązanego z Twoim kontem na SharkServers.pl.<br>
+
+# Proszę skorzystać z poniższego kodu weryfikacyjnego, aby potwierdzić tę zmianę:<br>
+
+# Kod weryfikacyjny: {code}<br>
+
+# Prosimy o wprowadzenie powyższego kodu w odpowiednie pole na naszej stronie w celu potwierdzenia zmiany adresu e-mail. Jeśli nie żądałeś/aś tej zmiany, prosimy o natychmiastowy kontakt z naszym zespołem wsparcia pod adresem [Adres e-mail zespołu wsparcia] lub za pośrednictwem formularza kontaktowego na naszej stronie.<br>
+
+# Pamiętaj, że ten kod weryfikacyjny wygaśnie po pewnym czasie w celu zabezpieczenia Twojego konta. Prosimy o jego użycie jak najszybciej.<br>
+
+# Jeśli potrzebujesz pomocy lub masz pytania, zawsze możesz skontaktować się z naszym zespołem obsługi klienta.<br>
+
+# Z poważaniem,<br>
+# Administracja SharkServers.pl
+
+#         """
+
+#     @staticmethod
+#     def password_reset_email_template(code: str) -> str:
+#         """
+#         Password reset email template.
+
+#         Args:
+#         ----
+#             code (str): Verification code.
+
+#         Returns:
+#         -------
+#             str: Password reset email template.
+#         """
+#         return f"""
+#         Drogi(a) Użytkowniku,<br><br>
+
+# Otrzymujesz tę wiadomość, ponieważ zażądałeś/aś zresetowania hasła powiązanego z Twoim kontem na SharkServers.pl.<br><br>
+
+# Proszę skorzystać z poniższego kodu weryfikacyjnego, aby zresetować hasło:<br><br>
+
+# Kod weryfikacyjny: {code}<br><br>
+
+# Proszę wprowadzić powyższy kod w odpowiednie pole na naszej stronie w celu zresetowania hasła. Jeśli to nie Ty zażądałeś/aś resetowania hasła, zignoruj tę wiadomość.<br><br>
+
+# Kod weryfikacyjny wygasa po ograniczonym czasie w celu zabezpieczenia Twojego konta. Proszę o użycie go jak najszybciej.<br><br>
+
+# Jeśli potrzebujesz pomocy lub masz pytania, zawsze możesz skontaktować się z naszym zespołem obsługi klienta.<br><br>
+
+# Z poważaniem,<br>
+# Administracja SharkServers.pl
+#         """
+
+#     async def _send_message(self, subject: str, recipients: list, body: str) -> None:
+#         """
+#         Sends an email message to the specified recipients.
+
+#         Args:
+#         ----
+#             subject (str): The subject of the email.
+#             recipients (list): A list of email addresses of the recipients.
+#             body (str): The body of the email.
+
+#         Returns:
+#         -------
+#             None
+#         """  # noqa: D401
+#         if not await self.checker.check_mx_record(recipients[0].split("@")[1]):
+#             logger.info(f"Email {recipients[0]} is invalid")
+#             return
+#         await self.mailer.send_message(
+#             message=MessageSchema(
+#                 subject=subject,
+#                 recipients=recipients,
+#                 body=body,
+#                 subtype=MessageType.html,
+#             ),
+#         )
+
+#     async def send_confirmation_email(
+#         self,
+#         activation_type: ActivationEmailTypeEnum,
+#         email: EmailStr,
+#         code: str,
+#     ) -> None:
+#         """
+#         Send a confirmation email.
+
+#         Args:
+#         ----
+#             activation_type (ActivationEmailTypeEnum): The type of the activation email.
+#             email (EmailStr): The email address of the recipient.
+#             code (str): The activation code.
+
+#         Returns:
+#         -------
+#             None
+#         """
+#         subject = None
+#         body = None
+#         if activation_type == ActivationEmailTypeEnum.ACCOUNT:
+#             subject = "Twój kod aktywacyjny - Witamy na naszej stronie!"
+#             body = self.activation_email_template(code)
+#         elif activation_type == ActivationEmailTypeEnum.EMAIL:
+#             subject = "Twój kod weryfikacyjny - Zmiana adresu e-mail"
+#             body = self.change_email_template(code)
+#         elif activation_type == ActivationEmailTypeEnum.PASSWORD:
+#             subject = "Twój kod weryfikacyjny - Reset hasła"
+#             body = self.password_reset_email_template(code)
+#         await self._send_message(subject, [email], body)
+#         logger.info(f"Activation email sent to {email} with code {code}")
+
+
 class EmailService:
-    """
-    Email service class.
+    """Email service class."""
 
-    Attributes
-    ----------
-        mailer: FastMail instance.
-        checker: DefaultChecker instance.
-
-    Methods
-    -------
-        activation_email_template: Returns an activation email template.
-        change_email_template: Returns a change email template.
-        password_reset_email_template: Returns a password reset email template.
-        _send_message: Sends an email message.
-        send_confirmation_email: Sends a confirmation email.
-    """
-
-    mailer: FastMail
-    checker: DefaultChecker
-
-    def __init__(self, _mailer: FastMail, checker: DefaultChecker) -> None:
+    def __init__(self, resend, checker: DefaultChecker) -> None:
         """Initialize EmailService class."""
-        self.mailer = _mailer
+        self.resend = resend
         self.checker = checker
+        self.params = {
+            "from": "No-Reply <no-reply@sharkservers.pl>",
+        }
 
-    @staticmethod
-    def activation_email_template(code: str) -> str:
-        """
-        Return an activation email template.
-
-        Args:
-        ----
-            code (str): Activation code.
-
-        Returns:
-        -------
-            str: Activation email template.
-        """
-        return f"""
-        Drogi(a) Użytkowniku, <br>
-
-Dziękujemy za dołączenie do naszej społeczności! Jesteśmy podekscytowani, że jesteś z nami.<br>
-
-Aby dokończyć proces rejestracji i aktywować swoje konto, proszę skorzystać z poniższego kodu aktywacyjnego: <br>
-
-Kod aktywacyjny: {code} <br>
-
-Pamiętaj, że kod aktywacyjny może wygasnąć po pewnym czasie, więc zalecamy, abyś aktywował/a swoje konto jak najszybciej. <br>
-
-Pozdrawiamy, <br>
-Administracja SharkServers.pl
-        """
-
-    @staticmethod
-    def change_email_template(code: str) -> str:
-        """
-        Return a change email template.
-
-        Args:
-        ----
-            code (str): Verification code.
-
-        Returns:
-        -------
-            str: Change email template.
-        """
-        return f"""
-Drogi(a) Użytkowniku,<br>
-
-Otrzymujesz tę wiadomość, ponieważ zażądałeś/aś zmiany adresu e-mail powiązanego z Twoim kontem na SharkServers.pl.<br>
-
-Proszę skorzystać z poniższego kodu weryfikacyjnego, aby potwierdzić tę zmianę:<br>
-
-Kod weryfikacyjny: {code}<br>
-
-Prosimy o wprowadzenie powyższego kodu w odpowiednie pole na naszej stronie w celu potwierdzenia zmiany adresu e-mail. Jeśli nie żądałeś/aś tej zmiany, prosimy o natychmiastowy kontakt z naszym zespołem wsparcia pod adresem [Adres e-mail zespołu wsparcia] lub za pośrednictwem formularza kontaktowego na naszej stronie.<br>
-
-Pamiętaj, że ten kod weryfikacyjny wygaśnie po pewnym czasie w celu zabezpieczenia Twojego konta. Prosimy o jego użycie jak najszybciej.<br>
-
-Jeśli potrzebujesz pomocy lub masz pytania, zawsze możesz skontaktować się z naszym zespołem obsługi klienta.<br>
-
-Z poważaniem,<br>
-Administracja SharkServers.pl
-
-        """
-
-    @staticmethod
-    def password_reset_email_template(code: str) -> str:
-        """
-        Password reset email template.
-
-        Args:
-        ----
-            code (str): Verification code.
-
-        Returns:
-        -------
-            str: Password reset email template.
-        """
-        return f"""
-        Drogi(a) Użytkowniku,<br><br>
-
-Otrzymujesz tę wiadomość, ponieważ zażądałeś/aś zresetowania hasła powiązanego z Twoim kontem na SharkServers.pl.<br><br>
-
-Proszę skorzystać z poniższego kodu weryfikacyjnego, aby zresetować hasło:<br><br>
-
-Kod weryfikacyjny: {code}<br><br>
-
-Proszę wprowadzić powyższy kod w odpowiednie pole na naszej stronie w celu zresetowania hasła. Jeśli to nie Ty zażądałeś/aś resetowania hasła, zignoruj tę wiadomość.<br><br>
-
-Kod weryfikacyjny wygasa po ograniczonym czasie w celu zabezpieczenia Twojego konta. Proszę o użycie go jak najszybciej.<br><br>
-
-Jeśli potrzebujesz pomocy lub masz pytania, zawsze możesz skontaktować się z naszym zespołem obsługi klienta.<br><br>
-
-Z poważaniem,<br>
-Administracja SharkServers.pl
-        """
-
-    async def _send_message(self, subject: str, recipients: list, body: str) -> None:
-        """
-        Sends an email message to the specified recipients.
-
-        Args:
-        ----
-            subject (str): The subject of the email.
-            recipients (list): A list of email addresses of the recipients.
-            body (str): The body of the email.
-
-        Returns:
-        -------
-            None
-        """  # noqa: D401
-        if not await self.checker.check_mx_record(recipients[0].split("@")[1]):
-            logger.info(f"Email {recipients[0]} is invalid")
-            return
-        await self.mailer.send_message(
-            message=MessageSchema(
-                subject=subject,
-                recipients=recipients,
-                body=body,
-                subtype=MessageType.html,
-            ),
-        )
-
-    async def send_confirmation_email(
-        self,
-        activation_type: ActivationEmailTypeEnum,
-        email: EmailStr,
-        code: str,
-    ) -> None:
+    async def send_confirmation_email(self, activation_type: ActivationEmailTypeEnum, email: EmailStr, code: str) -> None:
         """
         Send a confirmation email.
 
@@ -185,19 +226,32 @@ Administracja SharkServers.pl
         -------
             None
         """
-        subject = None
-        body = None
-        if activation_type == ActivationEmailTypeEnum.ACCOUNT:
-            subject = "Twój kod aktywacyjny - Witamy na naszej stronie!"
-            body = self.activation_email_template(code)
-        elif activation_type == ActivationEmailTypeEnum.EMAIL:
-            subject = "Twój kod weryfikacyjny - Zmiana adresu e-mail"
-            body = self.change_email_template(code)
-        elif activation_type == ActivationEmailTypeEnum.PASSWORD:
-            subject = "Twój kod weryfikacyjny - Reset hasła"
-            body = self.password_reset_email_template(code)
-        await self._send_message(subject, [email], body)
-        logger.info(f"Activation email sent to {email} with code {code}")
+
+        if not await self.checker.check_mx_record(email.split("@")[1]):
+            logger.error(f"Email {email} mx record is invalid")
+            return
+
+        try:
+            subject = None
+            body = None
+            if activation_type == ActivationEmailTypeEnum.ACCOUNT:
+                subject = "Witamy na naszej stronie!"
+            elif activation_type == ActivationEmailTypeEnum.EMAIL:
+                subject = "Zmiana adresu e-mail"
+            elif activation_type == ActivationEmailTypeEnum.PASSWORD:
+                subject = "Reset hasła"
+
+            html = "Twój kod to: " + code + "<br><br> Pozdrawiamy, <br> Administracja SharkServers.pl"
+            params = {
+                "from": self.params["from"],
+                "to": email,
+                "subject": subject,
+                "html": html,
+            }
+            self.resend.Emails.send(params)
+            logger.info(f"Activation email sent to {email} with subject <{subject}> data <{html}'>")
+        except Exception as e:
+            logger.error(f"E-mail sending error: {e}")
 
 
 class MainService:
