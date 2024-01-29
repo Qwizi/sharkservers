@@ -43,10 +43,7 @@ class PasswordSchema(BaseModel):
 
     @validator("password2")
     def passwords_match(
-        self,
-        value: str,
-        values: dict[str],
-        **kwargs: dict[str],  # noqa: ARG002
+        cls, value, values, **kwargs,  # noqa: ANN001, N805, ARG002, ANN003
     ) -> None:
         """
         Check if the 'password2' field matches the 'password' field.

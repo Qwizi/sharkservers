@@ -4,7 +4,7 @@
 
 [tool.poetry]
 name = "sharkservers-api"
-version = "1.2.2"
+version = "1.2.3"
 description = "sharkservers-api"
 authors = ["Qwizi <ciolek.adrian@protonmail.com>"]
 license = "GPL-3.0"
