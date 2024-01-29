@@ -1,8 +1,8 @@
 """Dependencies for the application."""
+import resend
 from fastapi import Depends
 from fastapi_mail import ConnectionConfig
 from fastapi_mail.email_utils import DefaultChecker
-import resend
 
 from sharkservers.services import EmailService, UploadService
 from sharkservers.settings import Settings, get_settings
