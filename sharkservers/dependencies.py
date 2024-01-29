@@ -1,6 +1,7 @@
 """Dependencies for the application."""
+import resend
 from fastapi import Depends
-from fastapi_mail import ConnectionConfig, FastMail
+from fastapi_mail import ConnectionConfig
 from fastapi_mail.email_utils import DefaultChecker
 
 from sharkservers.services import EmailService, UploadService
@@ -38,6 +39,7 @@ async def get_email_checker() -> DefaultChecker:
 
 
 async def get_email_service(
+    settings: Settings = Depends(get_settings),
     checker: DefaultChecker = Depends(get_email_checker),
 ) -> EmailService:
     """
@@ -45,14 +47,15 @@ async def get_email_service(
 
     Args:
     ----
-        checker (DefaultChecker, optional): The email checker. Defaults to Depends(get_email_checker).
+        settings (Settings, optional): The application settings. Defaults to Depends(get_settings).
+        checker (DefaultChecker, optional): The default email checker. Defaults to Depends(get_email_checker).
 
     Returns:
     -------
         EmailService: The email service.
     """
-    mailer = FastMail(conf)
-    return EmailService(_mailer=mailer, checker=checker)
+    resend.api_key = settings.RESEND_API_KEY
+    return EmailService(resend=resend, checker=checker)
 
 
 async def get_upload_service(

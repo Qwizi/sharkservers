@@ -17,6 +17,7 @@ from fastapi import (
     WebSocket,
     WebSocketDisconnect,
 )
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi_events.handlers.local import local_handler
 from fastapi_events.middleware import EventHandlerASGIMiddleware
@@ -37,6 +38,11 @@ from sharkservers.chat.dependencies import get_chat_service, ws_get_current_user
 from sharkservers.chat.services import ChatService
 from sharkservers.chat.views import router as chat_router
 from sharkservers.chat.websocket import chatroom_ws_receiver, chatroom_ws_sender
+from sharkservers.exception_handlers import (
+    http_exception_handler,
+    request_validation_exception_handler,
+    unhandled_exception_handler,
+)
 from sharkservers.forum.dependencies import (
     get_categories_service,
     get_posts_service,
@@ -51,6 +57,7 @@ from sharkservers.forum.views import (
 
 # import admin posts router
 from sharkservers.logger import logger
+from sharkservers.middleware import log_request_middleware
 from sharkservers.players.views import router as steamprofile_router
 from sharkservers.players.views_admin import router as admin_steamprofiles_router
 from sharkservers.roles.views import router as roles_router
@@ -240,6 +247,7 @@ def add_middlewares(_app: FastAPI) -> FastAPI:
         handlers=[local_handler],
         middleware_id=event_handler_id,
     )
+    _app.middleware("http")(log_request_middleware)
     return _app
 
 
@@ -262,6 +270,11 @@ def create_app() -> FastAPI:
     _app.mount("/static", StaticFiles(directory=st_abs_file_path), name="static")
     init_routes(_app)
     add_pagination(_app)
+    _app.add_exception_handler(
+        RequestValidationError, request_validation_exception_handler
+    )
+    _app.add_exception_handler(HTTPException, http_exception_handler)
+    _app.add_exception_handler(Exception, unhandled_exception_handler)
 
     @_app.websocket("/ws")
     async def websocket_endpoint(

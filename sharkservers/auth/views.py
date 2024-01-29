@@ -38,8 +38,8 @@ router = APIRouter()
 
 settings = get_settings()
 limiter = RateLimiter(
-    times=999 if settings.TESTING else 3,
-    minutes=60 if settings.TESTING else 2,
+    times=999 if settings.TESTING else 10,
+    minutes=60 if settings.TESTING else 5,
 )
 refresh_token_limiter = RateLimiter(times=3, minutes=60)
 
