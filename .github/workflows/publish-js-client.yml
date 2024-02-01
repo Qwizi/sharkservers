@@ -1,8 +1,8 @@
 name: Publish Package to npmjs
 
 on:
-  release:
-    types: [published]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   build:
@@ -15,8 +15,8 @@ jobs:
       - name: Check for changes in the js-client directory
         id: check_changes
         run: |
-          if git diff --name-only $GITHUB_SHA^ $GITHUB_SHA -- js-client/
-          then
+          JS_CLIENT_CHANGED=$(git diff --name-only origin/master...${{ github.head_ref }} -- js-client/ | wc -l)
+          if [ "$JS_CLIENT_CHANGED" -gt 0 ]; then
             echo "::set-output name=js_client_changed::true"
           else
             echo "::set-output name=js_client_changed::false"
@@ -28,7 +28,7 @@ jobs:
           node-version: '20.x'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Extract version from tag
+      - name: Extract version from branch name
         if: steps.check_changes.outputs.js_client_changed == 'true'
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
         shell: bash

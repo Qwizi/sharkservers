@@ -1,8 +1,8 @@
 name: Publish Backend Docker image
 
 on:
-  release:
-    types: [published]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   push_to_registry:
@@ -15,16 +15,11 @@ jobs:
         with:
           fetch-depth: 0  # Fetches all history for all branches and tags
 
-      - name: Find last commit affecting 'backend' directory
-        id: last_commit
-        run: |
-          LAST_COMMIT_SHA=$(git rev-list -1 HEAD -- backend/)
-          echo "LAST_COMMIT_SHA=$LAST_COMMIT_SHA" >> $GITHUB_ENV
-
       - name: Check for changes in backend directory
         id: check_changes
         run: |
-          if [ "$LAST_COMMIT_SHA" == "${{ github.sha }}" ]; then
+          BACKEND_CHANGED=$(git diff --name-only origin/master...${{ github.head_ref }} -- backend/ | wc -l)
+          if [ "$BACKEND_CHANGED" -gt 0 ]; then
             echo "::set-output name=backend_changed::true"
           else
             echo "::set-output name=backend_changed::false"
