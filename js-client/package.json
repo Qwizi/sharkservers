@@ -1,0 +1,24 @@
+{
+  "name": "sharkservers-sdk",
+  "version": "1.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generate-client": "openapi --input ../sharkservers-api/openapi.json --output ./src/client --client axios --name ApiClient",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.4.0",
+    "form-data": "^4.0.0",
+    "node-fetch": "^3.3.2",
+    "openapi-typescript-codegen": "^0.25.0"
+  },
+  "devDependencies": {
+    "@tsconfig/node16": "^16.1.0",
+    "typescript": "^5.3.2"
+  }
+}
