@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.OpenAPI = void 0;
 exports.OpenAPI = {
     BASE: '',
-    VERSION: '1.2.6',
+    VERSION: '1.2.7',
     WITH_CREDENTIALS: false,
     CREDENTIALS: 'include',
     TOKEN: undefined,

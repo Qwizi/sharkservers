@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Role_RMO } from './Role_RMO';
+import type { Role_XOP } from './Role_XOP';
 
 /**
  * Schema for retrieving a server.
@@ -16,7 +16,7 @@ export type ServerOut = {
     tag: string;
     ip: string;
     port: number;
-    admin_role?: Role_RMO;
+    admin_role?: Role_XOP;
     api_url: string;
 };
 

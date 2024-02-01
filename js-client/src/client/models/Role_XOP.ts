@@ -3,15 +3,16 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { User_PRS } from './User_PRS';
+import type { Scope_XIW } from './Scope_XIW';
 
-/**
- * Like output schema.
- */
-export type LikeOut = {
+export type Role_XOP = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    author?: User_PRS;
+    tag: string;
+    name: string;
+    color?: string;
+    scopes?: Array<Scope_XIW>;
+    is_staff?: boolean;
 };
 

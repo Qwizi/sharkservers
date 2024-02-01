@@ -3,12 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type SteamRepProfile_DWK = {
+export type ThreadMeta_TNX = {
     created_at?: string;
     updated_at?: string;
-    id?: number;
-    profile_url: string;
-    is_scammer?: boolean;
-    steamid64: string;
+    id?: string;
+    name: string;
+    value?: string;
+    description?: string;
 };
 

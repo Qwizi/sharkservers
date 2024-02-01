@@ -3,9 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Role_LDV } from './Role_LDV';
+import type { Role_HOY } from './Role_HOY';
 
-export type Server_DXQ = {
+export type Server_CLM = {
     created_at?: string;
     updated_at?: string;
     id?: number;
@@ -13,7 +13,7 @@ export type Server_DXQ = {
     tag: string;
     ip: string;
     port: number;
-    admin_role?: Role_LDV;
+    admin_role?: Role_HOY;
     api_url: string;
 };
 

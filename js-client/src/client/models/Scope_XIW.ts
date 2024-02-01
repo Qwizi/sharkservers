@@ -3,12 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Post_IVP } from './Post_IVP';
-
-export type Like_LHM = {
-    created_at?: string;
-    updated_at?: string;
+export type Scope_XIW = {
     id?: number;
-    post_likes?: Array<Post_IVP>;
+    app_name: string;
+    value: string;
+    description: string;
+    protected?: boolean;
 };
 
