@@ -3,17 +3,16 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Role_VFC } from './Role_VFC';
+import type { Scope_SBW } from './Scope_SBW';
 
-export type Server_ZBO = {
+export type Role_RMO = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    name: string;
     tag: string;
-    ip: string;
-    port: number;
-    admin_role?: Role_VFC;
-    api_url: string;
+    name: string;
+    color?: string;
+    scopes?: Array<Scope_SBW>;
+    is_staff?: boolean;
 };
 

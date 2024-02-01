@@ -3,10 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Scope_CXR } from './Scope_CXR';
+import type { Scope_NPC } from './Scope_NPC';
 
-export type Page_Scope_CXR_ = {
-    items: Array<Scope_CXR>;
+export type Page_Scope_NPC_ = {
+    items: Array<Scope_NPC>;
     total?: number;
     page?: number;
     size?: number;

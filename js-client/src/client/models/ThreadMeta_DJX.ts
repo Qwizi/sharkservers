@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type ThreadMeta_ZJN = {
+export type ThreadMeta_DJX = {
     created_at?: string;
     updated_at?: string;
     id?: string;

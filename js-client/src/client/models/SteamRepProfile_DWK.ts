@@ -3,16 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Scope_XVD } from './Scope_XVD';
-
-export type Role_JTG = {
+export type SteamRepProfile_DWK = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    tag: string;
-    name: string;
-    color?: string;
-    scopes?: Array<Scope_XVD>;
-    is_staff?: boolean;
+    profile_url: string;
+    is_scammer?: boolean;
+    steamid64: string;
 };
 

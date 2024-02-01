@@ -3,11 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Like_OTE } from './Like_OTE';
-import type { Player_HQF } from './Player_HQF';
-import type { Role_VFC } from './Role_VFC';
+import type { Like_LHM } from './Like_LHM';
+import type { Player_YFV } from './Player_YFV';
+import type { Role_LDV } from './Role_LDV';
 
-export type User_WTM = {
+export type User_MZB = {
     created_at?: string;
     updated_at?: string;
     id?: number;
@@ -15,13 +15,13 @@ export type User_WTM = {
     is_activated?: boolean;
     is_superuser?: boolean;
     avatar?: string;
-    display_role?: Role_VFC;
+    display_role?: Role_LDV;
     last_login?: string;
     last_online?: string;
     threads_count?: number;
     posts_count?: number;
     likes_count?: number;
-    player?: Player_HQF;
-    user_reputation?: Array<Like_OTE>;
+    player?: Player_YFV;
+    user_reputation?: Array<Like_LHM>;
 };
 
