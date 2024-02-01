@@ -10,7 +10,7 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 ## [v1.2.1](https://github.com/Qwizi/sharkservers-api/tree/v1.2.1) (2024-01-28)
 
 
-No significant changes.
+No significant changes
 
 
 ## [vv1.2.0](https://github.com/Qwizi/sharkservers-api/tree/vv1.2.0) (2024-01-13)
