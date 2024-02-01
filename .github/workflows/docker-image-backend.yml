@@ -23,7 +23,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5.5.1
         with:
-          images: your-docker-image-name
+          images: qwizii/sharkservers-backend
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5.1.0
