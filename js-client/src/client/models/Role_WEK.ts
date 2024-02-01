@@ -3,17 +3,16 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Role_JTG } from './Role_JTG';
+import type { Scope_OOO } from './Scope_OOO';
 
-export type Server_CYF = {
+export type Role_WEK = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    name: string;
     tag: string;
-    ip: string;
-    port: number;
-    admin_role?: Role_JTG;
-    api_url: string;
+    name: string;
+    color?: string;
+    scopes?: Array<Scope_OOO>;
+    is_staff?: boolean;
 };
 

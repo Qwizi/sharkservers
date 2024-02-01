@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Scope_FGJ = {
+export type Scope_SBW = {
     id?: number;
     app_name: string;
     value: string;

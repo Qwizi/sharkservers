@@ -3,12 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type SteamRepProfile_SJK = {
+export type UserSession_YLT = {
     created_at?: string;
     updated_at?: string;
-    id?: number;
-    profile_url: string;
-    is_scammer?: boolean;
-    steamid64: string;
+    id?: string;
+    user_ip: string;
+    user_agent: string;
 };
 

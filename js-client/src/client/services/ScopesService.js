@@ -21,7 +21,7 @@ class ScopesService {
      * @param roleId
      * @param page
      * @param size
-     * @returns Page_Scope_CXR_ Successful Response
+     * @returns Page_Scope_NPC_ Successful Response
      * @throws ApiError
      */
     getAllScopes(roleId, page = 1, size = 50) {

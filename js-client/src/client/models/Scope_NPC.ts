@@ -3,11 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Post_QKB = {
-    created_at?: string;
-    updated_at?: string;
+export type Scope_NPC = {
     id?: number;
-    content: string;
-    likes_count?: number;
+    app_name: string;
+    value: string;
+    description: string;
+    protected?: boolean;
 };
 

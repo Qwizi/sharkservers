@@ -3,11 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type UserSession_QAA = {
+export type Category_NBA = {
     created_at?: string;
     updated_at?: string;
-    id?: string;
-    user_ip: string;
-    user_agent: string;
+    id?: number;
+    name: string;
+    description?: string;
+    type?: string;
+    threads_count?: number;
 };
 

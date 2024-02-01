@@ -3,13 +3,17 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Role_VFC = {
+import type { Role_LDV } from './Role_LDV';
+
+export type Server_DXQ = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    tag: string;
     name: string;
-    color?: string;
-    is_staff?: boolean;
+    tag: string;
+    ip: string;
+    port: number;
+    admin_role?: Role_LDV;
+    api_url: string;
 };
 

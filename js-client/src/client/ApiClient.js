@@ -24,7 +24,7 @@ class ApiClient {
     constructor(config, HttpRequest = AxiosHttpRequest_1.AxiosHttpRequest) {
         this.request = new HttpRequest({
             BASE: config?.BASE ?? '',
-            VERSION: config?.VERSION ?? '1.1.1',
+            VERSION: config?.VERSION ?? '1.2.6',
             WITH_CREDENTIALS: config?.WITH_CREDENTIALS ?? false,
             CREDENTIALS: config?.CREDENTIALS ?? 'include',
             TOKEN: config?.TOKEN,

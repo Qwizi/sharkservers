@@ -3,11 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Scope_CXR = {
+export type Role_LDV = {
+    created_at?: string;
+    updated_at?: string;
     id?: number;
-    app_name: string;
-    value: string;
-    description: string;
-    protected?: boolean;
+    tag: string;
+    name: string;
+    color?: string;
+    is_staff?: boolean;
 };
 

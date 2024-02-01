@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Ban_OBO = {
+export type Ban_VLY = {
     created_at?: string;
     updated_at?: string;
     id?: number;

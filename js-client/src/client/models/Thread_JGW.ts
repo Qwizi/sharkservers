@@ -4,14 +4,11 @@
 /* eslint-disable */
 
 import type { Category_NBA } from './Category_NBA';
-import type { Server_DXQ } from './Server_DXQ';
+import type { Post_IVP } from './Post_IVP';
+import type { Server_LJL } from './Server_LJL';
 import type { ThreadMeta_DJX } from './ThreadMeta_DJX';
-import type { User_MZB } from './User_MZB';
 
-/**
- * Thread output schema.
- */
-export type ThreadOut = {
+export type Thread_JGW = {
     created_at?: string;
     updated_at?: string;
     id?: number;
@@ -21,9 +18,9 @@ export type ThreadOut = {
     is_pinned?: boolean;
     status?: string;
     category?: Category_NBA;
-    author?: User_MZB;
+    posts?: Array<Post_IVP>;
     meta_fields?: Array<ThreadMeta_DJX>;
     post_count?: number;
-    server?: Server_DXQ;
+    server?: Server_LJL;
 };
 
