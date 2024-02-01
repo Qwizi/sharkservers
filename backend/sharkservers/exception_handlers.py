@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import sys
-from typing import Union
 
 from fastapi import Request
 from fastapi.exception_handlers import http_exception_handler as _http_exception_handler
@@ -16,7 +15,8 @@ from sharkservers.logger import logger
 
 
 async def request_validation_exception_handler(
-    request: Request, exc: RequestValidationError
+    request: Request,
+    exc: RequestValidationError,
 ) -> JSONResponse:
     """
     Middleware will log all RequestValidationErrors.
@@ -33,7 +33,7 @@ async def request_validation_exception_handler(
     """
     logger.debug("Our custom request_validation_exception_handler was called")
     body = await request.body()
-    query_params = request.query_params._dict  # pylint: disable=protected-access
+    query_params = request.query_params._dict  # pylint: disable=protected-access  # noqa: SLF001
     detail = {
         "errors": exc.errors(),
         "body": body.decode(),
@@ -44,8 +44,9 @@ async def request_validation_exception_handler(
 
 
 async def http_exception_handler(
-    request: Request, exc: HTTPException
-) -> Union[JSONResponse, Response]:
+    request: Request,
+    exc: HTTPException,
+) -> JSONResponse | Response:
     """
     HTTPException handler.
 
@@ -63,7 +64,8 @@ async def http_exception_handler(
 
 
 async def unhandled_exception_handler(
-    request: Request, exc: Exception
+    request: Request,
+    exc: Exception,
 ) -> PlainTextResponse:
     """
     Unhandled exception handler.

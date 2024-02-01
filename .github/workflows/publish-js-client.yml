@@ -1,0 +1,54 @@
+name: Publish Package to npmjs
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetches all history for all branches and tags
+
+      - name: Check for changes in the js-client directory
+        id: check_changes
+        run: |
+          if git diff --name-only $GITHUB_SHA^ $GITHUB_SHA -- js-client/
+          then
+            echo "::set-output name=js_client_changed::true"
+          else
+            echo "::set-output name=js_client_changed::false"
+          fi
+
+      - uses: actions/setup-node@v3
+        if: steps.check_changes.outputs.js_client_changed == 'true'
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Extract version from tag
+        if: steps.check_changes.outputs.js_client_changed == 'true'
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Update package.json version
+        if: steps.check_changes.outputs.js_client_changed == 'true'
+        run: |
+          cd js-client
+          npm version $RELEASE_VERSION --no-git-tag-version
+        env:
+          RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
+
+      - name: Install dependencies
+        if: steps.check_changes.outputs.js_client_changed == 'true'
+        run: npm ci
+        working-directory: js-client
+
+      - name: Publish package
+        if: steps.check_changes.outputs.js_client_changed == 'true'
+        run: npm publish
+        working-directory: js-client
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
