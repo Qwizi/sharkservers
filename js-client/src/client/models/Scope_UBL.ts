@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Scope_CIM = {
+export type Scope_UBL = {
     id?: number;
     app_name: string;
     value: string;

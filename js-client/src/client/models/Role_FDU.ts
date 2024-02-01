@@ -3,11 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Ban_MXS = {
+export type Role_FDU = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    reason: string;
-    ban_time?: string;
+    tag: string;
+    name: string;
+    color?: string;
+    is_staff?: boolean;
 };
 

@@ -3,10 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Scope_CIM } from './Scope_CIM';
+import type { Scope_NPR } from './Scope_NPR';
 
-export type Page_Scope_CIM_ = {
-    items: Array<Scope_CIM>;
+export type Page_Scope_NPR_ = {
+    items: Array<Scope_NPR>;
     total?: number;
     page?: number;
     size?: number;

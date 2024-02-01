@@ -4,14 +4,11 @@
 /* eslint-disable */
 
 import type { Category_CEN } from './Category_CEN';
-import type { Server_PQY } from './Server_PQY';
+import type { Post_YRC } from './Post_YRC';
+import type { Server_CMD } from './Server_CMD';
 import type { ThreadMeta_MHC } from './ThreadMeta_MHC';
-import type { User_DFG } from './User_DFG';
 
-/**
- * Thread output schema.
- */
-export type ThreadOut = {
+export type Thread_HXO = {
     created_at?: string;
     updated_at?: string;
     id?: number;
@@ -21,9 +18,9 @@ export type ThreadOut = {
     is_pinned?: boolean;
     status?: string;
     category?: Category_CEN;
-    author?: User_DFG;
+    posts?: Array<Post_YRC>;
     meta_fields?: Array<ThreadMeta_MHC>;
     post_count?: number;
-    server?: Server_PQY;
+    server?: Server_CMD;
 };
 

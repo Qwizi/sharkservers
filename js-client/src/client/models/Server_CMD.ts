@@ -3,16 +3,17 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Scope_NUL } from './Scope_NUL';
+import type { Role_KVI } from './Role_KVI';
 
-export type Role_QRS = {
+export type Server_CMD = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    tag: string;
     name: string;
-    color?: string;
-    scopes?: Array<Scope_NUL>;
-    is_staff?: boolean;
+    tag: string;
+    ip: string;
+    port: number;
+    admin_role?: Role_KVI;
+    api_url: string;
 };
 

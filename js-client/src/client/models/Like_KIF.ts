@@ -3,16 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Scope_IGE } from './Scope_IGE';
+import type { Post_YRC } from './Post_YRC';
 
-export type Role_HSI = {
+export type Like_KIF = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    tag: string;
-    name: string;
-    color?: string;
-    scopes?: Array<Scope_IGE>;
-    is_staff?: boolean;
+    post_likes?: Array<Post_YRC>;
 };
 

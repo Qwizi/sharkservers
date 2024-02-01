@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { SteamRepProfile_ESB } from './SteamRepProfile_ESB';
+import type { SteamRepProfile_STO } from './SteamRepProfile_STO';
 
 /**
  * Player out schema.
@@ -12,7 +12,7 @@ export type PlayerOut = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    steamrep_profile?: SteamRepProfile_ESB;
+    steamrep_profile?: SteamRepProfile_STO;
     username: string;
     steamid3: string;
     steamid32: string;

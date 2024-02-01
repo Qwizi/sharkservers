@@ -3,17 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Role_QRS } from './Role_QRS';
-
-export type Server_XXZ = {
+export type Category_CEN = {
     created_at?: string;
     updated_at?: string;
     id?: number;
     name: string;
-    tag: string;
-    ip: string;
-    port: number;
-    admin_role?: Role_QRS;
-    api_url: string;
+    description?: string;
+    type?: string;
+    threads_count?: number;
 };
 

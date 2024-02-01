@@ -3,9 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Role_KPW } from './Role_KPW';
+import type { Role_FDU } from './Role_FDU';
 
-export type Server_UYR = {
+export type Server_PQY = {
     created_at?: string;
     updated_at?: string;
     id?: number;
@@ -13,7 +13,7 @@ export type Server_UYR = {
     tag: string;
     ip: string;
     port: number;
-    admin_role?: Role_KPW;
+    admin_role?: Role_FDU;
     api_url: string;
 };
 

@@ -3,13 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Category_AIC = {
+export type SteamRepProfile_STO = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    name: string;
-    description?: string;
-    type?: string;
-    threads_count?: number;
+    profile_url: string;
+    is_scammer?: boolean;
+    steamid64: string;
 };
 

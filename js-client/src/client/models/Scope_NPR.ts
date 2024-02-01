@@ -3,12 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Post_YIT } from './Post_YIT';
-
-export type Like_LAQ = {
-    created_at?: string;
-    updated_at?: string;
+export type Scope_NPR = {
     id?: number;
-    post_likes?: Array<Post_YIT>;
+    app_name: string;
+    value: string;
+    description: string;
+    protected?: boolean;
 };
 

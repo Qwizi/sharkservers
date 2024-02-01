@@ -3,13 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Role_KPW = {
-    created_at?: string;
-    updated_at?: string;
+export type Scope_IIV = {
     id?: number;
-    tag: string;
-    name: string;
-    color?: string;
-    is_staff?: boolean;
+    app_name: string;
+    value: string;
+    description: string;
+    protected?: boolean;
 };
 

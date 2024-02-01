@@ -3,11 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Like_LAQ } from './Like_LAQ';
-import type { Player_LPF } from './Player_LPF';
-import type { Role_KPW } from './Role_KPW';
+import type { Like_KIF } from './Like_KIF';
+import type { Player_ACX } from './Player_ACX';
+import type { Role_FDU } from './Role_FDU';
 
-export type User_OTX = {
+export type User_DFG = {
     created_at?: string;
     updated_at?: string;
     id?: number;
@@ -15,13 +15,13 @@ export type User_OTX = {
     is_activated?: boolean;
     is_superuser?: boolean;
     avatar?: string;
-    display_role?: Role_KPW;
+    display_role?: Role_FDU;
     last_login?: string;
     last_online?: string;
     threads_count?: number;
     posts_count?: number;
     likes_count?: number;
-    player?: Player_LPF;
-    user_reputation?: Array<Like_LAQ>;
+    player?: Player_ACX;
+    user_reputation?: Array<Like_KIF>;
 };
 

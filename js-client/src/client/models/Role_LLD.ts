@@ -3,20 +3,16 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Role_LLD } from './Role_LLD';
+import type { Scope_UBL } from './Scope_UBL';
 
-/**
- * Schema for retrieving a server.
- */
-export type ServerOut = {
+export type Role_LLD = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    name: string;
     tag: string;
-    ip: string;
-    port: number;
-    admin_role?: Role_LLD;
-    api_url: string;
+    name: string;
+    color?: string;
+    scopes?: Array<Scope_UBL>;
+    is_staff?: boolean;
 };
 

@@ -3,13 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Ban_MXS } from './Ban_MXS';
-import type { Like_LAQ } from './Like_LAQ';
-import type { Player_LPF } from './Player_LPF';
-import type { Post_YIT } from './Post_YIT';
-import type { Role_QRS } from './Role_QRS';
-import type { Thread_SET } from './Thread_SET';
-import type { UserSession_JIN } from './UserSession_JIN';
+import type { Ban_BMO } from './Ban_BMO';
+import type { Like_KIF } from './Like_KIF';
+import type { Player_ACX } from './Player_ACX';
+import type { Post_YRC } from './Post_YRC';
+import type { Role_KVI } from './Role_KVI';
+import type { Thread_HXO } from './Thread_HXO';
+import type { UserSession_YIF } from './UserSession_YIF';
 
 /**
  * Represents the output schema for a user with email.
@@ -23,19 +23,19 @@ export type UserOutWithEmail = {
     is_activated?: boolean;
     is_superuser?: boolean;
     avatar?: string;
-    roles?: Array<Role_QRS>;
-    display_role?: Role_QRS;
+    roles?: Array<Role_KVI>;
+    display_role?: Role_KVI;
     last_login?: string;
     last_online?: string;
     threads_count?: number;
     posts_count?: number;
     likes_count?: number;
-    player?: Player_LPF;
-    sessions?: Array<UserSession_JIN>;
-    banned_user?: Array<Ban_MXS>;
-    banned_by?: Array<Ban_MXS>;
-    user_reputation?: Array<Like_LAQ>;
-    user_posts?: Array<Post_YIT>;
-    user_threads?: Array<Thread_SET>;
+    player?: Player_ACX;
+    sessions?: Array<UserSession_YIF>;
+    banned_user?: Array<Ban_BMO>;
+    banned_by?: Array<Ban_BMO>;
+    user_reputation?: Array<Like_KIF>;
+    user_posts?: Array<Post_YRC>;
+    user_threads?: Array<Thread_HXO>;
 };
 
