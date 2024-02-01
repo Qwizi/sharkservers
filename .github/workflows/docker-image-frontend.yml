@@ -1,8 +1,8 @@
 name: Publish Frontend Docker image
 
 on:
-  pull_request:
-    branches: [ master ]
+  release:
+    types: [published]
 
 jobs:
   push_to_registry:
@@ -14,16 +14,28 @@ jobs:
         uses: actions/checkout@v4.1.1
         with:
           fetch-depth: 0  # Fetches all history for all branches and tags
-
+      
+      - name: Get previous tag
+        id: previoustag
+        run: |
+            git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+            CURRENT_TAG=${GITHUB_REF#refs/tags/}
+            PREVIOUS_TAG=$(git tag --sort=-creatordate | grep -B1 $CURRENT_TAG | head -n1)
+            echo "::set-output name=previous_tag::$PREVIOUS_TAG"
+  
       - name: Check for changes in frontend directory
         id: check_changes
         run: |
-          FRONTEND_CHANGED=$(git diff --name-only origin/master...${{ github.head_ref }} -- frontend/ | wc -l)
-          if [ "$FRONTEND_CHANGED" -gt 0 ]; then
-            echo "::set-output name=frontend_changed::true"
-          else
-            echo "::set-output name=frontend_changed::false"
-          fi
+            if [ -n "${{ steps.previoustag.outputs.previous_tag }}" ]; then
+              CHANGE_COUNT=$(git diff --name-only ${{ steps.previoustag.outputs.previous_tag }} $GITHUB_SHA -- frontend/ | wc -l)
+              if [ "$CHANGE_COUNT" -gt 0 ]; then
+                echo "::set-output name=frontend_changed::true"
+              else
+                echo "::set-output name=frontend_changed::false"
+              fi
+            else
+              echo "::set-output name=frontend_changed::false"
+            fi
 
       - name: Log in to Docker Hub
         if: steps.check_changes.outputs.frontend_changed == 'true'

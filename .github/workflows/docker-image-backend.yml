@@ -1,8 +1,8 @@
 name: Publish Backend Docker image
 
 on:
-  pull_request:
-    branches: [ master ]
+  release:
+    types: [published]
 
 jobs:
   push_to_registry:
@@ -13,14 +13,26 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4.1.1
         with:
-          fetch-depth: 0  # Fetches all history for all branches and tags
+          fetch-depth: 0
 
-      - name: Check for changes in backend directory
+      - name: Get previous tag
+        id: previoustag
+        run: |
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+          CURRENT_TAG=${GITHUB_REF#refs/tags/}
+          PREVIOUS_TAG=$(git tag --sort=-creatordate | grep -B1 $CURRENT_TAG | head -n1)
+          echo "::set-output name=previous_tag::$PREVIOUS_TAG"
+
+      - name: Check for changes in backend/sharkservers directory
         id: check_changes
         run: |
-          BACKEND_CHANGED=$(git diff --name-only origin/master...${{ github.head_ref }} -- backend/ | wc -l)
-          if [ "$BACKEND_CHANGED" -gt 0 ]; then
-            echo "::set-output name=backend_changed::true"
+          if [ -n "${{ steps.previoustag.outputs.previous_tag }}" ]; then
+            CHANGE_COUNT=$(git diff --name-only ${{ steps.previoustag.outputs.previous_tag }} $GITHUB_SHA -- backend/sharkservers/ | wc -l)
+            if [ "$CHANGE_COUNT" -gt 0 ]; then
+              echo "::set-output name=backend_changed::true"
+            else
+              echo "::set-output name=backend_changed::false"
+            fi
           else
             echo "::set-output name=backend_changed::false"
           fi
@@ -37,14 +49,14 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5.5.1
         with:
-          images: qwizii/sharkservers-backend
-      
+          images: your-docker-image-name
+
       - name: Build and push Docker image
         if: steps.check_changes.outputs.backend_changed == 'true'
         uses: docker/build-push-action@v5.1.0
         with:
-          context: ./backend
-          file: ./backend/Dockerfile
+          context: ./backend/sharkservers
+          file: ./backend/sharkservers/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
