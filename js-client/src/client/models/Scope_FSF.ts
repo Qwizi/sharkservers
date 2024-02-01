@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Scope_NPR = {
+export type Scope_FSF = {
     id?: number;
     app_name: string;
     value: string;

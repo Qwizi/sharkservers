@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Scope_IIV } from './Scope_IIV';
+import type { Scope_FSF } from './Scope_FSF';
 
 /**
  * RoleOutWithScopes schema.
@@ -15,7 +15,7 @@ export type RoleOutWithScopes = {
     tag: string;
     name: string;
     color?: string;
-    scopes?: Array<Scope_IIV>;
+    scopes?: Array<Scope_FSF>;
     is_staff?: boolean;
 };
 

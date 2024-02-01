@@ -15,7 +15,7 @@ if docker compose ps --services --filter "status=running" | grep "$SERVICE_NAME"
         cd js-client
         npm install
         npm run generate-client
-        npx tsc .
+        npx tsc
         echo "Client generated."
         exit 0
     else

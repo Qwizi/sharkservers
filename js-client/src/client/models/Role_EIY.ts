@@ -3,13 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Category_CEN = {
+export type Role_EIY = {
     created_at?: string;
     updated_at?: string;
     id?: number;
+    tag: string;
     name: string;
-    description?: string;
-    type?: string;
-    threads_count?: number;
+    color?: string;
+    is_staff?: boolean;
 };
 

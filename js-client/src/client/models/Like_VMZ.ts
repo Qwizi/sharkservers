@@ -3,11 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type UserSession_YIF = {
+import type { Post_VJU } from './Post_VJU';
+
+export type Like_VMZ = {
     created_at?: string;
     updated_at?: string;
-    id?: string;
-    user_ip: string;
-    user_agent: string;
+    id?: number;
+    post_likes?: Array<Post_VJU>;
 };
 

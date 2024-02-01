@@ -3,13 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Role_FDU = {
-    created_at?: string;
-    updated_at?: string;
+export type Scope_NII = {
     id?: number;
-    tag: string;
-    name: string;
-    color?: string;
-    is_staff?: boolean;
+    app_name: string;
+    value: string;
+    description: string;
+    protected?: boolean;
 };
 

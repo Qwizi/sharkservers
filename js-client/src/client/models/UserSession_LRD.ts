@@ -3,11 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Ban_BMO = {
+export type UserSession_LRD = {
     created_at?: string;
     updated_at?: string;
-    id?: number;
-    reason: string;
-    ban_time?: string;
+    id?: string;
+    user_ip: string;
+    user_agent: string;
 };
 

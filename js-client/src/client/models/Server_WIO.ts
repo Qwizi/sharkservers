@@ -3,12 +3,17 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type SteamRepProfile_STO = {
+import type { Role_HZZ } from './Role_HZZ';
+
+export type Server_WIO = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    profile_url: string;
-    is_scammer?: boolean;
-    steamid64: string;
+    name: string;
+    tag: string;
+    ip: string;
+    port: number;
+    admin_role?: Role_HZZ;
+    api_url: string;
 };
 

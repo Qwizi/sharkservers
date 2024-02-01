@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type ThreadMeta_MHC = {
+export type ThreadMeta_SKI = {
     created_at?: string;
     updated_at?: string;
     id?: string;

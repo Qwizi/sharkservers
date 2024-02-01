@@ -3,12 +3,17 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Post_YRC } from './Post_YRC';
+import type { Role_EIY } from './Role_EIY';
 
-export type Like_KIF = {
+export type Server_CLS = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    post_likes?: Array<Post_YRC>;
+    name: string;
+    tag: string;
+    ip: string;
+    port: number;
+    admin_role?: Role_EIY;
+    api_url: string;
 };
 

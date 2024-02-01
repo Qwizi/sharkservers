@@ -3,16 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Scope_IIV } from './Scope_IIV';
-
-export type Role_KVI = {
+export type SteamRepProfile_FYX = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    tag: string;
-    name: string;
-    color?: string;
-    scopes?: Array<Scope_IIV>;
-    is_staff?: boolean;
+    profile_url: string;
+    is_scammer?: boolean;
+    steamid64: string;
 };
 

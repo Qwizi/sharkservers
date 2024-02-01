@@ -3,17 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Role_FDU } from './Role_FDU';
-
-export type Server_PQY = {
+export type Post_VJU = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    name: string;
-    tag: string;
-    ip: string;
-    port: number;
-    admin_role?: Role_FDU;
-    api_url: string;
+    content: string;
+    likes_count?: number;
 };
 

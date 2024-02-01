@@ -3,11 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Like_KIF } from './Like_KIF';
-import type { Player_ACX } from './Player_ACX';
-import type { Role_FDU } from './Role_FDU';
+import type { Like_VMZ } from './Like_VMZ';
+import type { Player_JQG } from './Player_JQG';
+import type { Role_EIY } from './Role_EIY';
 
-export type User_DFG = {
+export type User_TAE = {
     created_at?: string;
     updated_at?: string;
     id?: number;
@@ -15,13 +15,13 @@ export type User_DFG = {
     is_activated?: boolean;
     is_superuser?: boolean;
     avatar?: string;
-    display_role?: Role_FDU;
+    display_role?: Role_EIY;
     last_login?: string;
     last_online?: string;
     threads_count?: number;
     posts_count?: number;
     likes_count?: number;
-    player?: Player_ACX;
-    user_reputation?: Array<Like_KIF>;
+    player?: Player_JQG;
+    user_reputation?: Array<Like_VMZ>;
 };
 

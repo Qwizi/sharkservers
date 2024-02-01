@@ -3,11 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Post_YRC = {
+export type Category_IHZ = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    content: string;
-    likes_count?: number;
+    name: string;
+    description?: string;
+    type?: string;
+    threads_count?: number;
 };
 

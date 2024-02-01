@@ -3,11 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Scope_IIV = {
+export type Ban_XLQ = {
+    created_at?: string;
+    updated_at?: string;
     id?: number;
-    app_name: string;
-    value: string;
-    description: string;
-    protected?: boolean;
+    reason: string;
+    ban_time?: string;
 };
 

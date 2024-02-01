@@ -3,17 +3,16 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Role_KVI } from './Role_KVI';
+import type { Scope_FSF } from './Scope_FSF';
 
-export type Server_CMD = {
+export type Role_HZZ = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    name: string;
     tag: string;
-    ip: string;
-    port: number;
-    admin_role?: Role_KVI;
-    api_url: string;
+    name: string;
+    color?: string;
+    scopes?: Array<Scope_FSF>;
+    is_staff?: boolean;
 };
 

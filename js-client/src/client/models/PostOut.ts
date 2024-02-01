@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { User_DFG } from './User_DFG';
+import type { User_TAE } from './User_TAE';
 
 /**
  * Post output schema.
@@ -12,7 +12,7 @@ export type PostOut = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    author?: User_DFG;
+    author?: User_TAE;
     content: string;
     likes_count?: number;
 };

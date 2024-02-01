@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { User_DFG } from './User_DFG';
+import type { User_TAE } from './User_TAE';
 
 /**
  * Like output schema.
@@ -12,6 +12,6 @@ export type LikeOut = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    author?: User_DFG;
+    author?: User_TAE;
 };
 
