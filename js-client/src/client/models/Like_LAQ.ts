@@ -3,13 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Category_VSL = {
+import type { Post_YIT } from './Post_YIT';
+
+export type Like_LAQ = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    name: string;
-    description?: string;
-    type?: string;
-    threads_count?: number;
+    post_likes?: Array<Post_YIT>;
 };
 

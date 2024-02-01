@@ -3,11 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type UserSession_QNT = {
+export type ThreadMeta_AYW = {
     created_at?: string;
     updated_at?: string;
     id?: string;
-    user_ip: string;
-    user_agent: string;
+    name: string;
+    value?: string;
+    description?: string;
 };
 

@@ -3,12 +3,17 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type SteamRepProfile_PTN = {
+import type { Role_QRS } from './Role_QRS';
+
+export type Server_XXZ = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    profile_url: string;
-    is_scammer?: boolean;
-    steamid64: string;
+    name: string;
+    tag: string;
+    ip: string;
+    port: number;
+    admin_role?: Role_QRS;
+    api_url: string;
 };
 

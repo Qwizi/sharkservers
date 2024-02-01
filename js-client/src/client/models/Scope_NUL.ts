@@ -3,11 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Ban_XZP = {
-    created_at?: string;
-    updated_at?: string;
+export type Scope_NUL = {
     id?: number;
-    reason: string;
-    ban_time?: string;
+    app_name: string;
+    value: string;
+    description: string;
+    protected?: boolean;
 };
 

@@ -3,16 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Scope_ULU } from './Scope_ULU';
-
-export type Role_CHQ = {
+export type Category_AIC = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    tag: string;
     name: string;
-    color?: string;
-    scopes?: Array<Scope_ULU>;
-    is_staff?: boolean;
+    description?: string;
+    type?: string;
+    threads_count?: number;
 };
 

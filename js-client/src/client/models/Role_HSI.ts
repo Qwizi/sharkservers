@@ -3,17 +3,16 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Role_MAJ } from './Role_MAJ';
+import type { Scope_IGE } from './Scope_IGE';
 
-export type Server_TRD = {
+export type Role_HSI = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    name: string;
     tag: string;
-    ip: string;
-    port: number;
-    admin_role?: Role_MAJ;
-    api_url: string;
+    name: string;
+    color?: string;
+    scopes?: Array<Scope_IGE>;
+    is_staff?: boolean;
 };
 

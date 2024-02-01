@@ -3,12 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Post_ZBH } from './Post_ZBH';
-
-export type Like_EYR = {
+export type UserSession_JIN = {
     created_at?: string;
     updated_at?: string;
-    id?: number;
-    post_likes?: Array<Post_ZBH>;
+    id?: string;
+    user_ip: string;
+    user_agent: string;
 };
 

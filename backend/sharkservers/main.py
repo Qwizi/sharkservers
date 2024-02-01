@@ -102,7 +102,7 @@ installed_file_path = os.path.join(script_dir, "installed")  # noqa: PTH118
 
 def init_routes(_app: FastAPI) -> FastAPI:
     """
-    Initialize the routes for the FastAPI applicationn.
+    Initialize the routes for the FastAPI applicationnn.
 
     Args:
     ----

@@ -3,12 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type ThreadMeta_CSQ = {
+export type SteamRepProfile_ESB = {
     created_at?: string;
     updated_at?: string;
-    id?: string;
-    name: string;
-    value?: string;
-    description?: string;
+    id?: number;
+    profile_url: string;
+    is_scammer?: boolean;
+    steamid64: string;
 };
 

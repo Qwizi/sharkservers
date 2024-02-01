@@ -3,13 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { SteamRepProfile_PTN } from './SteamRepProfile_PTN';
+import type { SteamRepProfile_ESB } from './SteamRepProfile_ESB';
 
-export type Player_TBD = {
+export type Player_LPF = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    steamrep_profile?: SteamRepProfile_PTN;
+    steamrep_profile?: SteamRepProfile_ESB;
     username: string;
     steamid3: string;
     steamid32: string;

@@ -3,11 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Like_EYR } from './Like_EYR';
-import type { Player_TBD } from './Player_TBD';
-import type { Role_MAJ } from './Role_MAJ';
+import type { Like_LAQ } from './Like_LAQ';
+import type { Player_LPF } from './Player_LPF';
+import type { Role_KPW } from './Role_KPW';
 
-export type User_NMI = {
+export type User_OTX = {
     created_at?: string;
     updated_at?: string;
     id?: number;
@@ -15,13 +15,13 @@ export type User_NMI = {
     is_activated?: boolean;
     is_superuser?: boolean;
     avatar?: string;
-    display_role?: Role_MAJ;
+    display_role?: Role_KPW;
     last_login?: string;
     last_online?: string;
     threads_count?: number;
     posts_count?: number;
     likes_count?: number;
-    player?: Player_TBD;
-    user_reputation?: Array<Like_EYR>;
+    player?: Player_LPF;
+    user_reputation?: Array<Like_LAQ>;
 };
 

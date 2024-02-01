@@ -3,12 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Like_EYR } from './Like_EYR';
-import type { Player_TBD } from './Player_TBD';
-import type { Post_ZBH } from './Post_ZBH';
-import type { Role_MAJ } from './Role_MAJ';
-import type { Thread_IDL } from './Thread_IDL';
-import type { UserSession_QNT } from './UserSession_QNT';
+import type { Like_LAQ } from './Like_LAQ';
+import type { Player_LPF } from './Player_LPF';
+import type { Post_YIT } from './Post_YIT';
+import type { Role_KPW } from './Role_KPW';
+import type { Thread_SET } from './Thread_SET';
+import type { UserSession_JIN } from './UserSession_JIN';
 
 /**
  * Represents the output schema for a user.
@@ -21,17 +21,17 @@ export type UserOut = {
     is_activated?: boolean;
     is_superuser?: boolean;
     avatar?: string;
-    roles?: Array<Role_MAJ>;
-    display_role?: Role_MAJ;
+    roles?: Array<Role_KPW>;
+    display_role?: Role_KPW;
     last_login?: string;
     last_online?: string;
     threads_count?: number;
     posts_count?: number;
     likes_count?: number;
-    player?: Player_TBD;
-    sessions?: Array<UserSession_QNT>;
-    user_reputation?: Array<Like_EYR>;
-    user_posts?: Array<Post_ZBH>;
-    user_threads?: Array<Thread_IDL>;
+    player?: Player_LPF;
+    sessions?: Array<UserSession_JIN>;
+    user_reputation?: Array<Like_LAQ>;
+    user_posts?: Array<Post_YIT>;
+    user_threads?: Array<Thread_SET>;
 };
 

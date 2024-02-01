@@ -3,10 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Scope_FRJ } from './Scope_FRJ';
+import type { Scope_CIM } from './Scope_CIM';
 
-export type Page_Scope_FRJ_ = {
-    items: Array<Scope_FRJ>;
+export type Page_Scope_CIM_ = {
+    items: Array<Scope_CIM>;
     total?: number;
     page?: number;
     size?: number;

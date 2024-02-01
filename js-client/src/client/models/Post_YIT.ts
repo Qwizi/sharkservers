@@ -3,11 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Scope_FRJ = {
+export type Post_YIT = {
+    created_at?: string;
+    updated_at?: string;
     id?: number;
-    app_name: string;
-    value: string;
-    description: string;
-    protected?: boolean;
+    content: string;
+    likes_count?: number;
 };
 

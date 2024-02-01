@@ -3,17 +3,16 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Role_CHQ } from './Role_CHQ';
+import type { Scope_NUL } from './Scope_NUL';
 
-export type Server_UVD = {
+export type Role_QRS = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    name: string;
     tag: string;
-    ip: string;
-    port: number;
-    admin_role?: Role_CHQ;
-    api_url: string;
+    name: string;
+    color?: string;
+    scopes?: Array<Scope_NUL>;
+    is_staff?: boolean;
 };
 
