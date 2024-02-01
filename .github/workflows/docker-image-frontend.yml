@@ -12,12 +12,19 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4.1.1
+        with:
+          fetch-depth: 0  # Fetches all history for all branches and tags
+
+      - name: Find last commit affecting 'frontend' directory
+        id: last_commit
+        run: |
+          LAST_COMMIT_SHA=$(git rev-list -1 HEAD -- frontend/)
+          echo "LAST_COMMIT_SHA=$LAST_COMMIT_SHA" >> $GITHUB_ENV
 
       - name: Check for changes in frontend directory
         id: check_changes
         run: |
-          if git diff --name-only $GITHUB_SHA^ $GITHUB_SHA -- frontend/
-          then
+          if [ "$LAST_COMMIT_SHA" == "${{ github.sha }}" ]; then
             echo "::set-output name=frontend_changed::true"
           else
             echo "::set-output name=frontend_changed::false"

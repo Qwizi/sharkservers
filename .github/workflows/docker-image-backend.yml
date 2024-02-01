@@ -12,12 +12,19 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4.1.1
+        with:
+          fetch-depth: 0  # Fetches all history for all branches and tags
+
+      - name: Find last commit affecting 'backend' directory
+        id: last_commit
+        run: |
+          LAST_COMMIT_SHA=$(git rev-list -1 HEAD -- backend/)
+          echo "LAST_COMMIT_SHA=$LAST_COMMIT_SHA" >> $GITHUB_ENV
 
       - name: Check for changes in backend directory
         id: check_changes
         run: |
-          if git diff --name-only $GITHUB_SHA^ $GITHUB_SHA -- backend/
-          then
+          if [ "$LAST_COMMIT_SHA" == "${{ github.sha }}" ]; then
             echo "::set-output name=backend_changed::true"
           else
             echo "::set-output name=backend_changed::false"
