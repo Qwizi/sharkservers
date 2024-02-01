@@ -7,7 +7,7 @@
 # To get a newer version, you will need to update the SHA.
 # You can also reference a tag or branch, but the action may change without warning.
 
-name: Publish Docker image
+name: Publish Frontend Docker image
 
 on:
   release:
@@ -17,13 +17,7 @@ jobs:
   push_to_registry:
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - image: qwizii/sharkservers-backend
-            dockerfile: ./backend/Dockerfile
-          - image: qwizii/sharkservers-frontend
-            dockerfile: ./frontend/Dockerfile
+
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4.1.1
@@ -38,14 +32,13 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5.5.1
         with:
-          images: ${{ matrix.image}}
+          images: qwizii/sharkservers-frontend
       
       - name: Build and push Docker image
         uses: docker/build-push-action@v5.1.0
         with:
-          context: .
-          file:  ${{ matrix.dockerfile }}
+          context: ./frontend
+          file:  ./frontend/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          
