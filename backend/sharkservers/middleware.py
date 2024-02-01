@@ -1,16 +1,24 @@
+"""Middleware for the FastAPI application."""
 import http
 import time
 
-from fastapi import Request
+from fastapi import Request, Response
 
 from sharkservers.logger import logger
 
 
-async def log_request_middleware(request: Request, call_next):
+async def log_request_middleware(request: Request, call_next) -> Response:  # noqa: ANN001
     """
-    This middleware will log all requests and their processing time.
-    E.g. log:
-    0.0.0.0:1234 - GET /ping 200 OK 1.00ms
+    Middleware will log all requests.
+
+    Args:
+    ----
+        request: The request object.
+        call_next: The next function.
+
+    Returns:
+    -------
+        The response object.
     """
     logger.debug("middleware: log_request_middleware")
     url = (
@@ -29,6 +37,6 @@ async def log_request_middleware(request: Request, call_next):
     except ValueError:
         status_phrase = ""
     logger.info(
-        f'{host}:{port} - "{request.method} {url}" {response.status_code} {status_phrase} {formatted_process_time}ms'
+        f'{host}:{port} - "{request.method} {url}" {response.status_code} {status_phrase} {formatted_process_time}ms',
     )
     return response

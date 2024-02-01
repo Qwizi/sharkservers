@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "generate-client": "openapi --input ../sharkservers-api/openapi.json --output ./src/client --client axios --name ApiClient",
+    "generate-client": "openapi --input ../backend/openapi.json --output ./src/client --client axios --name ApiClient",
     "build": "tsc"
   },
   "keywords": [],

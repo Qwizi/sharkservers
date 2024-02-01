@@ -28,10 +28,10 @@ repos:
     exclude: "^(frontend/|js-client/).*"
 -   repo: local
     hooks:
-    - id: generate-js-client
+    - id: generate-openapi-file
       name: Generate the JS client
       language: script
-      entry: ./scripts/generate-js-client.sh
-      exclude: "^(backend/|frontend/).*"
+      entry: ./scripts/generate-openapi-file.sh
+      exclude: "^(js-client/|frontend/|scripts/).*"
     
     
