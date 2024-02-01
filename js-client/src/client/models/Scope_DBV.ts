@@ -3,13 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Role_LDV = {
-    created_at?: string;
-    updated_at?: string;
+export type Scope_DBV = {
     id?: number;
-    tag: string;
-    name: string;
-    color?: string;
-    is_staff?: boolean;
+    app_name: string;
+    value: string;
+    description: string;
+    protected?: boolean;
 };
 

@@ -3,11 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Like_LHM } from './Like_LHM';
-import type { Player_YFV } from './Player_YFV';
-import type { Role_LDV } from './Role_LDV';
+import type { Like_FNC } from './Like_FNC';
+import type { Player_LPL } from './Player_LPL';
+import type { Role_KXR } from './Role_KXR';
 
-export type User_MZB = {
+export type User_PRS = {
     created_at?: string;
     updated_at?: string;
     id?: number;
@@ -15,13 +15,13 @@ export type User_MZB = {
     is_activated?: boolean;
     is_superuser?: boolean;
     avatar?: string;
-    display_role?: Role_LDV;
+    display_role?: Role_KXR;
     last_login?: string;
     last_online?: string;
     threads_count?: number;
     posts_count?: number;
     likes_count?: number;
-    player?: Player_YFV;
-    user_reputation?: Array<Like_LHM>;
+    player?: Player_LPL;
+    user_reputation?: Array<Like_FNC>;
 };
 

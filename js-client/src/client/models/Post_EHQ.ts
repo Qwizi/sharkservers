@@ -3,11 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Ban_VLY = {
+export type Post_EHQ = {
     created_at?: string;
     updated_at?: string;
     id?: number;
-    reason: string;
-    ban_time?: string;
+    content: string;
+    likes_count?: number;
 };
 

@@ -3,8 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { CreateScopeSchema } from '../models/CreateScopeSchema';
-import type { Page_Scope_NPC_ } from '../models/Page_Scope_NPC_';
-import type { Scope_NPC } from '../models/Scope_NPC';
+import type { Page_Scope_DBV_ } from '../models/Page_Scope_DBV_';
+import type { Scope_DBV } from '../models/Scope_DBV';
 import type { UpdateScopeSchema } from '../models/UpdateScopeSchema';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -28,13 +28,13 @@ export class AdminScopesService {
      * Page[ScopeOut]: A paginated list of ScopeOut objects.
      * @param page
      * @param size
-     * @returns Page_Scope_NPC_ Successful Response
+     * @returns Page_Scope_DBV_ Successful Response
      * @throws ApiError
      */
     public adminGetScopes(
         page: number = 1,
         size: number = 50,
-    ): CancelablePromise<Page_Scope_NPC_> {
+    ): CancelablePromise<Page_Scope_DBV_> {
         return this.httpRequest.request({
             method: 'GET',
             url: '/v1/admin/scopes',
@@ -61,12 +61,12 @@ export class AdminScopesService {
      * -------
      * ScopeOut: The created scope.
      * @param requestBody
-     * @returns Scope_NPC Successful Response
+     * @returns Scope_DBV Successful Response
      * @throws ApiError
      */
     public adminCreateScope(
         requestBody: CreateScopeSchema,
-    ): CancelablePromise<Scope_NPC> {
+    ): CancelablePromise<Scope_DBV> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/v1/admin/scopes',
@@ -90,12 +90,12 @@ export class AdminScopesService {
      * -------
      * ScopeOut: The retrieved scope.
      * @param scopeId
-     * @returns Scope_NPC Successful Response
+     * @returns Scope_DBV Successful Response
      * @throws ApiError
      */
     public adminGetScope(
         scopeId: number,
-    ): CancelablePromise<Scope_NPC> {
+    ): CancelablePromise<Scope_DBV> {
         return this.httpRequest.request({
             method: 'GET',
             url: '/v1/admin/scopes/{scope_id}',
@@ -122,13 +122,13 @@ export class AdminScopesService {
      * ScopeOut: The updated scope.
      * @param scopeId
      * @param requestBody
-     * @returns Scope_NPC Successful Response
+     * @returns Scope_DBV Successful Response
      * @throws ApiError
      */
     public adminUpdateScope(
         scopeId: number,
         requestBody: UpdateScopeSchema,
-    ): CancelablePromise<Scope_NPC> {
+    ): CancelablePromise<Scope_DBV> {
         return this.httpRequest.request({
             method: 'PUT',
             url: '/v1/admin/scopes/{scope_id}',
@@ -156,12 +156,12 @@ export class AdminScopesService {
      * -------
      * ScopeOut: The deleted scope.
      * @param scopeId
-     * @returns Scope_NPC Successful Response
+     * @returns Scope_DBV Successful Response
      * @throws ApiError
      */
     public adminDeleteScope(
         scopeId: number,
-    ): CancelablePromise<Scope_NPC> {
+    ): CancelablePromise<Scope_DBV> {
         return this.httpRequest.request({
             method: 'DELETE',
             url: '/v1/admin/scopes/{scope_id}',

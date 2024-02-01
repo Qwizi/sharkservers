@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Scope_NPC = {
+export type Scope_OUE = {
     id?: number;
     app_name: string;
     value: string;

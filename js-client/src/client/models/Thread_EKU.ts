@@ -4,14 +4,11 @@
 /* eslint-disable */
 
 import type { Category_AHN } from './Category_AHN';
-import type { Server_FJT } from './Server_FJT';
+import type { Post_EHQ } from './Post_EHQ';
+import type { Server_CLM } from './Server_CLM';
 import type { ThreadMeta_TNX } from './ThreadMeta_TNX';
-import type { User_PRS } from './User_PRS';
 
-/**
- * Thread output schema.
- */
-export type ThreadOut = {
+export type Thread_EKU = {
     created_at?: string;
     updated_at?: string;
     id?: number;
@@ -21,9 +18,9 @@ export type ThreadOut = {
     is_pinned?: boolean;
     status?: string;
     category?: Category_AHN;
-    author?: User_PRS;
+    posts?: Array<Post_EHQ>;
     meta_fields?: Array<ThreadMeta_TNX>;
     post_count?: number;
-    server?: Server_FJT;
+    server?: Server_CLM;
 };
 

@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Category_NBA = {
+export type Category_AHN = {
     created_at?: string;
     updated_at?: string;
     id?: number;

@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Page_Scope_NPC_ } from '../models/Page_Scope_NPC_';
+import type { Page_Scope_DBV_ } from '../models/Page_Scope_DBV_';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
@@ -27,14 +27,14 @@ export class ScopesService {
      * @param roleId
      * @param page
      * @param size
-     * @returns Page_Scope_NPC_ Successful Response
+     * @returns Page_Scope_DBV_ Successful Response
      * @throws ApiError
      */
     public getAllScopes(
         roleId?: number,
         page: number = 1,
         size: number = 50,
-    ): CancelablePromise<Page_Scope_NPC_> {
+    ): CancelablePromise<Page_Scope_DBV_> {
         return this.httpRequest.request({
             method: 'GET',
             url: '/v1/scopes',

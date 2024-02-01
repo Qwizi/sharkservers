@@ -3,12 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type ThreadMeta_DJX = {
+import type { Post_EHQ } from './Post_EHQ';
+
+export type Like_FNC = {
     created_at?: string;
     updated_at?: string;
-    id?: string;
-    name: string;
-    value?: string;
-    description?: string;
+    id?: number;
+    post_likes?: Array<Post_EHQ>;
 };
 

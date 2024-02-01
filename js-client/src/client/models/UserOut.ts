@@ -3,12 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Like_LHM } from './Like_LHM';
-import type { Player_YFV } from './Player_YFV';
-import type { Post_IVP } from './Post_IVP';
-import type { Role_LDV } from './Role_LDV';
-import type { Thread_JGW } from './Thread_JGW';
-import type { UserSession_YLT } from './UserSession_YLT';
+import type { Like_FNC } from './Like_FNC';
+import type { Player_LPL } from './Player_LPL';
+import type { Post_EHQ } from './Post_EHQ';
+import type { Role_KXR } from './Role_KXR';
+import type { Thread_EKU } from './Thread_EKU';
+import type { UserSession_GIS } from './UserSession_GIS';
 
 /**
  * Represents the output schema for a user.
@@ -21,17 +21,17 @@ export type UserOut = {
     is_activated?: boolean;
     is_superuser?: boolean;
     avatar?: string;
-    roles?: Array<Role_LDV>;
-    display_role?: Role_LDV;
+    roles?: Array<Role_KXR>;
+    display_role?: Role_KXR;
     last_login?: string;
     last_online?: string;
     threads_count?: number;
     posts_count?: number;
     likes_count?: number;
-    player?: Player_YFV;
-    sessions?: Array<UserSession_YLT>;
-    user_reputation?: Array<Like_LHM>;
-    user_posts?: Array<Post_IVP>;
-    user_threads?: Array<Thread_JGW>;
+    player?: Player_LPL;
+    sessions?: Array<UserSession_GIS>;
+    user_reputation?: Array<Like_FNC>;
+    user_posts?: Array<Post_EHQ>;
+    user_threads?: Array<Thread_EKU>;
 };
 

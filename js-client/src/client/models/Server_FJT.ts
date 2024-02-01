@@ -3,9 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Role_WEK } from './Role_WEK';
+import type { Role_KXR } from './Role_KXR';
 
-export type Server_LJL = {
+export type Server_FJT = {
     created_at?: string;
     updated_at?: string;
     id?: number;
@@ -13,7 +13,7 @@ export type Server_LJL = {
     tag: string;
     ip: string;
     port: number;
-    admin_role?: Role_WEK;
+    admin_role?: Role_KXR;
     api_url: string;
 };
 

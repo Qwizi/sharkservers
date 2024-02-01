@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type UserSession_YLT = {
+export type UserSession_GIS = {
     created_at?: string;
     updated_at?: string;
     id?: string;
