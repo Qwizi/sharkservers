@@ -14,35 +14,35 @@ jobs:
         uses: actions/checkout@v4.1.1
 
       - name: Check for changes in frontend directory
-        id: frontend_changes
+        id: check_changes
         run: |
-          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- frontend/
+          if git diff --name-only $GITHUB_SHA^ $GITHUB_SHA -- frontend/
           then
-            echo "FRONTEND_CHANGED=true" >> $GITHUB_ENV
+            echo "::set-output name=frontend_changed::true"
           else
-            echo "FRONTEND_CHANGED=false" >> $GITHUB_ENV
+            echo "::set-output name=frontend_changed::false"
           fi
-      
+
       - name: Log in to Docker Hub
-        if: env.FRONTEND_CHANGED == 'true'
+        if: steps.check_changes.outputs.frontend_changed == 'true'
         uses: docker/login-action@v3.0.0
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      
+
       - name: Extract metadata (tags, labels) for Docker
-        if: env.FRONTEND_CHANGED == 'true'
+        if: steps.check_changes.outputs.frontend_changed == 'true'
         id: meta
         uses: docker/metadata-action@v5.5.1
         with:
           images: qwizii/sharkservers-frontend
       
       - name: Build and push Docker image
-        if: env.FRONTEND_CHANGED == 'true'
+        if: steps.check_changes.outputs.frontend_changed == 'true'
         uses: docker/build-push-action@v5.1.0
         with:
           context: ./frontend
-          file:  ./frontend/Dockerfile
+          file: ./frontend/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
