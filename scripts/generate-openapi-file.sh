@@ -13,9 +13,10 @@ if docker compose ps --services --filter "status=running" | grep "$SERVICE_NAME"
     RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/generate-openapi)
     if [ "$RESPONSE" -eq 200 ]; then
         cd js-client
+        npm install
         npm run generate-client
         echo "Client generated."
-        
+        exit 0
     else
         echo "Error: Service is up, but HTTP Status is not 200. Status: $RESPONSE"
         exit 1

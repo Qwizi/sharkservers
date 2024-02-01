@@ -102,7 +102,7 @@ installed_file_path = os.path.join(script_dir, "installed")  # noqa: PTH118
 
 def init_routes(_app: FastAPI) -> FastAPI:
     """
-    Initialize the routes for the FastAPI application.
+    Initialize the routes for the FastAPI applicationn.
 
     Args:
     ----
@@ -271,7 +271,8 @@ def create_app() -> FastAPI:
     init_routes(_app)
     add_pagination(_app)
     _app.add_exception_handler(
-        RequestValidationError, request_validation_exception_handler
+        RequestValidationError,
+        request_validation_exception_handler,
     )
     _app.add_exception_handler(HTTPException, http_exception_handler)
     _app.add_exception_handler(Exception, unhandled_exception_handler)
