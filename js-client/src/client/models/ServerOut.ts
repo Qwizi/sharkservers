@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Role_TFE } from './Role_TFE';
+import type { Role_OVO } from './Role_OVO';
 
 /**
  * Schema for retrieving a server.
@@ -16,7 +16,7 @@ export type ServerOut = {
     tag: string;
     ip: string;
     port: number;
-    admin_role?: Role_TFE;
+    admin_role?: Role_OVO;
     api_url: string;
 };
 

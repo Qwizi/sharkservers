@@ -3,12 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Like_VMZ } from './Like_VMZ';
-import type { Player_JQG } from './Player_JQG';
-import type { Post_VJU } from './Post_VJU';
-import type { Role_EIY } from './Role_EIY';
-import type { Thread_FBF } from './Thread_FBF';
-import type { UserSession_LRD } from './UserSession_LRD';
+import type { Like_OTE } from './Like_OTE';
+import type { Player_HQF } from './Player_HQF';
+import type { Post_QKB } from './Post_QKB';
+import type { Role_VFC } from './Role_VFC';
+import type { Thread_NTR } from './Thread_NTR';
+import type { UserSession_QAA } from './UserSession_QAA';
 
 /**
  * Represents the output schema for a user.
@@ -21,17 +21,17 @@ export type UserOut = {
     is_activated?: boolean;
     is_superuser?: boolean;
     avatar?: string;
-    roles?: Array<Role_EIY>;
-    display_role?: Role_EIY;
+    roles?: Array<Role_VFC>;
+    display_role?: Role_VFC;
     last_login?: string;
     last_online?: string;
     threads_count?: number;
     posts_count?: number;
     likes_count?: number;
-    player?: Player_JQG;
-    sessions?: Array<UserSession_LRD>;
-    user_reputation?: Array<Like_VMZ>;
-    user_posts?: Array<Post_VJU>;
-    user_threads?: Array<Thread_FBF>;
+    player?: Player_HQF;
+    sessions?: Array<UserSession_QAA>;
+    user_reputation?: Array<Like_OTE>;
+    user_posts?: Array<Post_QKB>;
+    user_threads?: Array<Thread_NTR>;
 };
 

@@ -3,10 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Category_IHZ } from './Category_IHZ';
-import type { Server_CLS } from './Server_CLS';
-import type { ThreadMeta_SKI } from './ThreadMeta_SKI';
-import type { User_TAE } from './User_TAE';
+import type { Category_AJS } from './Category_AJS';
+import type { Server_ZBO } from './Server_ZBO';
+import type { ThreadMeta_ZJN } from './ThreadMeta_ZJN';
+import type { User_WTM } from './User_WTM';
 
 /**
  * Thread output schema.
@@ -20,10 +20,10 @@ export type ThreadOut = {
     is_closed?: boolean;
     is_pinned?: boolean;
     status?: string;
-    category?: Category_IHZ;
-    author?: User_TAE;
-    meta_fields?: Array<ThreadMeta_SKI>;
+    category?: Category_AJS;
+    author?: User_WTM;
+    meta_fields?: Array<ThreadMeta_ZJN>;
     post_count?: number;
-    server?: Server_CLS;
+    server?: Server_ZBO;
 };
 
