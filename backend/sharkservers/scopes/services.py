@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from ormar import and_, or_
 
 from sharkservers.db import BaseService
-from sharkservers.roles.enums import ProtectedDefaultRolesEnum
+from sharkservers.roles.enums import ProtectedDefaultRolesTagEnum
 from sharkservers.scopes.enums import ScopeEnum
 from sharkservers.scopes.exceptions import scope_not_found_exception
 from sharkservers.scopes.models import Scope
@@ -160,8 +160,10 @@ class ScopeService(BaseService):
             )
 
     async def create_default_scopes(
-        self, applications, additional=None
-    ) -> None:  # noqa: ANN001
+        self,
+        applications,  # noqa: ANN001
+        additional=None,  # noqa: ANN001
+    ) -> None:
         """
         Create default scopes for applications.
 
@@ -199,7 +201,7 @@ class ScopeService(BaseService):
         """
         scopes = []
         for role in roles:
-            if role.id == ProtectedDefaultRolesEnum.BANNED.value:
+            if role.id == ProtectedDefaultRolesTagEnum.BANNED.value:
                 return []
             for scope in role.scopes:
                 scope_str = scope.get_string()
@@ -207,14 +209,14 @@ class ScopeService(BaseService):
                     scopes.append(scope.get_string())
         return scopes
 
-    async def get_default_scopes_for_role(self, role_id: str) -> list[Scope]:
+    async def get_default_scopes_for_role(self, role_tag: str) -> list[Scope]:
         """
         Get default scopes for the given role.
 
         Args:
         ----
-        role_id : str
-            ID of the role.
+        role_tag : str
+            Role tag.
 
         Returns:
         -------
@@ -223,11 +225,11 @@ class ScopeService(BaseService):
 
         """
         scopes = None
-        if role_id == ProtectedDefaultRolesEnum.ADMIN.value:
+        if role_tag == ProtectedDefaultRolesTagEnum.ADMIN.value:
             scopes = await self.Meta.model.objects.all()
-        elif role_id in (
-            ProtectedDefaultRolesEnum.USER.value,
-            ProtectedDefaultRolesEnum.VIP.value,
+        elif role_tag in (
+            ProtectedDefaultRolesTagEnum.USER.value,
+            ProtectedDefaultRolesTagEnum.VIP.value,
         ):
             scopes = await self.Meta.model.objects.filter(
                 or_(

@@ -10,8 +10,13 @@ from __future__ import annotations
 
 from fastapi import Query
 from pydantic import BaseModel, EmailStr, validator
+from uuidbase62 import (
+    UUIDBase62ModelMixin,
+    con_uuidbase62,
+)
 
 from sharkservers.auth.schemas import UsernameRegex
+from sharkservers.roles.schemas import RoleOut, RoleOutWithScopes
 from sharkservers.schemas import OrderQuery
 from sharkservers.users.models import User, UserSession
 
@@ -38,12 +43,30 @@ class UserSessionOut(user_session_out):
     """Represents the output schema for a user session."""
 
 
-class UserOut(user_out):
+class UserOut(UUIDBase62ModelMixin, user_out):
     """Represents the output schema for a user."""
 
+    id: con_uuidbase62(prefix="user")
+    roles: list[RoleOutWithScopes]
+    display_role: RoleOut
 
-class UserOutWithEmail(user_out_with_email):
+    class Config:
+        """Category output schema config."""
+
+        orm_mode = True
+
+
+class UserOutWithEmail(UUIDBase62ModelMixin, user_out_with_email):
     """Represents the output schema for a user with email."""
+
+    id: con_uuidbase62(prefix="user")
+    roles: list[RoleOutWithScopes]
+    display_role: RoleOut
+
+    class Config:
+        """Category output schema config."""
+
+        orm_mode = True
 
 
 class ChangeUsernameSchema(UsernameRegex):
@@ -86,8 +109,11 @@ class ChangePasswordSchema(BaseModel):
 
     @validator("new_password2")
     def passwords_match(
-        cls, value, values, **kwargs
-    ) -> None:  # noqa: ANN001, ANN003, ARG002, N805
+        cls,  # noqa: N805
+        value,  # noqa: ANN001
+        values,  # noqa: ANN001
+        **kwargs,  # noqa: ARG002, ANN003
+    ) -> None:
         """Validate that the new_password2 matches the new_password."""
         if "new_password" in values and value != values["new_password"]:
             msg = "Passwords do not match"

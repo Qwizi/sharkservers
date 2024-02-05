@@ -78,7 +78,7 @@ class User(ormar.Model, DateFieldsMixins):
 
         tablename = "users"
 
-    id: int = ormar.Integer(primary_key=True)
+    id: str = ormar.UUID(primary_key=True, default=uuid.uuid4)
     username: str | None = ormar.String(max_length=64, unique=True)
     email: EmailStr | None = ormar.String(max_length=255, unique=True)
     password: str | None = ormar.String(max_length=255)
@@ -124,7 +124,7 @@ class Ban(ormar.Model, DateFieldsMixins):
 
         tablename = "banned"
 
-    id: int = ormar.Integer(primary_key=True)
+    id: str = ormar.UUID(primary_key=True, default=uuid.uuid4)
     user: User | None = ormar.ForeignKey(User, related_name="banned_user")
     reason: str | None = ormar.String(max_length=255)
     ban_time: datetime.datetime | None = ormar.DateTime(nullable=True, timezone=True)
@@ -133,8 +133,10 @@ class Ban(ormar.Model, DateFieldsMixins):
 
 @ormar.pre_update(User)
 async def update_user_updated_at(
-    sender, instance: User, **kwargs
-) -> None:  # noqa: ARG001, ANN001, ANN003
+    sender,  # noqa: ANN001, ARG001
+    instance: User,
+    **kwargs,  # noqa: ARG001, ANN003
+) -> None:
     """
     Update the 'updated_at' field of a User instance with the current datetime.
 

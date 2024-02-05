@@ -96,7 +96,7 @@ export class ServersService {
      * @throws ApiError
      */
     public getServer(
-        serverId: number,
+        serverId: string,
     ): CancelablePromise<ServerOut> {
         return this.httpRequest.request({
             method: 'GET',

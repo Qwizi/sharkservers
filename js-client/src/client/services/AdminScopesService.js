@@ -19,7 +19,7 @@ class AdminScopesService {
      * Page[ScopeOut]: A paginated list of ScopeOut objects.
      * @param page
      * @param size
-     * @returns Page_Scope_DBV_ Successful Response
+     * @returns Page_ScopeOut_ Successful Response
      * @throws ApiError
      */
     adminGetScopes(page = 1, size = 50) {
@@ -48,7 +48,7 @@ class AdminScopesService {
      * -------
      * ScopeOut: The created scope.
      * @param requestBody
-     * @returns Scope_DBV Successful Response
+     * @returns ScopeOut Successful Response
      * @throws ApiError
      */
     adminCreateScope(requestBody) {
@@ -74,7 +74,7 @@ class AdminScopesService {
      * -------
      * ScopeOut: The retrieved scope.
      * @param scopeId
-     * @returns Scope_DBV Successful Response
+     * @returns ScopeOut Successful Response
      * @throws ApiError
      */
     adminGetScope(scopeId) {
@@ -103,7 +103,7 @@ class AdminScopesService {
      * ScopeOut: The updated scope.
      * @param scopeId
      * @param requestBody
-     * @returns Scope_DBV Successful Response
+     * @returns ScopeOut Successful Response
      * @throws ApiError
      */
     adminUpdateScope(scopeId, requestBody) {
@@ -133,7 +133,7 @@ class AdminScopesService {
      * -------
      * ScopeOut: The deleted scope.
      * @param scopeId
-     * @returns Scope_DBV Successful Response
+     * @returns ScopeOut Successful Response
      * @throws ApiError
      */
     adminDeleteScope(scopeId) {

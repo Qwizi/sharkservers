@@ -14,9 +14,11 @@ from uuid import UUID
 
 from fastapi import Depends
 from ormar import Model, NoMatch
+from uuidbase62 import UUIDBase62, get_validated_uuidbase62_by_model
 
 from sharkservers.users.exceptions import user_not_found_exception
 from sharkservers.users.models import UserSession
+from sharkservers.users.schemas import UserOut
 from sharkservers.users.services import UserService, UserSessionService
 
 
@@ -32,7 +34,9 @@ async def get_users_service() -> UserService:
 
 
 async def get_valid_user(
-    user_id: int,
+    user_id: UUIDBase62 = Depends(
+        get_validated_uuidbase62_by_model(UserOut, "id", "user_id"),
+    ),
     users_service: UserService = Depends(get_users_service),
 ) -> Model:
     """
@@ -53,7 +57,7 @@ async def get_valid_user(
     """  # noqa: D401
     try:
         return await users_service.get_one(
-            id=user_id,
+            id=user_id.uuid,
             related=["roles", "display_role", "player", "player__steamrep_profile"],
         )
     except NoMatch as err:

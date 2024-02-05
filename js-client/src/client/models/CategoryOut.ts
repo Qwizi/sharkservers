@@ -9,7 +9,7 @@
 export type CategoryOut = {
     created_at?: string;
     updated_at?: string;
-    id?: number;
+    id: string;
     name: string;
     description?: string;
     type?: string;

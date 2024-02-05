@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { SteamRepProfile_XDG } from './SteamRepProfile_XDG';
+import type { SteamRepProfile_YEN } from './SteamRepProfile_YEN';
 
 /**
  * Player out schema.
@@ -11,8 +11,8 @@ import type { SteamRepProfile_XDG } from './SteamRepProfile_XDG';
 export type PlayerOut = {
     created_at?: string;
     updated_at?: string;
-    id?: number;
-    steamrep_profile?: SteamRepProfile_XDG;
+    id: string;
+    steamrep_profile?: SteamRepProfile_YEN;
     username: string;
     steamid3: string;
     steamid32: string;

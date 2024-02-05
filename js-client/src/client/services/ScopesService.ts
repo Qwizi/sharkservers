@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Page_Scope_DBV_ } from '../models/Page_Scope_DBV_';
+import type { Page_ScopeOut_ } from '../models/Page_ScopeOut_';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
@@ -27,14 +27,14 @@ export class ScopesService {
      * @param roleId
      * @param page
      * @param size
-     * @returns Page_Scope_DBV_ Successful Response
+     * @returns Page_ScopeOut_ Successful Response
      * @throws ApiError
      */
     public getAllScopes(
         roleId?: number,
         page: number = 1,
         size: number = 50,
-    ): CancelablePromise<Page_Scope_DBV_> {
+    ): CancelablePromise<Page_ScopeOut_> {
         return this.httpRequest.request({
             method: 'GET',
             url: '/v1/scopes',

@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { User_PRS } from './User_PRS';
+import type { UserOut } from './UserOut';
 
 /**
  * Like output schema.
@@ -11,7 +11,7 @@ import type { User_PRS } from './User_PRS';
 export type LikeOut = {
     created_at?: string;
     updated_at?: string;
-    id?: number;
-    author?: User_PRS;
+    id: string;
+    author: UserOut;
 };
 

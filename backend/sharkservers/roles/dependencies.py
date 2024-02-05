@@ -2,7 +2,9 @@
 
 from fastapi import Depends
 from ormar import Model
+from uuidbase62 import UUIDBase62, get_validated_uuidbase62_by_model
 
+from sharkservers.roles.schemas import RoleOut
 from sharkservers.roles.services import RoleService
 
 
@@ -12,7 +14,9 @@ async def get_roles_service() -> RoleService:
 
 
 async def get_valid_role(
-    role_id: int,
+    role_id: UUIDBase62 = Depends(
+        get_validated_uuidbase62_by_model(RoleOut, "id", "role_id"),
+    ),
     roles_service: RoleService = Depends(get_roles_service),
 ) -> Model:
     """
@@ -28,4 +32,4 @@ async def get_valid_role(
         Model: The valid role model.
 
     """
-    return await roles_service.get_one(id=role_id, related=["scopes"])
+    return await roles_service.get_one(id=role_id.uuid, related=["scopes"])

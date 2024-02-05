@@ -21,6 +21,10 @@ from __future__ import annotations
 import datetime
 
 from pydantic import BaseModel, EmailStr, Field, validator
+from uuidbase62 import (
+    UUIDBase62ModelMixin,
+    con_uuidbase62,
+)
 
 
 class UsernameRegex(BaseModel):
@@ -43,10 +47,10 @@ class PasswordSchema(BaseModel):
 
     @validator("password2")
     def passwords_match(
-        cls,
-        value,
-        values,
-        **kwargs,  # noqa: ANN001, N805, ARG002, ANN003
+        cls,  # noqa: N805
+        value,  # noqa: ANN001
+        values,  # noqa: ANN001
+        **kwargs,  # noqa: ANN003, ARG002
     ) -> None:
         """
         Check if the 'password2' field matches the 'password' field.
@@ -81,10 +85,10 @@ class TokenSchema(BaseModel):
     refresh_token: TokenDetailsSchema
 
 
-class TokenDataSchema(BaseModel):
+class TokenDataSchema(UUIDBase62ModelMixin, BaseModel):
     """Schema for the token data."""
 
-    user_id: int | None = None
+    user_id: con_uuidbase62(prefix="user")
     secret: str
     scopes: list[str] = []
     session_id: str | None

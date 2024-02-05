@@ -2,24 +2,33 @@
 from __future__ import annotations
 
 from pydantic import BaseModel
+from uuidbase62 import UUIDBase62ModelMixin, con_uuidbase62
 
 from sharkservers.roles.models import Role
+from sharkservers.scopes.schemas import ScopeOut
 
 role_out = Role.get_pydantic(exclude={"scopes", "user_roles", "user_display_role"})
 role_out_with_scopes = Role.get_pydantic(exclude={"user_roles", "user_display_role"})
 role_out_without_scopes_and_user_roles = Role.get_pydantic(exclude={"roles", "scopes"})
 
 
-class RoleOut(role_out):
+class RoleOut(UUIDBase62ModelMixin, role_out):
     """RoleOut schema."""
+
+    id: con_uuidbase62(prefix="role")
 
 
 class RoleOutWithScopes(role_out_with_scopes):
     """RoleOutWithScopes schema."""
 
+    id: con_uuidbase62(prefix="role")
+    scopes: list[ScopeOut]
+
 
 class RoleOutWithoutScopesAndUserRoles(role_out_without_scopes_and_user_roles):
     """RoleOutWithoutScopesAndUserRoles schema."""
+
+    id: con_uuidbase62(prefix="role")
 
 
 class StaffUserInRolesSchema(BaseModel):

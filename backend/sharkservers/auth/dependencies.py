@@ -29,11 +29,13 @@ from sharkservers.auth.exceptions import (
     no_permissions_exception,
     not_admin_user_exception,
 )
+from sharkservers.auth.schemas import TokenDataSchema
 from sharkservers.auth.services.auth import AuthService
 from sharkservers.auth.services.code import CodeService
 from sharkservers.auth.services.jwt import JWTService
 from sharkservers.auth.services.steam import SteamAuthService
 from sharkservers.db import get_redis
+from sharkservers.logger import logger
 from sharkservers.players.dependencies import get_players_service
 from sharkservers.players.services import PlayerService
 from sharkservers.roles.dependencies import get_roles_service
@@ -141,12 +143,13 @@ async def get_current_user(
         InvalidCredentialsException: If the credentials are invalid.
         NoPermissionsException: If the user does not have the required permissions.
     """
-    token_data = access_token_service.decode_token(token)
+    token_data: TokenDataSchema = access_token_service.decode_token(token)
     for scope in security_scopes.scopes:
         if scope not in token_data.scopes:
             raise no_permissions_exception
+    logger.info(f"Token data: {token_data.user_id}")
     user: User = await users_service.get_one(
-        id=token_data.user_id,
+        id=token_data.user_id.uuid,
         related=[
             "roles",
             "display_role",

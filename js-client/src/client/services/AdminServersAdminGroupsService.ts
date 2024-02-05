@@ -32,7 +32,7 @@ export class AdminServersAdminGroupsService {
      * @throws ApiError
      */
     public adminGetServerAdminsGroups(
-        serverId: number,
+        serverId: string,
         page: number = 1,
         size: number = 50,
     ): CancelablePromise<Page_GroupOut_> {
@@ -70,7 +70,7 @@ export class AdminServersAdminGroupsService {
      * @throws ApiError
      */
     public adminCreateServerAdminsGroups(
-        serverId: number,
+        serverId: string,
         requestBody: CreateGroupSchema,
     ): CancelablePromise<GroupOut> {
         return this.httpRequest.request({
@@ -106,7 +106,7 @@ export class AdminServersAdminGroupsService {
      */
     public adminGetServerAdminsGroup(
         groupId: number,
-        serverId: number,
+        serverId: string,
     ): CancelablePromise<GroupOut> {
         return this.httpRequest.request({
             method: 'GET',
@@ -140,7 +140,7 @@ export class AdminServersAdminGroupsService {
      */
     public adminDeleteServerAdminsGroup(
         groupId: number,
-        serverId: number,
+        serverId: string,
     ): CancelablePromise<GroupOut> {
         return this.httpRequest.request({
             method: 'DELETE',

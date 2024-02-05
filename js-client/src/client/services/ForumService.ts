@@ -76,7 +76,7 @@ export class ForumService {
      * @throws ApiError
      */
     public getCategory(
-        categoryId: number,
+        categoryId: string,
     ): CancelablePromise<CategoryOut> {
         return this.httpRequest.request({
             method: 'GET',
@@ -191,7 +191,7 @@ export class ForumService {
      * @throws ApiError
      */
     public getThread(
-        threadId: number,
+        threadId: string,
     ): CancelablePromise<ThreadOut> {
         return this.httpRequest.request({
             method: 'GET',
@@ -223,7 +223,7 @@ export class ForumService {
      * @throws ApiError
      */
     public updateThread(
-        threadId: number,
+        threadId: string,
         requestBody: UpdateThreadSchema,
     ): CancelablePromise<ThreadOut> {
         return this.httpRequest.request({
@@ -334,7 +334,7 @@ export class ForumService {
      * @throws ApiError
      */
     public getPostById(
-        postId: number,
+        postId: string,
     ): CancelablePromise<PostOut> {
         return this.httpRequest.request({
             method: 'GET',
@@ -366,7 +366,7 @@ export class ForumService {
      * @throws ApiError
      */
     public updatePost(
-        postId: number,
+        postId: string,
         requestBody: UpdatePostSchema,
     ): CancelablePromise<PostOut> {
         return this.httpRequest.request({
@@ -403,7 +403,7 @@ export class ForumService {
      * @throws ApiError
      */
     public getPostLikes(
-        postId: number,
+        postId: string,
         page: number = 1,
         size: number = 50,
     ): CancelablePromise<Page_LikeOut_> {
@@ -441,7 +441,7 @@ export class ForumService {
      * @throws ApiError
      */
     public likePost(
-        postId: number,
+        postId: string,
     ): CancelablePromise<LikeOut> {
         return this.httpRequest.request({
             method: 'POST',
@@ -473,7 +473,7 @@ export class ForumService {
      * @throws ApiError
      */
     public dislikePost(
-        postId: number,
+        postId: string,
     ): CancelablePromise<Record<string, any>> {
         return this.httpRequest.request({
             method: 'POST',

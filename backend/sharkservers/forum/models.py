@@ -35,7 +35,7 @@ class Category(ormar.Model, DateFieldsMixins):
 
         tablename = "forum_categories"
 
-    id: int = ormar.Integer(primary_key=True)
+    id: str = ormar.UUID(primary_key=True, default=uuid.uuid4)
     name: str = ormar.String(max_length=64, unique=True)
     description: str = ormar.Text(nullable=True)
     type: str = ormar.String(
@@ -61,7 +61,7 @@ class Like(ormar.Model, DateFieldsMixins):
 
         tablename = "forum_reputation"
 
-    id: int = ormar.Integer(primary_key=True)
+    id: str = ormar.UUID(primary_key=True, default=uuid.uuid4)
     author: User | None = ormar.ForeignKey(User, related_name="user_reputation")
 
 
@@ -83,7 +83,7 @@ class Post(ormar.Model, DateFieldsMixins):
 
         tablename = "forum_posts"
 
-    id: int = ormar.Integer(primary_key=True)
+    id: str = ormar.UUID(primary_key=True, default=uuid.uuid4)
     author: User | None = ormar.ForeignKey(User, related_name="user_posts")
     content: str = ormar.Text()
     likes: list[Like] | None = ormar.ManyToMany(Like, related_name="post_likes")
@@ -137,7 +137,7 @@ class Thread(ormar.Model, DateFieldsMixins):
 
         tablename = "forum_threads"
 
-    id: int = ormar.Integer(primary_key=True)
+    id: str = ormar.UUID(primary_key=True, default=uuid.uuid4)
     title: str | None = ormar.String(max_length=64)
     content: str | None = ormar.Text()
     is_closed: bool | None = ormar.Boolean(default=False)
@@ -212,8 +212,10 @@ class Thread(ormar.Model, DateFieldsMixins):
 
 @post_save(Thread)
 async def on_thread_save(
-    sender, instance, **kwargs
-) -> None:  # noqa: ANN003, ARG001, ANN001
+    sender,  # noqa: ANN001, ARG001
+    instance,  # noqa: ANN001
+    **kwargs,  # noqa: ANN003, ARG001
+) -> None:
     """
     On thread save event.
 

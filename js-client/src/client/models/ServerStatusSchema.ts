@@ -7,7 +7,7 @@
  * Schema for retrieving a server's status.
  */
 export type ServerStatusSchema = {
-    id: number;
+    id: string;
     name: string;
     ip: string;
     port: number;

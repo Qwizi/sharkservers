@@ -1,6 +1,8 @@
 """Roles models."""
 from __future__ import annotations
 
+import uuid
+
 import ormar
 
 from sharkservers.db import BaseMeta, DateFieldsMixins
@@ -26,7 +28,7 @@ class Role(ormar.Model, DateFieldsMixins):
 
         tablename = "roles"
 
-    id: int = ormar.Integer(primary_key=True)
+    id: str = ormar.UUID(primary_key=True, default=uuid.uuid4)
     tag: str | None = ormar.String(max_length=64, unique=True)
     name: str | None = ormar.String(max_length=64)
     color: str | None = ormar.String(max_length=256, default="#999999")

@@ -32,9 +32,7 @@ services:
     networks:
       - shark
     healthcheck:
-      test: "exit 1"
-    volumes:
-      - local_pgdata:/var/lib/postgresql/data
+      test: "exit 0"
   redis:
     image: "redis:alpine"
     container_name: sharkservers_redis
@@ -69,6 +67,3 @@ networks:
   shark:
     name: shark
     external: true
-
-volumes:
-  local_pgdata:

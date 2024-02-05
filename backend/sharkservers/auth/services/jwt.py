@@ -101,7 +101,7 @@ class JWTService:
             session_id = payload.get("session_id")
 
             return TokenDataSchema(
-                user_id=int(user_id),
+                user_id=user_id,
                 scopes=token_scopes,
                 secret=secret,
                 session_id=session_id,
