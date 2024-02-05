@@ -3,12 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type SteamRepProfile_YEN = {
+import type { Post_EWP } from './Post_EWP';
+
+export type Like_UUM = {
     created_at?: string;
     updated_at?: string;
     id?: string;
-    profile_url: string;
-    is_scammer?: boolean;
-    steamid64: string;
+    post_likes?: Array<Post_EWP>;
 };
 

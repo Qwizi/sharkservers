@@ -3,11 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type UserSession_IZE = {
-    created_at?: string;
-    updated_at?: string;
+export type Scope_EAX = {
     id?: string;
-    user_ip: string;
-    user_agent: string;
+    app_name: string;
+    value: string;
+    description: string;
+    protected?: boolean;
 };
 

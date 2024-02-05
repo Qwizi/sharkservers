@@ -3,9 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Role_CXW } from './Role_CXW';
+import type { Role_NUE } from './Role_NUE';
 
-export type Server_HAK = {
+export type Server_FUT = {
     created_at?: string;
     updated_at?: string;
     id?: string;
@@ -13,7 +13,7 @@ export type Server_HAK = {
     tag: string;
     ip: string;
     port: number;
-    admin_role?: Role_CXW;
+    admin_role?: Role_NUE;
     api_url: string;
 };
 

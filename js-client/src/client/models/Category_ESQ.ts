@@ -3,12 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type SteamRepProfile_EYR = {
+export type Category_ESQ = {
     created_at?: string;
     updated_at?: string;
     id?: string;
-    profile_url: string;
-    is_scammer?: boolean;
-    steamid64: string;
+    name: string;
+    description?: string;
+    type?: string;
+    threads_count?: number;
 };
 

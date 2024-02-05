@@ -3,13 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Category_KOC = {
+export type UserSession_AQF = {
     created_at?: string;
     updated_at?: string;
     id?: string;
-    name: string;
-    description?: string;
-    type?: string;
-    threads_count?: number;
+    user_ip: string;
+    user_agent: string;
 };
 

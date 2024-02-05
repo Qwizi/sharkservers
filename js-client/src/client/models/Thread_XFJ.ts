@@ -3,11 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Category_KOC } from './Category_KOC';
-import type { Server_HAK } from './Server_HAK';
-import type { ThreadMeta_RLM } from './ThreadMeta_RLM';
+import type { Category_ESQ } from './Category_ESQ';
+import type { Server_FUT } from './Server_FUT';
+import type { ThreadMeta_NFV } from './ThreadMeta_NFV';
 
-export type Thread_RKX = {
+export type Thread_XFJ = {
     created_at?: string;
     updated_at?: string;
     id?: string;
@@ -16,9 +16,9 @@ export type Thread_RKX = {
     is_closed?: boolean;
     is_pinned?: boolean;
     status?: string;
-    category?: Category_KOC;
-    meta_fields?: Array<ThreadMeta_RLM>;
+    category?: Category_ESQ;
+    meta_fields?: Array<ThreadMeta_NFV>;
     post_count?: number;
-    server?: Server_HAK;
+    server?: Server_FUT;
 };
 

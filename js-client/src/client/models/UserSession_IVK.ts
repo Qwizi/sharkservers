@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type UserSession_KAN = {
+export type UserSession_IVK = {
     created_at?: string;
     updated_at?: string;
     id?: string;

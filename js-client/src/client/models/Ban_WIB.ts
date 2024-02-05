@@ -3,16 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Scope_QNT } from './Scope_QNT';
-
-export type Role_BTL = {
+export type Ban_WIB = {
     created_at?: string;
     updated_at?: string;
     id?: string;
-    tag: string;
-    name: string;
-    color?: string;
-    scopes?: Array<Scope_QNT>;
-    is_staff?: boolean;
+    reason: string;
+    ban_time?: string;
 };
 

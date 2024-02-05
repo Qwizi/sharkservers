@@ -3,13 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { SteamRepProfile_YEN } from './SteamRepProfile_YEN';
+import type { SteamRepProfile_NZC } from './SteamRepProfile_NZC';
 
-export type Player_FPT = {
+export type Player_AHL = {
     created_at?: string;
     updated_at?: string;
     id?: string;
-    steamrep_profile?: SteamRepProfile_YEN;
+    steamrep_profile?: SteamRepProfile_NZC;
     username: string;
     steamid3: string;
     steamid32: string;

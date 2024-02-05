@@ -3,12 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Post_STX } from './Post_STX';
-
-export type Like_ZYX = {
-    created_at?: string;
-    updated_at?: string;
+export type Scope_PMT = {
     id?: string;
-    post_likes?: Array<Post_STX>;
+    app_name: string;
+    value: string;
+    description: string;
+    protected?: boolean;
 };
 

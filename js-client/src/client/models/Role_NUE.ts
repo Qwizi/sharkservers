@@ -3,11 +3,16 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Ban_PAN = {
+import type { Scope_EAX } from './Scope_EAX';
+
+export type Role_NUE = {
     created_at?: string;
     updated_at?: string;
     id?: string;
-    reason: string;
-    ban_time?: string;
+    tag: string;
+    name: string;
+    color?: string;
+    scopes?: Array<Scope_EAX>;
+    is_staff?: boolean;
 };
 

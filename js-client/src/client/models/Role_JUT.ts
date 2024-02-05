@@ -3,12 +3,16 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Post_KHL } from './Post_KHL';
+import type { Scope_PMT } from './Scope_PMT';
 
-export type Like_ATB = {
+export type Role_JUT = {
     created_at?: string;
     updated_at?: string;
     id?: string;
-    post_likes?: Array<Post_KHL>;
+    tag: string;
+    name: string;
+    color?: string;
+    scopes?: Array<Scope_PMT>;
+    is_staff?: boolean;
 };
 

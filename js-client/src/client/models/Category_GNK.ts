@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Category_GQC = {
+export type Category_GNK = {
     created_at?: string;
     updated_at?: string;
     id?: string;

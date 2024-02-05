@@ -3,12 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type ThreadMeta_RLM = {
+import type { Post_YMB } from './Post_YMB';
+
+export type Like_XMW = {
     created_at?: string;
     updated_at?: string;
     id?: string;
-    name: string;
-    value?: string;
-    description?: string;
+    post_likes?: Array<Post_YMB>;
 };
 

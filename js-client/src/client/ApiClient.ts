@@ -53,7 +53,7 @@ export class ApiClient {
     constructor(config?: Partial<OpenAPIConfig>, HttpRequest: HttpRequestConstructor = AxiosHttpRequest) {
         this.request = new HttpRequest({
             BASE: config?.BASE ?? '',
-            VERSION: config?.VERSION ?? '1.2.7',
+            VERSION: config?.VERSION ?? '1.2.9',
             WITH_CREDENTIALS: config?.WITH_CREDENTIALS ?? false,
             CREDENTIALS: config?.CREDENTIALS ?? 'include',
             TOKEN: config?.TOKEN,

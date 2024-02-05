@@ -3,8 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Role_BTL } from './Role_BTL';
-import type { Thread_PND } from './Thread_PND';
+import type { Role_JUT } from './Role_JUT';
+import type { Thread_BWB } from './Thread_BWB';
 
 /**
  * Schema for retrieving a server.
@@ -17,8 +17,8 @@ export type ServerOut = {
     tag: string;
     ip: string;
     port: number;
-    admin_role?: Role_BTL;
+    admin_role?: Role_JUT;
     api_url: string;
-    thread_server?: Array<Thread_PND>;
+    thread_server?: Array<Thread_BWB>;
 };
 

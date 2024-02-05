@@ -3,12 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type ThreadMeta_WQV = {
+export type Post_YMB = {
     created_at?: string;
     updated_at?: string;
     id?: string;
-    name: string;
-    value?: string;
-    description?: string;
+    content: string;
+    likes_count?: number;
 };
 

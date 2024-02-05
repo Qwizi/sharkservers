@@ -3,11 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Ban_BGT = {
+export type SteamRepProfile_NZC = {
     created_at?: string;
     updated_at?: string;
     id?: string;
-    reason: string;
-    ban_time?: string;
+    profile_url: string;
+    is_scammer?: boolean;
+    steamid64: string;
 };
 

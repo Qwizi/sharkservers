@@ -3,11 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Scope_QNT = {
+export type Ban_YPL = {
+    created_at?: string;
+    updated_at?: string;
     id?: string;
-    app_name: string;
-    value: string;
-    description: string;
-    protected?: boolean;
+    reason: string;
+    ban_time?: string;
 };
 
