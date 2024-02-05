@@ -3,13 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Like_ATB } from './Like_ATB';
-import type { Player_FPT } from './Player_FPT';
-import type { Post_KHL } from './Post_KHL';
+import type { Like_UUM } from './Like_UUM';
+import type { Player_AHL } from './Player_AHL';
+import type { Post_EWP } from './Post_EWP';
 import type { RoleOut } from './RoleOut';
 import type { RoleOutWithScopes } from './RoleOutWithScopes';
-import type { Thread_RKX } from './Thread_RKX';
-import type { UserSession_IZE } from './UserSession_IZE';
+import type { Thread_XFJ } from './Thread_XFJ';
+import type { UserSession_IVK } from './UserSession_IVK';
 
 /**
  * Represents the output schema for a user.
@@ -29,10 +29,10 @@ export type UserOut = {
     threads_count?: number;
     posts_count?: number;
     likes_count?: number;
-    player?: Player_FPT;
-    sessions?: Array<UserSession_IZE>;
-    user_reputation?: Array<Like_ATB>;
-    user_posts?: Array<Post_KHL>;
-    user_threads?: Array<Thread_RKX>;
+    player?: Player_AHL;
+    sessions?: Array<UserSession_IVK>;
+    user_reputation?: Array<Like_UUM>;
+    user_posts?: Array<Post_EWP>;
+    user_threads?: Array<Thread_XFJ>;
 };
 
