@@ -58,7 +58,7 @@ class RoleService(BaseService):
                     is_staff=role[0] == ProtectedDefaultRolesTagEnum.ADMIN.value,
                 )
                 scopes = await scopes_service.get_default_scopes_for_role(
-                    role_id=default_role.id,
+                    role_tag=default_role.tag,
                 )
                 if role[0] != ProtectedDefaultRolesTagEnum.BANNED.value:
                     for scope in scopes:

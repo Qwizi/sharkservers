@@ -59,7 +59,7 @@ async def http_exception_handler(
     -------
         A JSONResponse with the error.
     """
-    logger.error(f"{exc.detail} <{exc.detail.value}>")
+    logger.error(f"{exc.detail}")
     return await _http_exception_handler(request, exc)
 
 

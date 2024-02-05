@@ -4,20 +4,19 @@ import json
 import os
 import uuid
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import httpx
 from fastapi import HTTPException, UploadFile
-from fastapi_mail import FastMail, MessageSchema, MessageType
 from fastapi_mail.email_utils import DefaultChecker
 from PIL import Image, UnidentifiedImageError
 from pydantic import EmailStr
-from resend import Resend
 from starlette import status
 
 from sharkservers.auth.schemas import RegisterUserSchema
 from sharkservers.enums import ActivationEmailTypeEnum
 from sharkservers.logger import logger, logger_with_filename
+from sharkservers.roles.services import RoleService
+from sharkservers.scopes.services import ScopeService
 from sharkservers.settings import Settings
 from sharkservers.users.models import User
 
@@ -105,8 +104,8 @@ class MainService:
     async def install(
         file_path,
         admin_user_data: RegisterUserSchema,
-        scopes_service,
-        roles_service,
+        scopes_service: ScopeService,
+        roles_service: RoleService,
         auth_service,
         create_file: bool = True,
         settings: Settings = None,

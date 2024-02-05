@@ -1,7 +1,9 @@
 """Dependencies for the servers module."""
 from fastapi import Depends
 from ormar import Model
+from uuidbase62 import UUIDBase62, get_validated_uuidbase62_by_model
 
+from sharkservers.servers.schemas import ServerOut
 from sharkservers.servers.services import ServerService
 
 
@@ -17,7 +19,9 @@ async def get_servers_service() -> ServerService:
 
 
 async def get_valid_server(
-    server_id: int,
+    server_id: UUIDBase62 = Depends(
+        get_validated_uuidbase62_by_model(ServerOut, "id", "server_id"),
+    ),
     servers_service: ServerService = Depends(get_servers_service),
 ) -> Model:
     """
@@ -33,4 +37,4 @@ async def get_valid_server(
         Model: The retrieved server model.
 
     """
-    return await servers_service.get_one(id=server_id, related=["admin_role"])
+    return await servers_service.get_one(id=server_id.uuid, related=["admin_role"])

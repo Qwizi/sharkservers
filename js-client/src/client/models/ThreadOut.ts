@@ -3,10 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Category_AHN } from './Category_AHN';
-import type { Server_FJT } from './Server_FJT';
-import type { ThreadMeta_TNX } from './ThreadMeta_TNX';
-import type { User_PRS } from './User_PRS';
+import type { CategoryOut } from './CategoryOut';
+import type { ServerOut } from './ServerOut';
+import type { ThreadMetaOut } from './ThreadMetaOut';
+import type { UserOut } from './UserOut';
 
 /**
  * Thread output schema.
@@ -14,16 +14,16 @@ import type { User_PRS } from './User_PRS';
 export type ThreadOut = {
     created_at?: string;
     updated_at?: string;
-    id?: number;
+    id: string;
     title: string;
     content: string;
     is_closed?: boolean;
     is_pinned?: boolean;
     status?: string;
-    category?: Category_AHN;
-    author?: User_PRS;
-    meta_fields?: Array<ThreadMeta_TNX>;
+    category: CategoryOut;
+    author: UserOut;
+    meta_fields?: Array<ThreadMetaOut>;
     post_count?: number;
-    server?: Server_FJT;
+    server?: ServerOut;
 };
 

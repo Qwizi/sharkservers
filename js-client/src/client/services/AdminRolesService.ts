@@ -96,7 +96,7 @@ export class AdminRolesService {
      * @throws ApiError
      */
     public adminGetRole(
-        roleId: number,
+        roleId: string,
     ): CancelablePromise<RoleOutWithScopes> {
         return this.httpRequest.request({
             method: 'GET',
@@ -129,7 +129,7 @@ export class AdminRolesService {
      * @throws ApiError
      */
     public adminUpdateRole(
-        roleId: number,
+        roleId: string,
         requestBody: UpdateRoleSchema,
     ): CancelablePromise<RoleOutWithScopes> {
         return this.httpRequest.request({
@@ -163,7 +163,7 @@ export class AdminRolesService {
      * @throws ApiError
      */
     public adminDeleteRole(
-        roleId: number,
+        roleId: string,
     ): CancelablePromise<RoleOutWithScopes> {
         return this.httpRequest.request({
             method: 'DELETE',

@@ -1,6 +1,8 @@
 """Servers models."""
 from __future__ import annotations
 
+import uuid
+
 import ormar
 from fastapi_pagination import Params
 from sourcemod_api_client import (
@@ -69,7 +71,7 @@ class Server(ormar.Model, DateFieldsMixins):
 
         tablename = "servers"
 
-    id: int = ormar.Integer(primary_key=True)
+    id: str = ormar.UUID(primary_key=True, default=uuid.uuid4)
     name: str | None = ormar.String(max_length=64)
     tag: str | None = ormar.String(max_length=64, unique=True)
     ip: str | None = ormar.String(max_length=64)
@@ -277,8 +279,10 @@ async def create_admin_role(instance: Server) -> RoleOut:
 
 @ormar.post_save(Server)
 async def on_server_created(
-    sender: Server, instance: Server, **kwargs
-) -> None:  # noqa: ANN003, ARG001
+    sender: Server,  # noqa: ARG001
+    instance: Server,
+    **kwargs,  # noqa: ANN003, ARG001
+) -> None:
     """
     On server created event.
 
@@ -305,8 +309,10 @@ async def on_server_created(
 
 @ormar.post_delete(Server)
 async def on_server_deleted(
-    sender, instance: Server, **kwargs
-) -> None:  # noqa: ANN001, ARG001, ANN003
+    sender,  # noqa: ANN001, ARG001
+    instance: Server,
+    **kwargs,  # noqa: ARG001, ANN003
+) -> None:
     """
     On server deleted event.
 

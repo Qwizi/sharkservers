@@ -1,4 +1,6 @@
 """Scopes models."""
+import uuid
+
 import ormar
 
 from sharkservers.db import BaseMeta
@@ -28,7 +30,7 @@ class Scope(ormar.Model):
 
         tablename = "scopes"
 
-    id = ormar.Integer(primary_key=True)
+    id: str = ormar.UUID(primary_key=True, default=uuid.uuid4)
     app_name = ormar.String(max_length=64)
     value = ormar.String(max_length=120)
     description = ormar.String(max_length=256)

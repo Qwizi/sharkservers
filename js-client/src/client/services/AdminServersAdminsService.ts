@@ -33,7 +33,7 @@ export class AdminServersAdminsService {
      * @throws ApiError
      */
     public adminGetServerAdmins(
-        serverId: number,
+        serverId: string,
         page: number = 1,
         size: number = 50,
     ): CancelablePromise<Page_AdminOut_> {
@@ -71,7 +71,7 @@ export class AdminServersAdminsService {
      * @throws ApiError
      */
     public adminCreateServerAdmin(
-        serverId: number,
+        serverId: string,
         requestBody: CreateAdminSchema,
     ): CancelablePromise<AdminOut> {
         return this.httpRequest.request({
@@ -107,7 +107,7 @@ export class AdminServersAdminsService {
      */
     public adminGetServerAdmin(
         identity: string,
-        serverId: number,
+        serverId: string,
     ): CancelablePromise<AdminOut> {
         return this.httpRequest.request({
             method: 'GET',
@@ -143,7 +143,7 @@ export class AdminServersAdminsService {
      */
     public adminUpdateServerAdmin(
         identity: string,
-        serverId: number,
+        serverId: string,
         requestBody: UpdateAdminSchema,
     ): CancelablePromise<AdminOut> {
         return this.httpRequest.request({
@@ -180,7 +180,7 @@ export class AdminServersAdminsService {
      */
     public adminDeleteServerAdmin(
         identity: string,
-        serverId: number,
+        serverId: string,
     ): CancelablePromise<AdminOut> {
         return this.httpRequest.request({
             method: 'DELETE',

@@ -63,7 +63,7 @@ export class AdminForumService {
      * @throws ApiError
      */
     public adminDeleteCategory(
-        categoryId: number,
+        categoryId: string,
     ): CancelablePromise<CategoryOut> {
         return this.httpRequest.request({
             method: 'DELETE',
@@ -98,7 +98,7 @@ export class AdminForumService {
      * @throws ApiError
      */
     public adminUpdateThread(
-        threadId: number,
+        threadId: string,
         requestBody: AdminUpdateThreadSchema,
     ): CancelablePromise<ThreadOut> {
         return this.httpRequest.request({
@@ -131,7 +131,7 @@ export class AdminForumService {
      * @throws ApiError
      */
     public adminDeleteThread(
-        threadId: number,
+        threadId: string,
     ): CancelablePromise<ThreadOut> {
         return this.httpRequest.request({
             method: 'DELETE',
@@ -169,7 +169,7 @@ export class AdminForumService {
      * @throws ApiError
      */
     public runThreadAction(
-        threadId: number,
+        threadId: string,
         requestBody: AdminThreadActionSchema,
     ): CancelablePromise<ThreadOut> {
         return this.httpRequest.request({
@@ -234,7 +234,7 @@ export class AdminForumService {
      * @throws ApiError
      */
     public adminDeletePost(
-        postId: number,
+        postId: string,
     ): CancelablePromise<PostOut> {
         return this.httpRequest.request({
             method: 'DELETE',

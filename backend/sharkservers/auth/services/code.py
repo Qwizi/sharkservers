@@ -49,9 +49,7 @@ class CodeService:
         -------
             str: A random string of digits.
         """
-        return "".join(
-            random.choice(string.digits) for _ in range(number)
-        )  # noqa: S311
+        return "".join(random.choice(string.digits) for _ in range(number))  # noqa: S311
 
     def get_redis_key(self, code: str) -> str:
         """

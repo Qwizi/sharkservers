@@ -80,7 +80,7 @@ export class AdminServersService {
      * @throws ApiError
      */
     public adminGetServer(
-        serverId: number,
+        serverId: string,
     ): CancelablePromise<ServerOut> {
         return this.httpRequest.request({
             method: 'GET',
@@ -112,7 +112,7 @@ export class AdminServersService {
      * @throws ApiError
      */
     public adminUpdateServer(
-        serverId: number,
+        serverId: string,
         requestBody: UpdateServerSchema,
     ): CancelablePromise<ServerOut> {
         return this.httpRequest.request({
@@ -146,7 +146,7 @@ export class AdminServersService {
      * @throws ApiError
      */
     public adminDeleteServer(
-        serverId: number,
+        serverId: string,
     ): CancelablePromise<boolean> {
         return this.httpRequest.request({
             method: 'DELETE',

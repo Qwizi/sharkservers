@@ -1,6 +1,8 @@
 """Players models."""
 from __future__ import annotations
 
+import uuid
+
 import ormar
 
 from sharkservers.db import BaseMeta, DateFieldsMixins
@@ -23,7 +25,7 @@ class SteamRepProfile(ormar.Model, DateFieldsMixins):
 
         tablename = "steamrep_profiles"
 
-    id: int = ormar.Integer(primary_key=True)
+    id: str = ormar.UUID(primary_key=True, default=uuid.uuid4)
     profile_url: str | None = ormar.String(max_length=255, unique=True)
     is_scammer: bool | None = ormar.Boolean(default=False)
     steamid64: str | None = ormar.String(max_length=255, unique=True)
@@ -52,7 +54,7 @@ class Player(ormar.Model, DateFieldsMixins):
 
         tablename = "players"
 
-    id: int = ormar.Integer(primary_key=True)
+    id: str = ormar.UUID(primary_key=True, default=uuid.uuid4)
     steamrep_profile: SteamRepProfile | None = ormar.ForeignKey(
         SteamRepProfile,
         related_name="players",

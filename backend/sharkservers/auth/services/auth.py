@@ -21,6 +21,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError
 from ormar import NoMatch
 from pydantic import EmailStr
+from uuidbase62.types import to_uuidbase62
 
 from sharkservers.auth.exceptions import (
     incorrect_username_password_exception,
@@ -254,15 +255,16 @@ class AuthService:
             raise incorrect_username_password_exception
 
         scopes = await self.scopes_service.get_scopes_list(user.roles)
+        user_id = to_uuidbase62(user.id, "user")
         access_token, access_token_exp = jwt_access_token_service.encode(
             data={
-                "sub": str(user.id),
+                "sub": user_id,
                 "scopes": scopes,
                 "secret": user.secret_salt,
             },
         )
         refresh_token, refresh_toke_exp = jwt_refresh_token_service.encode(
-            data={"sub": str(user.id), "secret": user.secret_salt},
+            data={"sub": user_id, "secret": user.secret_salt},
         )
         await user.update(last_online=now_datetime())
         return (
@@ -304,10 +306,7 @@ class AuthService:
             payload = jwt_refresh_token_service.decode(token_data.refresh_token)
             refresh_token_exp = payload.get("exp", None)
             # TODO(Qwizi): replace with timezone  # noqa: TD003
-            if (
-                datetime.fromtimestamp(refresh_token_exp)
-                < now_datetime()  # noqa: DTZ006
-            ):
+            if datetime.fromtimestamp(refresh_token_exp) < now_datetime():  # noqa: DTZ006
                 raise token_expired_exception
             user_id = int(payload.get("sub"))
             secret: str = payload.get("secret")
@@ -375,9 +374,7 @@ class AuthService:
             str: The generated code.
         """
         # TODO(Qwizi): replace with secrets (secrets.token_hex(number)[:number])  # noqa: TD003
-        return "".join(
-            random.choice(string.digits) for _ in range(number)
-        )  # noqa: S311
+        return "".join(random.choice(string.digits) for _ in range(number))  # noqa: S311
 
     @staticmethod
     def generate_secret_salt() -> str:

@@ -3,6 +3,10 @@ from __future__ import annotations
 
 from fastapi import Query
 from pydantic import BaseModel, Field
+from uuidbase62 import (
+    UUIDBase62ModelMixin,
+    con_uuidbase62,
+)
 
 from sharkservers.forum.enums import (
     CategoryTypeEnum,
@@ -12,6 +16,8 @@ from sharkservers.forum.enums import (
 from sharkservers.forum.models import Category, Like, Post, Thread, ThreadMeta
 from sharkservers.roles.models import Role
 from sharkservers.schemas import OrderQuery
+from sharkservers.servers.schemas import ServerOut
+from sharkservers.users.schemas import UserOut
 
 author_exclude = {
     "author__password",
@@ -38,8 +44,10 @@ like_out = Like.get_pydantic(exclude=author_exclude | {"post_likes"})
 thread_meta_out = ThreadMeta.get_pydantic()
 
 
-class CategoryOut(category_out):
+class CategoryOut(UUIDBase62ModelMixin, category_out):
     """Category output schema."""
+
+    id: con_uuidbase62(prefix="category")
 
     class Config:
         """Category output schema config."""
@@ -47,8 +55,10 @@ class CategoryOut(category_out):
         orm_mode = True
 
 
-class ThreadMetaOut(BaseModel):
+class ThreadMetaOut(UUIDBase62ModelMixin, BaseModel):
     """Thread meta output schema."""
+
+    id: con_uuidbase62(prefix="thread_meta")
 
     class Config:
         """Thread meta output schema config."""
@@ -56,8 +66,14 @@ class ThreadMetaOut(BaseModel):
         orm_mode = True
 
 
-class ThreadOut(thread_out):
+class ThreadOut(UUIDBase62ModelMixin, thread_out):
     """Thread output schema."""
+
+    id: con_uuidbase62(prefix="thread")
+    author: UserOut
+    category: CategoryOut
+    server: ServerOut | None
+    meta_fields: list[ThreadMetaOut] | None
 
     class Config:
         """Thread output schema config."""
@@ -65,20 +81,27 @@ class ThreadOut(thread_out):
         orm_mode = True
 
 
-class PostOut(post_out):
-    """Post output schema."""
+class LikeOut(UUIDBase62ModelMixin, like_out):
+    """Like output schema."""
+
+    id: con_uuidbase62(prefix="like")
+    author: UserOut
 
     class Config:
-        """Post output schema config."""
+        """Like output schema config."""
 
         orm_mode = True
 
 
-class LikeOut(like_out):
-    """Like output schema."""
+class PostOut(UUIDBase62ModelMixin, post_out):
+    """Post output schema."""
+
+    id: con_uuidbase62(prefix="post")
+    author: UserOut
+    likes: list[LikeOut] | None
 
     class Config:
-        """Like output schema config."""
+        """Post output schema config."""
 
         orm_mode = True
 

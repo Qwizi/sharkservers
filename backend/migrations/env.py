@@ -21,6 +21,10 @@ if config.config_file_name is not None:
 # add your model's MetaData object here
 # for 'autogenerate' support
 from sharkservers.users.models import Ban, User  # noqa: E402, F401
+from sharkservers.forum.models import Category, Like  # noqa: E402, F401
+from sharkservers.chat.models import Chat  # noqa: E402, F401
+from sharkservers.servers.models import Server  # noqa: E402, F401
+
 
 # target_metadata = mymodel.Base.metadata\
 

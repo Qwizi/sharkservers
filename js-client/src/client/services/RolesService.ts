@@ -62,7 +62,7 @@ export class RolesService {
      * @throws ApiError
      */
     public getRole(
-        roleId: number,
+        roleId: string,
     ): CancelablePromise<RoleOutWithScopes> {
         return this.httpRequest.request({
             method: 'GET',

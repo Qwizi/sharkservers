@@ -221,7 +221,7 @@ def add_middlewares(_app: FastAPI) -> FastAPI:
                 jwt_token,
             )  # Import TokenData and use the correct type
             users_service: UserService = await get_users_service()
-            user = await users_service.get_one(id=token_data.user_id)
+            user = await users_service.get_one(id=token_data.user_id.uuid)
             await user.update(last_online=now_datetime())
             return response  # noqa: TRY300
         except (JWTError, HTTPException):

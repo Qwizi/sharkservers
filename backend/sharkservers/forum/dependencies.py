@@ -1,15 +1,15 @@
 """Forum dependencies."""
 from fastapi import Depends, Security
-from fastapi_events.dispatcher import dispatch
+from uuidbase62 import UUIDBase62, get_validated_uuidbase62_by_model
 
 from sharkservers.auth.dependencies import get_current_active_user
-from sharkservers.forum.enums import PostEventEnum
 from sharkservers.forum.exceptions import (
     post_not_valid_author_exception,
     thread_is_closed_exception,
     thread_not_valid_author_exception,
 )
 from sharkservers.forum.models import Category, Post, Thread
+from sharkservers.forum.schemas import CategoryOut, PostOut, ThreadOut
 from sharkservers.forum.services import (
     CategoryService,
     LikeService,
@@ -36,7 +36,9 @@ async def get_posts_service() -> PostService:
 
 
 async def get_valid_category(
-    category_id: int,
+    category_id: UUIDBase62 = Depends(
+        get_validated_uuidbase62_by_model(CategoryOut, "id", "category_id"),
+    ),
     categories_service: CategoryService = Depends(get_categories_service),
 ) -> Category:
     """
@@ -51,11 +53,13 @@ async def get_valid_category(
     -------
         Category: The category.
     """
-    return await categories_service.get_one(id=category_id)
+    return await categories_service.get_one(id=category_id.uuid)
 
 
 async def get_valid_thread(
-    thread_id: int,
+    thread_id: UUIDBase62 = Depends(
+        get_validated_uuidbase62_by_model(ThreadOut, "id", "thread_id"),
+    ),
     threads_service: ThreadService = Depends(get_threads_service),
 ) -> Thread:
     """
@@ -124,7 +128,9 @@ async def get_valid_thread_with_author(
 
 
 async def get_valid_post(
-    post_id: int,
+    post_id: UUIDBase62 = Depends(
+        get_validated_uuidbase62_by_model(PostOut, "id", "post_id"),
+    ),
     posts_service: PostService = Depends(get_posts_service),
 ) -> Post:
     """
@@ -139,9 +145,8 @@ async def get_valid_post(
     -------
         Post: The post.
     """
-    dispatch(PostEventEnum.GET_ONE_PRE, payload={"data": post_id})
     return await posts_service.get_one(
-        id=post_id,
+        id=post_id.uuid,
         related=[
             "author",
             "author__display_role",

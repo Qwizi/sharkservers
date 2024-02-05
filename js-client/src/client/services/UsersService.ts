@@ -140,7 +140,7 @@ export class UsersService {
      * @throws ApiError
      */
     public getUser(
-        userId: number,
+        userId: string,
     ): CancelablePromise<UserOut> {
         return this.httpRequest.request({
             method: 'GET',
@@ -176,7 +176,7 @@ export class UsersService {
      * @throws ApiError
      */
     public getUserPosts(
-        userId: number,
+        userId: string,
         page: number = 1,
         size: number = 50,
         orderBy: string = '-id',
@@ -220,7 +220,7 @@ export class UsersService {
      * @throws ApiError
      */
     public getUserThreads(
-        userId: number,
+        userId: string,
         page: number = 1,
         size: number = 50,
         orderBy: string = '-id',

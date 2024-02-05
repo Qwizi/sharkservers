@@ -2,14 +2,20 @@
 from __future__ import annotations
 
 from pydantic import BaseModel
+from uuidbase62 import (
+    UUIDBase62ModelMixin,
+    con_uuidbase62,
+)
 
 from sharkservers.servers.models import Server
 
 server_out = Server.get_pydantic()
 
 
-class ServerOut(server_out):
+class ServerOut(UUIDBase62ModelMixin, server_out):
     """Schema for retrieving a server."""
+
+    id: con_uuidbase62(prefix="server")
 
 
 class CreateServerSchema(BaseModel):
@@ -32,10 +38,10 @@ class UpdateServerSchema(BaseModel):
     api_url: str | None
 
 
-class ServerStatusSchema(BaseModel):
+class ServerStatusSchema(UUIDBase62ModelMixin, BaseModel):
     """Schema for retrieving a server's status."""
 
-    id: int
+    id: con_uuidbase62(prefix="server")
     name: str
     ip: str
     port: int

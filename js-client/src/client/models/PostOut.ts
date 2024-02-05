@@ -3,7 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { User_PRS } from './User_PRS';
+import type { LikeOut } from './LikeOut';
+import type { UserOut } from './UserOut';
 
 /**
  * Post output schema.
@@ -11,9 +12,10 @@ import type { User_PRS } from './User_PRS';
 export type PostOut = {
     created_at?: string;
     updated_at?: string;
-    id?: number;
-    author?: User_PRS;
+    id: string;
+    author: UserOut;
     content: string;
     likes_count?: number;
+    likes?: Array<LikeOut>;
 };
 

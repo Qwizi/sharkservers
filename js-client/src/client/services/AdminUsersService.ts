@@ -97,7 +97,7 @@ export class AdminUsersService {
      * @throws ApiError
      */
     public adminGetUser(
-        userId: number,
+        userId: string,
     ): CancelablePromise<UserOutWithEmail> {
         return this.httpRequest.request({
             method: 'GET',
@@ -130,7 +130,7 @@ export class AdminUsersService {
      * @throws ApiError
      */
     public adminUpdateUser(
-        userId: number,
+        userId: string,
         requestBody: AdminUpdateUserSchema,
     ): CancelablePromise<UserOutWithEmail> {
         return this.httpRequest.request({
@@ -164,7 +164,7 @@ export class AdminUsersService {
      * @throws ApiError
      */
     public adminDeleteUser(
-        userId: number,
+        userId: string,
     ): CancelablePromise<UserOutWithEmail> {
         return this.httpRequest.request({
             method: 'DELETE',

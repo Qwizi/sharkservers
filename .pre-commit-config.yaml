@@ -23,11 +23,3 @@ repos:
     stages: ["push"]
     name: "Run Poetry check hook"
     files: "^backend/sharkservers/.*"
-
-- repo: local
-  hooks:
-  - id: generate-openapi-file
-    name: Generate the JS client
-    language: script
-    entry: ./scripts/generate-openapi-file.sh
-    files: "^backend/sharkservers/.*"
