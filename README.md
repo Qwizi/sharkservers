@@ -11,6 +11,9 @@
 
 sharkservers-api
 
+# Showcase
+![Home Page](https://i.imgur.com/HG3C0IL.png)
+
 # Installation for contributors
 
 
